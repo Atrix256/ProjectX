@@ -1,6 +1,6 @@
+* statically link to directx
+* give people access to the git repository and instructions on how to use it
 * get people to try the exe
-* put it in git or svn
-* statically link to dx10
 
 * coding standard -> make it and share it w/ jojo (and josh?).  make sure the current code follows it.  think about whether there should be one or not
 * finish cleaning up code so its a pristine place to start from
@@ -31,6 +31,7 @@
 
 
 
+* make a way to make a publishable build (grabs exe, shared code, kernel code, etc and puts into some folder and possibly zips it up or whatever?)
 * be able to take screenshots and video
 * make an xml settings file and pass those as #defines to the compiler thing?
 * do the material field names make sense in xml? might try "transparency" or some other stuff
@@ -153,6 +154,11 @@
  * refraction
 
 =====DONE=====
+--11/3/13
+* over the weekend learned a ton about matrix math
+* got bumpmapping w/ RT working on shadertoy.  looks amazing combined with refraction
+* got code into git
+
 --10/29/13
 * got most of xml scene loading working
 

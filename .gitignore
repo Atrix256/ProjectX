@@ -2,6 +2,7 @@
 *.slo
 *.lo
 *.o
+*.obj
 
 # Compiled Dynamic libraries
 *.so
@@ -11,3 +12,18 @@
 *.lai
 *.la
 *.a
+
+# Bin directories
+Debug/
+Release/
+
+# MSVC files we don't care about
+*.sdf
+*.pdb
+*.opensdf
+
+# Program specific files we don't care about
+builderrors.txt
+
+# OpenCL files we don't care about
+*.ptx

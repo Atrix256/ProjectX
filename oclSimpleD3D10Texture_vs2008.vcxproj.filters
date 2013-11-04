@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cu;cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="TinyXML">
+      <UniqueIdentifier>{8ba3922b-ed19-4e8c-8658-a32a40f2213f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{d26ccb9b-447c-47bf-b0bd-e4c93eb9b466}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dynlink_d3d10.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="oclUtils.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="float3.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="CCamera.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="SCamera.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="CDirectx.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="SharedGeometry.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="SharedArray.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="External\tinyxml\tinyxml2.h">
+      <Filter>TinyXML</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="oclUtils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="CDirectx.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="CCamera.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="External\tinyxml\tinyxml2.cpp">
+      <Filter>TinyXML</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Todo.txt" />
+    <Text Include="CLNotes.txt" />
+    <Text Include="Data\worldformat.txt">
+      <Filter>Data</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Data\world.xml">
+      <Filter>Data</Filter>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="texture_2d.cl" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,31 @@
+* cl code is "C99" (or a subset of c99)
+ * no pass by reference
+ * struct SMaterial mat = blah
+* cl code is a string
+* you can share headers between cl code and c++.  .cl code can do #include, but when you compile it from the cpp you have to give include paths
+* you can set up defines when compiling the .cl code
+* struct alignment differences between c++ and .cl code.  Difficult to debug!
+ * lots of issues!
+ * what if some cl compiler decides to pad your structs differently? might totally not work on some random (future?) machine.
+ * but, if you specify padding and packing manually in .cl and cpp, may not be optimal
+ * seems like you need to pad structs to 32 bytes if you want to pass arrays
+ * can you precompile kernels? Yes but it makes them hardware specific apparently and isn't a good idea.
+ * seems like manually packing and aligning may be the way to go ):
+* cl_mem for passing larger data between cpp and .cl code
+ * made a templated dynamic array that has a "dirty flag" so it can re-write mem on demand.
+* memory scopes
+ * TODO: FILL IN MORE
+ * __global: shared across all kernel instances.
+ * __constant: same but kernel can only read the data.  apparently a hint for optimizer
+ ? common sizes of memory?
+  * CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE 
+  * CL_DEVICE_LOCAL_MEM_SIZE 
+  * CL_DEVICE_MAX_CONSTANT_ARGS
+ ? synchronization primitives and who can access which scopes?
+* clSetKernelArg: have to set the order of the args and stuff when calling
+* can do swizzling if you want to!
+* you can use extensions. like dx10 texture access... nvidia samples used an nvidia extension, but there are generic ones that have the same interface so you aren't really locked to nvidia w/ their sample code
+* going to try: "permutation generator".  Have graphics options control how the kernel code is generated.  That way no runtime checks "is reflection enabled?" it either is in the kernel code or isnt.
+ * either that or perhaps just do #defines in the kernel code so it's easier to visualize what the final code looks like
+* on my machine, kernel only rebuilds if kernel code changed, but doesn't check files the kernel includes!!
+* "uint8" = 8 bits or 8 uints?  in opencl it's 8 uints hehe.  cl_uint8 for code side usage.

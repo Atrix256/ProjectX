@@ -1,0 +1,191 @@
+* get people to try the exe
+* put it in git or svn
+* statically link to dx10
+
+* coding standard -> make it and share it w/ jojo (and josh?).  make sure the current code follows it.  think about whether there should be one or not
+* finish cleaning up code so its a pristine place to start from
+* rename the "texture_2d.cl" and other texture 2d stuff to something that makes more sense
+
+* statically link to directx (maybe do after putting in git?)
+* move xml parsing to it's own file?  maybe do the #define thing to declare structs that auto-generate xml parsing functions
+ * YES
+* package shared code with .cl code
+* i think we need to manually pack / pad the objects to ensure it works on all kernel compilers
+ * fix the padding in the structs... formalize it somehow or something??
+* make sure things are initialized in structs, in case an attribute in the xml isn't found.
+* fill out the worldformat.txt file
+* jumping, falling, crouching.
+* walk on boxes, under objects, can't walk through walls?
+* move "game code" out of directx file into game code files (ie logic that moves camera, moves objects, etc)
+* make some kind of "control state" struct that holds input info to query instead of globals
+* animate lights or objects or something
+
+* Video cards / OpenCL support
+ * Mike: NVIDIA geforce GT, 2gb mem
+ * Eric: Amd but josh and Matthew have nvidia and I have physx card.  we have hd7950 a 470 gtx and a 480 gtx
+ * Katie: going to test her 2 cards
+
+
+
+
+
+
+
+* be able to take screenshots and video
+* make an xml settings file and pass those as #defines to the compiler thing?
+* do the material field names make sense in xml? might try "transparency" or some other stuff
+* error on unknown xml attribute? possible on unknown xml tag too?
+* make sure material id is unique.  error on not unique?
+* do something else to map material names to indices instead of storing a temporary std::vector of strings?  maybe generalize the id's somehow to all xml types and have some sort of lookup table to objects?
+* should a float4 be made like the float3 guy?  is float3 a good idea? maybe call it something else entirely and have it convert to a cl_float3 as needed
+* formalize some xml definition parsing stuff.  macro definitions may be enough
+* some way to trigger a map reload
+* bump mapping - especially for refraction since it looks so rad
+ * animated texture or even procedural bump texture - like for water droplets running down glass
+  * also for tentacly / bio bumped stuff.
+* twist and manipulate camera rays. static and over time
+* C# property grid for generic data editor?
+* how do you profile opencl?
+* verify that specular calculation is correct
+* verify that reflection calculation is correct
+* verify that refraction calculation is correct. i think raytocameradir is wrong
+* verify ambient light is correct... should it be used as many places as it is?
+* verify that colorMultiplier is used correctly.  passed to apply light, but then also applied to result?!
+ * should bail out if it gets too small?
+* verify material index is in range before indexing in kernel somehow.  maybe have material zero be the default / error material?
+* do something to make build errors more obvious, since it exits now before you can read it. like sscanf on build error or something? idk
+* red blue 3d mode, toggle with a key
+* it seems like reflective objects that have sections in shadow vs light should somehow not reflect as strongly in shadow?
+* should we try having objects that don't RECIEVE shadows? not just ones that don't cast them...
+* try light attenuation over distance
+* can you somehow precompile kernel so you dont have to worry about packing and paddnig and shit?
+ * appaerntly yes, but it makes it too device specific.  investigate
+* make a way to show how many ray bounces per pixel
+* also show how many object tests per pixel (whiter dots = more)
+* assert support and put it in where needed
+* review the querying and creation of opencl platforms, devices and contexts
+ * make sure doing right and taking advantage of all options.  probably want a graphics option to choose device!
+* figure out why dynlinkUnloadD3D10API causes a crash on exit
+* trybump mapping and other usages of textures to modify things per pixel
+* add some randomness to specular / diffuse coloration to get rid of the banding
+* alt+enter full screen toggle (or at least graphics option)
+* have some way to do autodetection of graphics settings?
+* figure out a way to do reflection AND refraction (as a graphics option or something)
+* mouse sensitivity setting
+* quaternion camera?  polar coordinate camera may actually be enough.  quaternion would only be needed for flight controls etc
+* make material be pointed to by collision info, not coppied
+* directional lighting support later.  need to basically shoot a ray in the reverse direction towards infinity.  need to know the extents of what to test to make directional lights work so leaving it out for now.
+* is there a perf penalty for storing thigns in float4's and casting to float3* to just work with the first 3 components?
+* refraction: color absorption over distance?
+* see what other kinds of RT effects there are out there besides what's implemented... ask around if needed?
+* dispersion / aberation investigation
+* investigate depth of field.  people say you have to cast multiple rays, but maybe you don't if you configure the ray sources correctly?
+* generate permutations based on object properties for faster, more custom fit code?
+* gotta watch out for instruction cache problems though...
+* cl permutation compiler would be for when changing graphics settings so the tests for "should i shadow?" don't need to be run, it just does or does not
+ * or maybe just #defines so it's easier to see the end result code & debug5
+* attempt to run it on cpu only? might be super super slow, but may be ok at low resolutions and graphics settings?
+* async build of cl scripts... you pass a function pointer to clBuildProgram 
+* interlaced mode if needed as a faster rendering option
+* red/blue 3d mode (screen door render if needed)
+* figure out optimizations for kernal (check link in notes).  like maybe do full opts in release mode or something?
+ * make denormals zero! and other nice things
+* oclCheckErrorEX <-- go away!!
+* port rt code from cuda to this -> or just redo it :P
+* see if these exes run at work / on other computers? esp non nvidia machines
+* figure out how to partition work on "threads" for opencl
+* port other todo list
+* see how to get CPU involved.  Maybe having it help would be useful too? dunno.
+  * maybe end user can choose device it runs on somehow...
+* is it running in SLI? how can i check
+* is there a way to share code between the .cl file and the rest of the code base?
+  * could have files included by source code which also included by .cl file maybe
+  * can .cl include files?
+  * would have to put them in a dir that gets included in binary
+* lua binding so can use this thing from lua and make lots of diff games.
+ * is there a way to protect the lua / opencl or embed it into the exe or something?
+ * lua swig or lua bind (bind not as good apparently)
+* get into svn
+* better app title for window?
+* test exiting by pressing X and by using escape
+* test device lost if still relevant
+* clean up dx & cl init & handling stuff better. split dx and cl into 2 seperate classes
+* don't need to set kernel arguments each kernel call
+* do cpu stuff while waiting on gpu?
+* can we bake lighting at all? bake in bsp somehow
+* can we enable vsync?
+* depth of field / bokeh
+* use a compressor or limiter for brightness of scene?
+
+* texture lookup for opacity, reflectiveness, refraction index and something else? (could pack 4 values per pixel in)
+  * alternately, could let people specify a texture for those various things.
+
+* animated meshes: Have it make bsp trees for each pose?
+
+=====NOTES=====
+? is there an instruction limit in opencl?
+ * not really but you dont want to make it too large since the instruction cache is like 64KB usually.
+ * http://devgurus.amd.com/thread/158542
+
+* clBuildProgram notes (includes, optimizations, etc)
+ http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clBuildProgram.html
+
+* it doesn't seem to recompile the cl program unless you modify the cl itself, you can't just edit a header it includes and expect it to recompile! (shitty).
+ * also, it doesn't go off timestamp, but actual changes, so you literally need to add a new blank line or something for it to recompile
+
+* when packing a 3 vector and a scalar into a float4 be careful... operations on the 3 vector will overwrite w! you have to do it like this below.  may not be particularly safe... but it does pack things tighter, so tough to say we shouldn't do it at all
+ (*(float3*)&info->m_intersectionPointAndTime) = rayPos + rayDir * collisionTime;
+ info->m_intersectionPointAndTime.w = collisionTime;
+
+* could use address of primitive instead of having to have an ID per primitive
+ * no - for some reason when i did that it went from 400fps down to about 70fps.  no idea why
+
+* RT Basics Done
+ * shadows
+ * sphere primitives
+ * specular lighting
+ * diffuse lighting
+ * ambient lighting
+ * point light
+ * box primitives
+ * reflection
+ * max raybounces
+ * refraction
+
+=====DONE=====
+--10/29/13
+* got most of xml scene loading working
+
+--10/26/13
+* got shadows working
+* only shadow test objects marked as casting shadows
+* move ambient lighting to be a c++ param
+* make the light spheres use a material that is their color
+* use constant instaead of global space
+* combine color and amount, pos and radius etc.  use swizzle to get just the components you want.  shared geometry / smaterial
+* make sure all params are out of the kernel code
+
+--10/25/13
+* made more objects be passed through from c++ side
+* made materials be a set of objects indexed by prims
+* fought w/ padding and alignment w/ shared structs working for now (need to formalize it later to be not manual)
+* make some kind of shadowed object array to make it easier to send objects to the cl file.
+
+--10/21/13
+* swept the crash on exit under the rug by not dynamically unlinking dx10 at exit.  todo for later :/
+* lights now get passed through dynamically from cpp
+
+--10/20/13
+* got a basic camera in as a shared struct passed to the kernal
+* got some spheres with specular, diffuse and ambient lighting in.  got a point light in
+* got wasd movement and mouse look in
+* axis aligned box support
+* reflection / refraction
+* got rid of nvidia extensions in favor of khr extensions of the same name
+
+--10/19/13
+* figured out how includes and defines worked in .cl program compiling
+* cpu gives camera pos, fwd, up and other info and passes it to cl to make into rays.
+--9/22/13
+* Get opencl compiling and running
+* started cleaning up and renaming things

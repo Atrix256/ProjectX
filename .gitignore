@@ -21,6 +21,7 @@ Release/
 *.sdf
 *.pdb
 *.opensdf
+*.suo
 
 # Program specific files we don't care about
 builderrors.txt

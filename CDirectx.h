@@ -5,6 +5,8 @@
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <string>
+
 // OpenCL includes
 #include <oclUtils.h>
 #include <CL/cl_d3d10.h>
@@ -41,6 +43,8 @@ public:
 	HRESULT InitCL ();
 
 	HWND GetHWND () const { return m_hWnd; }
+
+	void SetWorld (const char *world) {m_world = world;}
 
 private:
 	CDirectX ();
@@ -102,6 +106,8 @@ private:
 	D3DPRESENT_PARAMETERS g_d3dpp;
 
 	WNDCLASSEX m_wc;
+
+	std::string m_world;
 
 	unsigned int			m_width;
 	unsigned int			m_height;

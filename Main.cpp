@@ -19,6 +19,11 @@ void Update(float elapsed);
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+	if (argc > 1)
+		CDirectX::Get().SetWorld(argv[1]);
+	else
+		CDirectX::Get().SetWorld("./data/default.xml");
+
 	if(!CDirectX::Get().Init(1000, 1000))
 		return 0;
 

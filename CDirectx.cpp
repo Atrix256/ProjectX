@@ -5,6 +5,10 @@
 #include <vector>
 #include <string>
 
+#pragma comment(lib, "d3d10.lib")
+#pragma comment(lib, "d3dx10.lib")
+#pragma comment(lib, "dxgi.lib")
+
 #ifndef HID_USAGE_PAGE_GENERIC
 #define HID_USAGE_PAGE_GENERIC         ((USHORT) 0x01)
 #endif
@@ -453,7 +457,7 @@ void CDirectX::LoadWorld ()
 	unsigned int nextObjectId = 1;
 
 	tinyxml2::XMLDocument doc;
-	if (doc.LoadFile("./data/world.xml") != tinyxml2::XML_NO_ERROR)
+	if (doc.LoadFile(m_world.c_str()) != tinyxml2::XML_NO_ERROR)
 		return;
 
 	tinyxml2::XMLElement *world = doc.FirstChildElement("World");

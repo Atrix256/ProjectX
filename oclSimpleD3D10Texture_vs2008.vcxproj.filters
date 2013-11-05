@@ -13,9 +13,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="dynlink_d3d10.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="oclUtils.h">
       <Filter>src</Filter>
     </ClInclude>

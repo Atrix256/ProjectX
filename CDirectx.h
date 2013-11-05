@@ -1,6 +1,14 @@
 #pragma once
 
-#include "dynlink_d3d10.h"
+// Direct3D9 includes
+#include <d3d9.h>
+#include <d3dx9.h>
+
+// Direct3D10 includes
+#include <dxgi.h>
+#include <d3d10_1.h>
+#include <d3d10.h>
+#include <d3dx10.h>
 
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>

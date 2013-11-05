@@ -141,11 +141,6 @@ CDirectX::~CDirectX ()
     if(m_cxGPUContext)
 		clReleaseContext(m_cxGPUContext);
 
-	// this causes a crash on exit for some reason??  something to do with cl stuff.
-	// if m_clCreateFromD3D10Texture2DKHR is not called, this doesn't crash on exit
-	// need to fix (and putting notes in todo)
-	//dynlinkUnloadD3D10API();
-
 	// Unregister windows class
 	UnregisterClass( m_wc.lpszClassName, m_wc.hInstance );
 }
@@ -155,12 +150,6 @@ CDirectX::~CDirectX ()
 {
 	m_width = width;
 	m_height = height;
-
-	if (!dynlinkLoadD3D10API())
-	{
-		printf("could not dynamicaly link to d3d10\r\n");
-		return false;
-	}
 
 	//
 	// create window
@@ -291,7 +280,7 @@ HRESULT CDirectX::InitD3D10 ()
     {
         // iterate through the candidate adapters
         IDXGIFactory *pFactory;
-        hr = sFnPtr_CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(&pFactory) );
+		hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(&pFactory));
         if(FAILED(hr))
 		{
 			noD3DAvailable = true;
@@ -340,7 +329,7 @@ HRESULT CDirectX::InitD3D10 ()
     sd.Windowed = TRUE;
 
     // Create device and swapchain
-    hr = sFnPtr_D3D10CreateDeviceAndSwapChain( 
+    hr = D3D10CreateDeviceAndSwapChain( 
         pCLCapableAdapter, 
         D3D10_DRIVER_TYPE_HARDWARE, 
         NULL, 
@@ -385,7 +374,7 @@ HRESULT CDirectX::InitD3D10 ()
     {
         ID3D10Blob* pCompiledEffect;
         ID3D10Blob* pErrors = NULL;
-        hr = sFnPtr_D3D10CompileEffectFromMemory(
+        hr = D3D10CompileEffectFromMemory(
             (void*)g_simpleEffectSrc,
             sizeof(g_simpleEffectSrc),
             NULL,
@@ -405,7 +394,7 @@ HRESULT CDirectX::InitD3D10 ()
 		if(FAILED(hr))
 			return hr;
         
-        hr = sFnPtr_D3D10CreateEffectFromMemory(
+        hr = D3D10CreateEffectFromMemory(
             pCompiledEffect->GetBufferPointer(),
             pCompiledEffect->GetBufferSize(),
             0, // FXFlags

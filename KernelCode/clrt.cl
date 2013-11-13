@@ -1,5 +1,13 @@
-#include "SCamera.h"
-#include "SharedGeometry.h"
+/*==================================================================================================
+
+clrt.cl
+
+The kernel code
+
+==================================================================================================*/
+
+#include "Shared/SCamera.h"
+#include "Shared/SharedGeometry.h"
 
 #define c_maxRayBounces 6
 
@@ -350,7 +358,7 @@ void TraceRay (
 	}
 }
 
-__kernel void cl_kernel_texture_2d (
+__kernel void clrt (
 	__write_only image2d_t texOut, 
 	struct SCamera camera,
 	float cameraViewDistance,

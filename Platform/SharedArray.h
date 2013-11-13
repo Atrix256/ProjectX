@@ -1,4 +1,17 @@
+/*==================================================================================================
+
+SharedArray.h
+
+An array class that can be passed to kernel code
+
+==================================================================================================*/
+
 #pragma once
+
+#include "oclUtils.h"
+#include <CL/cl_d3d10.h>
+#include <CL/cl_d3d10_ext.h>
+#include <CL/cl_ext.h>
 
 template<typename T>
 class CSharedArray

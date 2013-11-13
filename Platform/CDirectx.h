@@ -1,3 +1,11 @@
+/*==================================================================================================
+
+CDirectX.h
+
+DirectX and OpenCL code lives here
+
+==================================================================================================*/
+
 #pragma once
 
 // Direct3D9 includes
@@ -16,13 +24,12 @@
 #include <string>
 
 // OpenCL includes
-#include <oclUtils.h>
+#include "oclUtils.h"
 #include <CL/cl_d3d10.h>
 #include <CL/cl_d3d10_ext.h>
 #include <CL/cl_ext.h>
 
-#include "SharedArray.h"
-#include "SharedGeometry.h"
+#include "Game/CWorld.h"
 
 // Data structure for 2D texture shared between DX9 and CL
 struct STexture2D
@@ -52,13 +59,11 @@ public:
 
 	HWND GetHWND () const { return m_hWnd; }
 
-	void SetWorld (const char *world) {m_world = world;}
+	void SetWorld (const char *world) {m_worldFileName = world;}
 
 private:
 	CDirectX ();
 	HRESULT InitD3D10 ();
-
-	void LoadWorld ();
 
 	void RunCL (float elapsed);
 	void RunKernels (float elapsed);
@@ -103,19 +108,14 @@ private:
 	size_t				m_szGlobalWorkSize[2];
 	size_t				m_szLocalWorkSize[2];
 
-	float3						m_ambientLight;
-	CSharedArray<SPointLight>	m_pointLights;
-	CSharedArray<SSphere>		m_spheres;
-	CSharedArray<SAABox>		m_boxes;
-	CSharedArray<SMaterial>		m_materials;
+	CWorld				m_world;
+	std::string			m_worldFileName;
 
 	HWND			      g_hWnd;
 	D3DDISPLAYMODE        g_d3ddm;    
 	D3DPRESENT_PARAMETERS g_d3dpp;
 
 	WNDCLASSEX m_wc;
-
-	std::string m_world;
 
 	unsigned int			m_width;
 	unsigned int			m_height;

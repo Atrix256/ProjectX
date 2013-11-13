@@ -1,78 +1,92 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="src">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cu;cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="TinyXML">
-      <UniqueIdentifier>{8ba3922b-ed19-4e8c-8658-a32a40f2213f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Data">
       <UniqueIdentifier>{d26ccb9b-447c-47bf-b0bd-e4c93eb9b466}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Kernel Code">
+      <UniqueIdentifier>{9d488562-5a6b-4073-a25a-d599944cd523}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Kernel Code\Shared">
+      <UniqueIdentifier>{cfa2896d-8aff-4000-8616-a32704317fe6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{8acdba73-c568-40c7-9ea6-0974e9a426e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External">
+      <UniqueIdentifier>{f3ef049b-66f6-4cbd-bd6f-a386c23406d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\TinyXML">
+      <UniqueIdentifier>{8ba3922b-ed19-4e8c-8658-a32a40f2213f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{7d7c441d-7c61-447c-b0fc-c1eeb78d0c55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataSchemas">
+      <UniqueIdentifier>{a47ab293-b2d6-45c8-8395-8480b5fe99d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="oclUtils.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="float3.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="CCamera.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="SCamera.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="CDirectx.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="SharedGeometry.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="SharedArray.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="External\tinyxml\tinyxml2.h">
-      <Filter>TinyXML</Filter>
+      <Filter>External\TinyXML</Filter>
     </ClInclude>
-    <ClInclude Include="DataSchemas.h">
-      <Filter>src</Filter>
+    <ClInclude Include="KernelCode\Shared\SCamera.h">
+      <Filter>Kernel Code\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="DataSchemasXML.h">
-      <Filter>src</Filter>
+    <ClInclude Include="KernelCode\Shared\SharedGeometry.h">
+      <Filter>Kernel Code\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="DataSchemasStructs.h">
-      <Filter>src</Filter>
+    <ClInclude Include="Platform\CDirectx.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\oclUtils.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\float3.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\SharedArray.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CCamera.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CWorld.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSchemas\DataSchemasXML.h">
+      <Filter>DataSchemas</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSchemas\DataSchemas.h">
+      <Filter>DataSchemas</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSchemas\DataSchemasStructs.h">
+      <Filter>DataSchemas</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="oclUtils.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="Main.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="CDirectx.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="CCamera.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="External\tinyxml\tinyxml2.cpp">
-      <Filter>TinyXML</Filter>
+      <Filter>External\TinyXML</Filter>
     </ClCompile>
-    <ClCompile Include="DataSchemasStructs.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="Platform\CDirectx.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\oclUtils.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\CCamera.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\CWorld.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="DataSchemas\DataSchemasStructs.cpp">
+      <Filter>DataSchemas</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Todo.txt" />
     <Text Include="CLNotes.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="texture_2d.cl" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="Data\default.xml">
@@ -81,5 +95,10 @@
     <Xml Include="Data\simple.xml">
       <Filter>Data</Filter>
     </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="KernelCode\clrt.cl">
+      <Filter>Kernel Code</Filter>
+    </None>
   </ItemGroup>
 </Project>

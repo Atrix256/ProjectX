@@ -7,27 +7,20 @@ TO "SHIP" TO TEAM
 * give people access to the git repository and instructions on how to use it
 * get people to try the exe
 
+
 NEXT
-* put world loading into it's own file or something? doesnt belong in directx.cpp!
-* i think we need to manually pack / pad the objects to ensure it works on all kernel compilers
- * give treatment to data schemas too i think
- * fix the padding in the structs... formalize it somehow or something??
-* coding standard -> make it and share it?  make sure the current code follows it.  think about whether there should be one or not
-* finish cleaning up code so its a pristine place to start from
-* rename the "texture_2d.cl" and other texture 2d stuff to something that makes more sense
-* package shared code with .cl code
-* make sure things are initialized in structs, in case an attribute in the xml isn't found.
 * jumping, falling, crouching.
 * walk on boxes, under objects, can't walk through walls?
 * move "game code" out of directx file into game code files (ie logic that moves camera, moves objects, etc)
 * make some kind of "control state" struct that holds input info to query instead of globals
 * textures and bumpmapping
-* organize code
 
 
- 
+* if needed, could break code up into multiple projects to help compile time if it ends up being an issue
+* CDirectX.cpp / .h needs some cleaning up
+* xml file to describe graphics options for now?
 * if making a data catalog, allow it to be used for network messages as well
-* if no reflection or refraction, remove loop completely.
+* if no reflection or refraction from #define settings, remove loop completely.
 * mouse input doesnt work in 64 bit build
 * build warning about: c:\program files (x86)\microsoft directx sdk (june 2010)\include\dxgitype.h(12): warning C4005: 'DXGI_STATUS_OCCLUDED' : macro redefinition
 * mouse sensitivity / invert mouse
@@ -157,6 +150,7 @@ NEXT
 =====DONE=====
 --11/13/13
 * got formalized schema based xml parser done... been working on it on and off the last several days
+* organized and cleaned up the code a bit
 
 --11/4/13
 * command line to load a specific xml scene file so people can make their own maps

@@ -1,5 +1,15 @@
-#include "float3.h"
-#include "SCamera.h"
+/*==================================================================================================
+
+CCamera.h
+
+This is the camera singleton class.  Manipulate this object to change the view of the world.
+
+==================================================================================================*/
+
+#pragma once
+
+#include "Platform/float3.h"
+#include "KernelCode/Shared/SCamera.h"
 
 class CCamera
 {

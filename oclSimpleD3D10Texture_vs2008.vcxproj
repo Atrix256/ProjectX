@@ -211,41 +211,26 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CCamera.h" />
-    <ClInclude Include="CDirectx.h" />
-    <ClInclude Include="DataSchemas.h" />
-    <ClInclude Include="DataSchemasStructs.h" />
+    <ClInclude Include="DataSchemas\DataSchemas.h" />
+    <ClInclude Include="DataSchemas\DataSchemasStructs.h" />
+    <ClInclude Include="DataSchemas\DataSchemasXML.h" />
     <ClInclude Include="External\tinyxml\tinyxml2.h" />
-    <ClInclude Include="oclUtils.h" />
-    <ClInclude Include="float3.h" />
-    <ClInclude Include="SCamera.h" />
-    <ClInclude Include="SharedArray.h" />
-    <ClInclude Include="SharedGeometry.h" />
-    <ClInclude Include="DataSchemasXML.h" />
+    <ClInclude Include="Game\CCamera.h" />
+    <ClInclude Include="Game\CWorld.h" />
+    <ClInclude Include="KernelCode\Shared\SCamera.h" />
+    <ClInclude Include="KernelCode\Shared\SharedGeometry.h" />
+    <ClInclude Include="Platform\CDirectx.h" />
+    <ClInclude Include="Platform\float3.h" />
+    <ClInclude Include="Platform\oclUtils.h" />
+    <ClInclude Include="Platform\SharedArray.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CCamera.cpp" />
-    <ClCompile Include="CDirectx.cpp">
-      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</PreprocessToFile>
-    </ClCompile>
-    <ClCompile Include="DataSchemasStructs.cpp" />
+    <ClCompile Include="DataSchemas\DataSchemasStructs.cpp" />
     <ClCompile Include="External\tinyxml\tinyxml2.cpp" />
-    <ClCompile Include="Main.cpp">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../../common/inc;$(DXSDK_DIR)/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../../common/inc;$(DXSDK_DIR)/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../../common/inc;$(DXSDK_DIR)/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../common/inc;$(DXSDK_DIR)/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <ClCompile Include="oclUtils.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="texture_2d.cl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </CustomBuild>
+    <ClCompile Include="Game\CCamera.cpp" />
+    <ClCompile Include="Game\CWorld.cpp" />
+    <ClCompile Include="Platform\CDirectx.cpp" />
+    <ClCompile Include="Platform\oclUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CLNotes.txt" />
@@ -254,6 +239,9 @@
   <ItemGroup>
     <Xml Include="Data\default.xml" />
     <Xml Include="Data\simple.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="KernelCode\clrt.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

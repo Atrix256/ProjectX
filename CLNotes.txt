@@ -1,9 +1,9 @@
 * cl code is "C99" (or a subset of c99)
  * no pass by reference
- * struct SMaterial mat = blah
+ * struct SMaterial mat = blah.  Having to explicitly say "struct" before the var type
 * cl code is a string
 * you can share headers between cl code and c++.  .cl code can do #include, but when you compile it from the cpp you have to give include paths
-* you can set up defines when compiling the .cl code
+* you can set up defines when compiling the .cl code, passing those defines from the c++ code.
 * struct alignment differences between c++ and .cl code.  Difficult to debug!
  * lots of issues!
  * what if some cl compiler decides to pad your structs differently? might totally not work on some random (future?) machine.
@@ -13,6 +13,7 @@
  * seems like manually packing and aligning may be the way to go ):
 * cl_mem for passing larger data between cpp and .cl code
  * made a templated dynamic array that has a "dirty flag" so it can re-write mem on demand.
+ ? limited number of these?
 * memory scopes
  * TODO: FILL IN MORE
  * __global: shared across all kernel instances.

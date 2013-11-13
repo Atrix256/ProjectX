@@ -1,7 +1,15 @@
+/*==================================================================================================
+
+SharedGeometry.h
+
+Structs shared by both kernel and host code
+
+==================================================================================================*/
+
 #pragma once
 
 #ifndef OPENCL
-	#include "float3.h"
+	#include "Platform/float3.h"
 #else
 	typedef unsigned int cl_uint;
 	typedef float cl_float;

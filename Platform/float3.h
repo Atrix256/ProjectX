@@ -1,3 +1,11 @@
+/*==================================================================================================
+
+float3.h
+
+This defines a float3 that can be used on the C++ side and is compatible with float3 OpenCL side
+
+==================================================================================================*/
+
 #pragma once
 
 //#ifndef OPENCL <--- this is here in case we need to share code with the .cl file
@@ -6,7 +14,7 @@
 // impossible to make functions like normalize() that rely on overloading to know how many
 // elements are in the float
 
-#include <oclUtils.h>
+#include "oclUtils.h"
 #include <math.h>
 
 struct float3 {

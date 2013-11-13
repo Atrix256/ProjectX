@@ -1,7 +1,13 @@
+/*==================================================================================================
+
+CDirectX.cpp
+
+DirectX and OpenCL code lives here
+
+==================================================================================================*/
+
 #include "CDirectx.h"
-#include "CCamera.h"
-#include "SharedGeometry.h"
-#include "DataSchemasXML.h"
+#include "Game/CCamera.h"
 
 #include <vector>
 #include <string>
@@ -125,10 +131,7 @@ CDirectX::~CDirectX ()
 	if (m_texture_2d.pTexture)
 		m_texture_2d.pTexture->Release();
 
-	m_pointLights.Release();
-	m_spheres.Release();
-	m_boxes.Release();
-	m_materials.Release();
+	m_world.Release();
 
 	if(m_ckKernel_tex2d)
 		clReleaseKernel(m_ckKernel_tex2d); 
@@ -250,7 +253,7 @@ HRESULT CDirectX::InitCL()
     m_cqCommandQueue = clCreateCommandQueue(m_cxGPUContext, cdDevice, 0, &ciErrNum);
 	oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
-	CreateKernelProgram("texture_2d.cl", "texture_2d.ptx", "cl_kernel_texture_2d", m_cpProgram_tex2d, m_ckKernel_tex2d);
+	CreateKernelProgram("./KernelCode/clrt.cl", "clrt.ptx", "clrt", m_cpProgram_tex2d, m_ckKernel_tex2d);
 
 	return S_OK;
 }
@@ -430,104 +433,6 @@ HRESULT CDirectX::InitD3D10 ()
     return S_OK;
 }
 
-void Copy(float3 &lhs, const SData_Vec3 &rhs)
-{
-	lhs[0] = rhs.m_x;
-	lhs[1] = rhs.m_y;
-	lhs[2] = rhs.m_z;
-}
-
-void Copy(cl_float4 &lhs, const SData_Vec3 &rhs, const float w)
-{
-	lhs.s[0] = rhs.m_x;
-	lhs.s[1] = rhs.m_y;
-	lhs.s[2] = rhs.m_z;
-	lhs.s[3] = w;
-}
-
-//-----------------------------------------------------------------------------
-void CDirectX::LoadWorld ()
-{
-	// clear the existing world data
-	m_ambientLight[0] = 0.0f;
-	m_ambientLight[1] = 0.0f;
-	m_ambientLight[2] = 0.0f;
-	m_pointLights.Clear();
-	m_materials.Clear();
-	m_boxes.Clear();
-	m_spheres.Clear();
-
-	SData_World worldData;
-	if (!DataSchemasXML::Load(worldData, m_world.c_str(), "World"))
-		return;
-
-	// ambient light
-	Copy(m_ambientLight, worldData.m_AmbientLight);
-
-	// point lights
-	m_pointLights.Resize(worldData.m_PointLight.size());
-	for (unsigned int index = 0, count = worldData.m_PointLight.size(); index < count; ++index)
-	{
-		Copy(m_pointLights[index].m_color, worldData.m_PointLight[index].m_Color);
-		Copy(m_pointLights[index].m_position, worldData.m_PointLight[index].m_Position);
-	}
-
-	// materials
-	m_materials.Resize(worldData.m_Material.size());
-	for (unsigned int index = 0, count = worldData.m_Material.size(); index < count; ++index)
-	{
-		Copy(m_materials[index].m_diffuseColorAndAmount, worldData.m_Material[index].m_DiffuseColor, worldData.m_Material[index].m_DiffuseAmount);
-		Copy(m_materials[index].m_specularColorAndAmount, worldData.m_Material[index].m_SpecularColor, worldData.m_Material[index].m_SpecularAmount);
-		Copy(m_materials[index].m_emissiveColor, worldData.m_Material[index].m_EmissiveColor);
-		m_materials[index].m_reflectionAmount = worldData.m_Material[index].m_ReflectionAmount;
-		m_materials[index].m_refractionAmount = worldData.m_Material[index].m_RefractionAmount;
-		m_materials[index].m_refractionIndex = worldData.m_Material[index].m_RefractionIndex;
-	}
-
-	unsigned int nextObjectId = 1;
-
-	// boxes
-	m_boxes.Resize(worldData.m_Box.size());
-	for (unsigned int index = 0, count = worldData.m_Box.size(); index < count; ++index)
-	{
-		m_boxes[index].m_objectId = nextObjectId++;
-		Copy(m_boxes[index].m_position, worldData.m_Box[index].m_Position);
-		Copy(m_boxes[index].m_scale, worldData.m_Box[index].m_Scale);
-		m_boxes[index].m_castsShadows = worldData.m_Box[index].m_CastShadows;
-
-		// set the material index
-		m_boxes[index].m_materialIndex = 0;
-		for(unsigned int matIndex = 0, matCount = worldData.m_Material.size(); matIndex < matCount; ++matIndex)
-		{
-			if (!stricmp(worldData.m_Box[index].m_Material.c_str(), worldData.m_Material[matIndex].m_id.c_str()))
-			{
-				m_boxes[index].m_materialIndex = matIndex;
-				break;
-			}
-		}
-	}
-
-	// spheres
-	m_spheres.Resize(worldData.m_Sphere.size());
-	for (unsigned int index = 0, count = worldData.m_Sphere.size(); index < count; ++index)
-	{
-		m_spheres[index].m_objectId = nextObjectId++;
-		Copy(m_spheres[index].m_positionAndRadius, worldData.m_Sphere[index].m_Position, worldData.m_Sphere[index].m_Radius);
-		m_spheres[index].m_castsShadows = worldData.m_Sphere[index].m_CastShadows;
-
-		// set the material index
-		m_spheres[index].m_materialIndex = 0;
-		for(unsigned int matIndex = 0, matCount = worldData.m_Material.size(); matIndex < matCount; ++matIndex)
-		{
-			if (!stricmp(worldData.m_Sphere[index].m_Material.c_str(), worldData.m_Material[matIndex].m_id.c_str()))
-			{
-				m_spheres[index].m_materialIndex = matIndex;
-				break;
-			}
-		}
-	}
-}
-
 //-----------------------------------------------------------------------------
 HRESULT CDirectX::InitTextures ()
 {
@@ -570,7 +475,7 @@ HRESULT CDirectX::InitTextures ()
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 	}
 
-	LoadWorld();
+	m_world.Load(m_worldFileName.c_str());
 
 	return S_OK;
 }
@@ -598,7 +503,7 @@ HRESULT CDirectX::CreateKernelProgram(
     free(source);
 
     // build the program
-	static char *opts = "-cl-fast-relaxed-math -I ./ -D=OPENCL";
+	static char *opts = "-cl-fast-relaxed-math -I ./KernelCode/ -D=OPENCL";
     ciErrNum = clBuildProgram(cpProgram, 0, NULL, opts, NULL, NULL);
     if (ciErrNum != CL_SUCCESS)
     {
@@ -748,23 +653,23 @@ void CDirectX::RunKernels(float elapsed)
 		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 2, sizeof(cameraViewDistance), &cameraViewDistance);
 		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 3, sizeof(cameraViewWidth), &cameraViewWidth);
 		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 4, sizeof(cameraViewHeight), &cameraViewHeight);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 5, sizeof(m_ambientLight), &m_ambientLight);
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 5, sizeof(m_world.m_ambientLight), &m_world.m_ambientLight);
 
-		cl_int numLights = m_pointLights.Count();
+		cl_int numLights = m_world.m_pointLights.Count();
 		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 6, sizeof(numLights), &numLights);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 7, sizeof(cl_mem), &m_pointLights.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 7, sizeof(cl_mem), &m_world.m_pointLights.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 
-		cl_int numSpheres = m_spheres.Count();
+		cl_int numSpheres = m_world.m_spheres.Count();
 		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 8, sizeof(numSpheres), &numSpheres);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 9, sizeof(cl_mem), &m_spheres.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 9, sizeof(cl_mem), &m_world.m_spheres.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 
-		cl_int numBoxes = m_boxes.Count();
+		cl_int numBoxes = m_world.m_boxes.Count();
 		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 10, sizeof(numBoxes), &numBoxes);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 11, sizeof(cl_mem), &m_boxes.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 11, sizeof(cl_mem), &m_world.m_boxes.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 
-		cl_int numMaterials = m_materials.Count();
+		cl_int numMaterials = m_world.m_materials.Count();
 		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 12, sizeof(numMaterials), &numMaterials);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 13, sizeof(cl_mem), &m_materials.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 13, sizeof(cl_mem), &m_world.m_materials.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 	    
@@ -859,4 +764,90 @@ static LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
     }
     return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+
+
+
+#include <string>
+#include <fstream>
+
+#ifndef HID_USAGE_PAGE_GENERIC
+#define HID_USAGE_PAGE_GENERIC         ((USHORT) 0x01)
+#endif
+#ifndef HID_USAGE_GENERIC_MOUSE
+#define HID_USAGE_GENERIC_MOUSE        ((USHORT) 0x02)
+#endif
+
+//-----------------------------------------------------------------------------
+// Forward declarations
+//-----------------------------------------------------------------------------
+void Update(float elapsed);
+
+//-----------------------------------------------------------------------------
+// Program main
+//-----------------------------------------------------------------------------
+int main(int argc, char** argv)
+{
+	if (argc > 1)
+		CDirectX::Get().SetWorld(argv[1]);
+	else
+		CDirectX::Get().SetWorld("./data/default.xml");
+
+	if(!CDirectX::Get().Init(1000, 1000))
+		return 0;
+
+    RAWINPUTDEVICE Rid[1];
+    Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC; 
+    Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE; 
+    Rid[0].dwFlags = RIDEV_INPUTSINK;   
+	Rid[0].hwndTarget = CDirectX::Get().GetHWND();
+    RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
+
+	//
+	// the main loop
+	//
+	while(true) 
+	{
+		Update(0.0f);
+		CDirectX::Get().DrawScene(0.0f);
+
+		MSG msg;
+		ZeroMemory( &msg, sizeof(msg) );
+		while( msg.message!=WM_QUIT )
+		{
+			while( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
+			{
+				TranslateMessage( &msg );
+				DispatchMessage( &msg );
+			}
+
+			static DWORD lastTime = 0;
+			DWORD newTime = GetTickCount();
+			float delta = lastTime > 0 ? (float)(newTime - lastTime) / 1000.0f : 0.0f;
+			lastTime = newTime;
+
+		    Update(delta);
+			CDirectX::Get().DrawScene(delta);
+		}
+    };
+}
+
+//-----------------------------------------------------------------------------
+void Update(float elapsed)
+{
+	static float time = 0.0f;
+	static DWORD frameCount = 0;
+	frameCount++;
+	time += elapsed;
+
+	if (time > 1.0f)
+	{
+		float fps = ((float)frameCount / time);
+		frameCount = 0;
+		time = 0;
+		char buffer[256];
+		sprintf(buffer, "FPS - %0.2f", fps);
+		SetWindowText(CDirectX::Get().GetHWND(), buffer);
+	}
 }

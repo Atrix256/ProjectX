@@ -33,11 +33,26 @@ public:
 	unsigned int SizeInBytes () const { return sizeof(T) * m_dataSize; }
 	unsigned int Count () const { return m_dataSize; }
 
-	cl_mem& GetAndUpdateMem (cl_command_queue& commandQueue)
+	cl_mem& GetAndUpdateMem (cl_context& context, cl_command_queue& commandQueue)
 	{
 		if (m_clDataStale)
 		{
-			clEnqueueWriteBuffer(commandQueue, m_clData, CL_FALSE, 0, SizeInBytes(), m_data, 0, NULL, NULL);
+			// allocate a new cl_mem object if needed
+			if (!m_clData && m_allocatedSize > 0)
+			{
+				cl_int errorcode;
+				m_clData = clCreateBuffer(
+					context,
+					CL_MEM_READ_ONLY,
+					SizeInBytes(),
+					NULL, 
+					&errorcode
+				);
+				oclCheckErrorEX(errorcode, CL_SUCCESS, NULL);
+			}
+
+			if (m_clData)
+				clEnqueueWriteBuffer(commandQueue, m_clData, CL_FALSE, 0, SizeInBytes(), m_data, 0, NULL, NULL);
 			m_clDataStale = false;
 		}
 		return m_clData;
@@ -48,19 +63,20 @@ public:
 		return m_data[index];
 	}
 
-	T& AddOne (cl_context& context)
+	T& AddOne ()
 	{
 		unsigned int newIndex = Count();
-		Resize(newIndex + 1, context);
+		Resize(newIndex + 1);
 		return (*this)[newIndex];
 	}
 
-	void Clear (cl_context& context)
+	void Clear ()
 	{
-		Resize(0, context);
+		m_clDataStale = true;
+		m_dataSize = 0;
 	}
 
-	void Resize (unsigned int newSize, cl_context& context)
+	void Resize (unsigned int newSize)
 	{
 		// our data is stale when we resize
 		m_clDataStale = true;
@@ -86,18 +102,12 @@ public:
 		m_allocatedSize = newSize;
 		m_dataSize = newSize;
 
+		// release the cl_mem object so we know to allocate a new one if asked for it
 		if (m_clData)
+		{
 			clReleaseMemObject(m_clData);
-
-		cl_int errorcode;
-		m_clData = clCreateBuffer(
-			context,
-			CL_MEM_READ_ONLY,
-			SizeInBytes(),
-			NULL, 
-			&errorcode
-		);
-		oclCheckErrorEX(errorcode, CL_SUCCESS, NULL);
+			m_clData = NULL;
+		}
 	}
 
 private:

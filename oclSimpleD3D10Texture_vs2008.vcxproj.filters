@@ -37,6 +37,15 @@
     <ClInclude Include="External\tinyxml\tinyxml2.h">
       <Filter>TinyXML</Filter>
     </ClInclude>
+    <ClInclude Include="DataSchemas.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSchemasXML.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSchemasStructs.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="oclUtils.cpp">
@@ -54,20 +63,23 @@
     <ClCompile Include="External\tinyxml\tinyxml2.cpp">
       <Filter>TinyXML</Filter>
     </ClCompile>
+    <ClCompile Include="DataSchemasStructs.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Todo.txt" />
     <Text Include="CLNotes.txt" />
-    <Text Include="Data\worldformat.txt">
-      <Filter>Data</Filter>
-    </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="Data\world.xml">
-      <Filter>Data</Filter>
-    </Xml>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="texture_2d.cl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Data\default.xml">
+      <Filter>Data</Filter>
+    </Xml>
+    <Xml Include="Data\simple.xml">
+      <Filter>Data</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

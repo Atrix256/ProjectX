@@ -213,16 +213,22 @@
   <ItemGroup>
     <ClInclude Include="CCamera.h" />
     <ClInclude Include="CDirectx.h" />
+    <ClInclude Include="DataSchemas.h" />
+    <ClInclude Include="DataSchemasStructs.h" />
     <ClInclude Include="External\tinyxml\tinyxml2.h" />
     <ClInclude Include="oclUtils.h" />
     <ClInclude Include="float3.h" />
     <ClInclude Include="SCamera.h" />
     <ClInclude Include="SharedArray.h" />
     <ClInclude Include="SharedGeometry.h" />
+    <ClInclude Include="DataSchemasXML.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CCamera.cpp" />
-    <ClCompile Include="CDirectx.cpp" />
+    <ClCompile Include="CDirectx.cpp">
+      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</PreprocessToFile>
+    </ClCompile>
+    <ClCompile Include="DataSchemasStructs.cpp" />
     <ClCompile Include="External\tinyxml\tinyxml2.cpp" />
     <ClCompile Include="Main.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../../common/inc;$(DXSDK_DIR)/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -243,11 +249,11 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="CLNotes.txt" />
-    <Text Include="Data\worldformat.txt" />
     <Text Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="Data\world.xml" />
+    <Xml Include="Data\default.xml" />
+    <Xml Include="Data\simple.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

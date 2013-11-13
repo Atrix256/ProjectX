@@ -1,5 +1,5 @@
 <World>
-  <AmbientLight Color="0.01, 0.01, 0.01"/>
+  <AmbientLight Value="0.01, 0.01, 0.01"/>
   
   <PointLight Position="5, 0, 0" Color="1, 1, 0.5"/>
   <PointLight Position="-2, 0, 0" Color="1, 0.5, 1"/>
@@ -14,16 +14,22 @@
   <Material id="Floor" DiffuseColor="0.09, 0.075, 0.1" DiffuseAmount="1" SpecularColor="0, 0, 0" SpecularAmount="28" EmissiveColor="0, 0, 0" ReflectionAmount="0.5" RefractionIndex="1" RefractionAmount="0"/>
 
   <Box Position="0, 0, 0" Scale="0.5, 0.5, 0.5" Material="RedReflective" CastShadows="1"/>
-  <Box Position="4, 0, 1.25" Scale="0.25, 2, 2" Material="RedReflective" CastShadows="1"/>
+  <Box Position="4, 0, 1.25" Scale="0.25, 2, 2" Material="RedReflective" CastShadows="true"/>
   <Box Position="0, -2, 0" Scale="100, 0.0625, 100" Material="Floor" CastShadows="1"/>
-  
-  <Sphere Position="-2, 0, 2" Radius="1" Material="Lense" CastShadows="0"/>
+
   <Sphere Position="2, 0.5, 2" Radius="0.5" Material="RedReflective" CastShadows="1"/>
   <Sphere Position="-1, -2, 5" Radius="1" Material="BlueReflective" CastShadows="1"/>
   <Sphere Position="1, 4, 0" Radius="1" Material="RedReflective" CastShadows="1"/>
 
+  <!-- alternate ways of defining data-->
+  <Sphere Radius="1">
+    <Position Value ="-2, 0, 2"/>
+    <Material Value="Lense"/>
+    <CastShadows Value="false"/>
+  </Sphere>
+
   <!--spheres to show where the point lights are.  they dont cast shadows and have emissive colored materials-->
   <Sphere Position="5, 0, 0" Radius="0.05" Material="YellowLight" CastShadows="0"/>
-  <Sphere Position="-2, 0, 0" Radius="0.05" Material="PurpleLight" CastShadows="0"/>
+  <Sphere Position="-2, 0, 0" Radius="0.05" Material="PurpleLight" CastShadows="false"/>
   <Sphere Position="0, 0, 5" Radius="0.05" Material="CyanLight" CastShadows="0"/>
 </World>

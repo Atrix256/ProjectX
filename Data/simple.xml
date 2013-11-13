@@ -1,5 +1,5 @@
 <World>
-  <AmbientLight Color="0.01, 0.01, 0.01"/>
+  <AmbientLight Value="0.01, 0.01, 0.01"/>
   
   <PointLight Position="5, 0, 0" Color="1, 1, 0.5"/>
   <PointLight Position="-2, 0, 0" Color="1, 0.5, 1"/>

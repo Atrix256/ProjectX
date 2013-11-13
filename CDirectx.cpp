@@ -1,7 +1,8 @@
 #include "CDirectx.h"
 #include "CCamera.h"
 #include "SharedGeometry.h"
-#include "External\tinyxml\tinyxml2.h"
+#include "DataSchemasXML.h"
+
 #include <vector>
 #include <string>
 
@@ -429,6 +430,21 @@ HRESULT CDirectX::InitD3D10 ()
     return S_OK;
 }
 
+void Copy(float3 &lhs, const SData_Vec3 &rhs)
+{
+	lhs[0] = rhs.m_x;
+	lhs[1] = rhs.m_y;
+	lhs[2] = rhs.m_z;
+}
+
+void Copy(cl_float4 &lhs, const SData_Vec3 &rhs, const float w)
+{
+	lhs.s[0] = rhs.m_x;
+	lhs.s[1] = rhs.m_y;
+	lhs.s[2] = rhs.m_z;
+	lhs.s[3] = w;
+}
+
 //-----------------------------------------------------------------------------
 void CDirectX::LoadWorld ()
 {
@@ -436,168 +452,78 @@ void CDirectX::LoadWorld ()
 	m_ambientLight[0] = 0.0f;
 	m_ambientLight[1] = 0.0f;
 	m_ambientLight[2] = 0.0f;
-	m_pointLights.Clear(m_cxGPUContext);
-	m_materials.Clear(m_cxGPUContext);
-	m_boxes.Clear(m_cxGPUContext);
-	m_spheres.Clear(m_cxGPUContext);
+	m_pointLights.Clear();
+	m_materials.Clear();
+	m_boxes.Clear();
+	m_spheres.Clear();
 
-	std::vector<std::string> m_materialIDs;
+	SData_World worldData;
+	if (!DataSchemasXML::Load(worldData, m_world.c_str(), "World"))
+		return;
+
+	// ambient light
+	Copy(m_ambientLight, worldData.m_AmbientLight);
+
+	// point lights
+	m_pointLights.Resize(worldData.m_PointLight.size());
+	for (unsigned int index = 0, count = worldData.m_PointLight.size(); index < count; ++index)
+	{
+		Copy(m_pointLights[index].m_color, worldData.m_PointLight[index].m_Color);
+		Copy(m_pointLights[index].m_position, worldData.m_PointLight[index].m_Position);
+	}
+
+	// materials
+	m_materials.Resize(worldData.m_Material.size());
+	for (unsigned int index = 0, count = worldData.m_Material.size(); index < count; ++index)
+	{
+		Copy(m_materials[index].m_diffuseColorAndAmount, worldData.m_Material[index].m_DiffuseColor, worldData.m_Material[index].m_DiffuseAmount);
+		Copy(m_materials[index].m_specularColorAndAmount, worldData.m_Material[index].m_SpecularColor, worldData.m_Material[index].m_SpecularAmount);
+		Copy(m_materials[index].m_emissiveColor, worldData.m_Material[index].m_EmissiveColor);
+		m_materials[index].m_reflectionAmount = worldData.m_Material[index].m_ReflectionAmount;
+		m_materials[index].m_refractionAmount = worldData.m_Material[index].m_RefractionAmount;
+		m_materials[index].m_refractionIndex = worldData.m_Material[index].m_RefractionIndex;
+	}
 
 	unsigned int nextObjectId = 1;
 
-	tinyxml2::XMLDocument doc;
-	if (doc.LoadFile(m_world.c_str()) != tinyxml2::XML_NO_ERROR)
-		return;
-
-	tinyxml2::XMLElement *world = doc.FirstChildElement("World");
-	if (!world)
-		return;
-
-	// load ambient light
+	// boxes
+	m_boxes.Resize(worldData.m_Box.size());
+	for (unsigned int index = 0, count = worldData.m_Box.size(); index < count; ++index)
 	{
-		tinyxml2::XMLElement *ambientLight = world->FirstChildElement("AmbientLight");
-		if (ambientLight)
-		{
-			const tinyxml2::XMLAttribute *attribute = ambientLight->FirstAttribute();
-			while (attribute)
-			{
-				if (!strcmp(attribute->Name(), "Color"))
-					sscanf(attribute->Value(), "%f, %f, %f", &m_ambientLight[0], &m_ambientLight[1], &m_ambientLight[2]);
+		m_boxes[index].m_objectId = nextObjectId++;
+		Copy(m_boxes[index].m_position, worldData.m_Box[index].m_Position);
+		Copy(m_boxes[index].m_scale, worldData.m_Box[index].m_Scale);
+		m_boxes[index].m_castsShadows = worldData.m_Box[index].m_CastShadows;
 
-				attribute = attribute->Next();
+		// set the material index
+		m_boxes[index].m_materialIndex = 0;
+		for(unsigned int matIndex = 0, matCount = worldData.m_Material.size(); matIndex < matCount; ++matIndex)
+		{
+			if (!stricmp(worldData.m_Box[index].m_Material.c_str(), worldData.m_Material[matIndex].m_id.c_str()))
+			{
+				m_boxes[index].m_materialIndex = matIndex;
+				break;
 			}
 		}
 	}
 
-	// load point lights
+	// spheres
+	m_spheres.Resize(worldData.m_Sphere.size());
+	for (unsigned int index = 0, count = worldData.m_Sphere.size(); index < count; ++index)
 	{
-		tinyxml2::XMLElement *lightElement = world->FirstChildElement("PointLight");
-		while (lightElement)
+		m_spheres[index].m_objectId = nextObjectId++;
+		Copy(m_spheres[index].m_positionAndRadius, worldData.m_Sphere[index].m_Position, worldData.m_Sphere[index].m_Radius);
+		m_spheres[index].m_castsShadows = worldData.m_Sphere[index].m_CastShadows;
+
+		// set the material index
+		m_spheres[index].m_materialIndex = 0;
+		for(unsigned int matIndex = 0, matCount = worldData.m_Material.size(); matIndex < matCount; ++matIndex)
 		{
-			SPointLight &light = m_pointLights.AddOne(m_cxGPUContext);
-
-			const tinyxml2::XMLAttribute *attribute = lightElement->FirstAttribute();
-			while (attribute)
+			if (!stricmp(worldData.m_Sphere[index].m_Material.c_str(), worldData.m_Material[matIndex].m_id.c_str()))
 			{
-				if (!strcmp(attribute->Name(), "Color"))
-					sscanf(attribute->Value(), "%f, %f, %f", &light.m_color[0], &light.m_color[1], &light.m_color[2]);
-				else if (!strcmp(attribute->Name(), "Position"))
-					sscanf(attribute->Value(), "%f, %f, %f", &light.m_position[0], &light.m_position[1], &light.m_position[2]);
-
-				attribute = attribute->Next();
+				m_spheres[index].m_materialIndex = matIndex;
+				break;
 			}
-
-			lightElement = lightElement->NextSiblingElement("PointLight");
-		}
-	}
-
-	// load materials
-	{
-		tinyxml2::XMLElement *materialElement = world->FirstChildElement("Material");
-		while (materialElement)
-		{
-			SMaterial &material = m_materials.AddOne(m_cxGPUContext);
-			m_materialIDs.push_back("");
-			std::string &materialName = m_materialIDs.back();
-
-			const tinyxml2::XMLAttribute *attribute = materialElement->FirstAttribute();
-			while (attribute)
-			{
-				if (!strcmp(attribute->Name(), "id"))
-					materialName = attribute->Value();
-				else if (!strcmp(attribute->Name(), "DiffuseColor"))
-					sscanf(attribute->Value(), "%f, %f, %f", &material.m_diffuseColorAndAmount.s[0], &material.m_diffuseColorAndAmount.s[1], &material.m_diffuseColorAndAmount.s[2]);
-				else if (!strcmp(attribute->Name(), "DiffuseAmount"))
-					sscanf(attribute->Value(), "%f", &material.m_diffuseColorAndAmount.s[3]);
-				else if (!strcmp(attribute->Name(), "SpecularColor"))
-					sscanf(attribute->Value(), "%f, %f, %f", &material.m_specularColorAndAmount.s[0], &material.m_specularColorAndAmount.s[1], &material.m_specularColorAndAmount.s[2]);
-				else if (!strcmp(attribute->Name(), "SpecularAmount"))
-					sscanf(attribute->Value(), "%f", &material.m_specularColorAndAmount.s[3]);
-				else if (!strcmp(attribute->Name(), "EmissiveColor"))
-					sscanf(attribute->Value(), "%f, %f, %f", &material.m_emissiveColor[0], &material.m_emissiveColor[1], &material.m_emissiveColor[2]);
-				else if (!strcmp(attribute->Name(), "ReflectionAmount"))
-					sscanf(attribute->Value(), "%f", &material.m_reflectionAmount);
-				else if (!strcmp(attribute->Name(), "RefractionIndex"))
-					sscanf(attribute->Value(), "%f", &material.m_refractionIndex);
-				else if (!strcmp(attribute->Name(), "RefractionAmount"))
-					sscanf(attribute->Value(), "%f", &material.m_refractionAmount);
-
-				attribute = attribute->Next();
-			}
-
-			materialElement = materialElement->NextSiblingElement("Material");
-		}
-	}
-
-	// load boxes
-	{
-		tinyxml2::XMLElement *boxElement = world->FirstChildElement("Box");
-		while (boxElement)
-		{
-			SAABox &box = m_boxes.AddOne(m_cxGPUContext);
-			box.m_objectId = ++nextObjectId;
-
-			const tinyxml2::XMLAttribute *attribute = boxElement->FirstAttribute();
-			while (attribute)
-			{
-				if (!strcmp(attribute->Name(), "Position"))
-					sscanf(attribute->Value(), "%f, %f, %f", &box.m_position[0], &box.m_position[1], &box.m_position[2]);
-				else if (!strcmp(attribute->Name(), "Scale"))
-					sscanf(attribute->Value(), "%f, %f, %f", &box.m_scale[0], &box.m_scale[1], &box.m_scale[2]);
-				else if (!strcmp(attribute->Name(), "Material"))
-				{
-					for (unsigned int index = 0; index < m_materialIDs.size(); ++index)
-					{
-						if (!stricmp(attribute->Value(), m_materialIDs[index].c_str()))
-						{
-							box.m_materialIndex = index;
-							break;
-						}
-					}
-				}
-				else if (!strcmp(attribute->Name(), "CastShadows"))
-					sscanf(attribute->Value(), "%u", &box.m_castsShadows);
-
-				attribute = attribute->Next();
-			}
-
-			boxElement = boxElement->NextSiblingElement("Box");
-		}
-	}
-
-	// load spheres
-	{
-		tinyxml2::XMLElement *boxElement = world->FirstChildElement("Sphere");
-		while (boxElement)
-		{
-			SSphere &sphere = m_spheres.AddOne(m_cxGPUContext);
-			sphere.m_objectId = ++nextObjectId;
-
-			const tinyxml2::XMLAttribute *attribute = boxElement->FirstAttribute();
-			while (attribute)
-			{
-				if (!strcmp(attribute->Name(), "Position"))
-					sscanf(attribute->Value(), "%f, %f, %f", &sphere.m_positionAndRadius.s[0], &sphere.m_positionAndRadius.s[1], &sphere.m_positionAndRadius.s[2]);
-				else if (!strcmp(attribute->Name(), "Radius"))
-					sscanf(attribute->Value(), "%f", &sphere.m_positionAndRadius.s[3]);
-				else if (!strcmp(attribute->Name(), "Material"))
-				{
-					for (unsigned int index = 0; index < m_materialIDs.size(); ++index)
-					{
-						if (!stricmp(attribute->Value(), m_materialIDs[index].c_str()))
-						{
-							sphere.m_materialIndex = index;
-							break;
-						}
-					}
-				}
-				else if (!strcmp(attribute->Name(), "CastShadows"))
-					sscanf(attribute->Value(), "%u", &sphere.m_castsShadows);
-
-				attribute = attribute->Next();
-			}
-
-			boxElement = boxElement->NextSiblingElement("Sphere");
 		}
 	}
 }
@@ -826,19 +752,19 @@ void CDirectX::RunKernels(float elapsed)
 
 		cl_int numLights = m_pointLights.Count();
 		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 6, sizeof(numLights), &numLights);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 7, sizeof(cl_mem), &m_pointLights.GetAndUpdateMem(m_cqCommandQueue));
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 7, sizeof(cl_mem), &m_pointLights.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 
 		cl_int numSpheres = m_spheres.Count();
 		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 8, sizeof(numSpheres), &numSpheres);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 9, sizeof(cl_mem), &m_spheres.GetAndUpdateMem(m_cqCommandQueue));
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 9, sizeof(cl_mem), &m_spheres.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 
 		cl_int numBoxes = m_boxes.Count();
 		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 10, sizeof(numBoxes), &numBoxes);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 11, sizeof(cl_mem), &m_boxes.GetAndUpdateMem(m_cqCommandQueue));
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 11, sizeof(cl_mem), &m_boxes.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 
 		cl_int numMaterials = m_materials.Count();
 		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 12, sizeof(numMaterials), &numMaterials);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 13, sizeof(cl_mem), &m_materials.GetAndUpdateMem(m_cqCommandQueue));
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 13, sizeof(cl_mem), &m_materials.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 	    

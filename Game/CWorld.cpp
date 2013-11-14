@@ -32,9 +32,6 @@ void Copy(cl_float4 &lhs, const SData_Vec3 &rhs, const float w)
 bool CWorld::Load(const char *worldFileName)
 {
 	// clear the existing world data
-	m_ambientLight[0] = 0.0f;
-	m_ambientLight[1] = 0.0f;
-	m_ambientLight[2] = 0.0f;
 	m_pointLights.Clear();
 	m_materials.Clear();
 	m_boxes.Clear();
@@ -42,14 +39,11 @@ bool CWorld::Load(const char *worldFileName)
 
 	SData_World worldData;
 	if (!DataSchemasXML::Load(worldData, worldFileName, "World"))
-		return false;
+		worldData.SetDefault();
 
 	// Starting Position and facing
 	CGame::SetPlayerPos(worldData.m_StartPoint.m_x, worldData.m_StartPoint.m_y, worldData.m_StartPoint.m_z);
 	CGame::SetPlayerFacing(worldData.m_StartFacing * 3.1415f / 180.0f);
-
-	// ambient light
-	Copy(m_ambientLight, worldData.m_AmbientLight);
 
 	// point lights
 	m_pointLights.Resize(worldData.m_PointLight.size());
@@ -113,6 +107,14 @@ bool CWorld::Load(const char *worldFileName)
 			}
 		}
 	}
+
+	// set our shared data values
+	SWorld &worldShared = SSharedDataRoot::World();
+	Copy(worldShared.m_ambientLight, worldData.m_AmbientLight);
+	worldShared.m_numLights = m_pointLights.Count();
+	worldShared.m_numSpheres = m_spheres.Count();
+	worldShared.m_numBoxes = m_boxes.Count();
+	worldShared.m_numMaterials = m_materials.Count();
 
 	return true;
 }

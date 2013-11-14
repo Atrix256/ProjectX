@@ -6,6 +6,9 @@ DirectX and OpenCL code lives here
 
 ==================================================================================================*/
 
+// TODO: this is temporary
+#pragma warning ( disable : 4005 )
+
 #include "CDirectx.h"
 #include "Game/CCamera.h"
 #include "Game/CGame.h"
@@ -179,6 +182,10 @@ CDirectX::~CDirectX ()
 
 	if(FAILED(InitTextures()))
 		return false;
+
+	// set the viewing height, based on aspect ratio of texture
+	SCamera &cameraShared = SSharedDataRoot::Camera();
+	cameraShared.m_viewWidthHeightDistance[1] = cameraShared.m_viewWidthHeightDistance[0] * (float)m_texture_2d.height / (float)m_texture_2d.width;
 
 	return true;
 }
@@ -700,37 +707,26 @@ void CDirectX::RunKernels(float elapsed)
 		m_szGlobalWorkSize[0] = shrRoundUp((int)m_szLocalWorkSize[0], m_texture_2d.pitch);
 		m_szGlobalWorkSize[1] = shrRoundUp((int)m_szLocalWorkSize[1], m_texture_2d.height);
 
-		SCamera& camera = CCamera::Get().GetCameraData();
-		const float cameraViewDistance = CCamera::Get().ViewDistance();
-		const float cameraViewWidth = CCamera::Get().ViewWidth();
-		const float cameraViewHeight = cameraViewWidth * (float)m_texture_2d.height / (float)m_texture_2d.width;
-
 		// set the args values
 		cl_int ciErrNum = clSetKernelArg(m_ckKernel_tex2d, 0, sizeof(m_texture_2d.clTexture), (void *) &(m_texture_2d.clTexture));
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 1, sizeof(camera), &camera);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 2, sizeof(cameraViewDistance), &cameraViewDistance);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 3, sizeof(cameraViewWidth), &cameraViewWidth);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 4, sizeof(cameraViewHeight), &cameraViewHeight);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 5, sizeof(m_world.m_ambientLight), &m_world.m_ambientLight);
-
-		cl_int numLights = m_world.m_pointLights.Count();
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 6, sizeof(numLights), &numLights);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 7, sizeof(cl_mem), &m_world.m_pointLights.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
-
-		cl_int numSpheres = m_world.m_spheres.Count();
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 8, sizeof(numSpheres), &numSpheres);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 9, sizeof(cl_mem), &m_world.m_spheres.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
-
-		cl_int numBoxes = m_world.m_boxes.Count();
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 10, sizeof(numBoxes), &numBoxes);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 11, sizeof(cl_mem), &m_world.m_boxes.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
-
-		cl_int numMaterials = m_world.m_materials.Count();
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 12, sizeof(numMaterials), &numMaterials);
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 13, sizeof(cl_mem), &m_world.m_materials.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
-
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
-	    
+
+		CSharedObject<SSharedDataRoot> &sharedDataRoot = SSharedDataRoot::Get();
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 1, sizeof(cl_mem), &sharedDataRoot.GetAndUpdateCLMem(m_cxGPUContext, m_cqCommandQueue));
+		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
+
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 2, sizeof(cl_mem), &m_world.m_pointLights.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
+
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 3, sizeof(cl_mem), &m_world.m_spheres.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
+
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 4, sizeof(cl_mem), &m_world.m_boxes.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
+
+		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 5, sizeof(cl_mem), &m_world.m_materials.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
+
 		// launch computation kernel
 		ciErrNum |= clEnqueueNDRangeKernel(m_cqCommandQueue, m_ckKernel_tex2d, 2, NULL,
 										  m_szGlobalWorkSize, m_szLocalWorkSize, 

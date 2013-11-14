@@ -75,6 +75,15 @@
     <ClInclude Include="Game\CPlayer.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="KernelCode\Shared\SSharedDataRoot.h">
+      <Filter>Kernel Code\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelCode\Shared\SWorld.h">
+      <Filter>Kernel Code\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\SharedObject.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\tinyxml\tinyxml2.cpp">
@@ -103,6 +112,9 @@
     </ClCompile>
     <ClCompile Include="Game\CPlayer.cpp">
       <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="KernelCode\Shared\SSharedDataRoot.cpp">
+      <Filter>Kernel Code\Shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

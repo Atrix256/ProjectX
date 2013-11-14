@@ -22,6 +22,8 @@ Release/
 *.pdb
 *.opensdf
 *.suo
+*.lastcodeanalysissucceeded
+*.vcxproj.user
 
 # Program specific files we don't care about
 builderrors.txt

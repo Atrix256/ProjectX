@@ -2,9 +2,15 @@
 
 SCamera.h
 
-A struct used by both host and kernel code
+This holds the constant sized information about the camera
 
 ==================================================================================================*/
+
+#pragma once
+
+#ifndef OPENCL
+#include "Platform/float3.h"
+#endif
 
 struct SCamera
 {
@@ -12,6 +18,5 @@ struct SCamera
 	float3 m_fwd;
 	float3 m_up;
 	float3 m_left;
-	// putting view width and view height in here causes a size mismatch in host vs kernel code due to padding differences.
-	// it would be nice if we could figure out how to fix that
+	float3 m_viewWidthHeightDistance;
 };

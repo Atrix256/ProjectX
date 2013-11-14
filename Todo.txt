@@ -13,6 +13,18 @@ NEXT
 * textures and bumpmapping
 
 
+* make it so we don't update the global root each frame, only when the data actually changes.  That will keep it "cleaner" more often hopefully.
+ * maybe have a shared object struct where things are updated every frame (like, camera position) and another where things are seldom changed?
+* #pragma warning ( disable : 4005 ) // fix this eventually
+* put array counts into the shared data root
+* have the kernel pass the data root around (as a pointer) instead of passing each field around individually
+* is it better to send the shared data root to kernel as a pointer?
+* see about minimizing what is sent to the kernal program... is there a limit to what can be sent?
+ * maybe we can make some kind of globally shared struct for non dynamic things
+ * maybe it can include the count for dynamic things
+* some command to reload a map file? (like, pressing R?)
+* skybox or skysphere? (eventually could do raymarching for terrain but ::shrug::)
+* handle the warnings under the code analasys option under the build menu
 * improve the video recording quality
 * make the recorded video frame rate and sleep interval be specified in data
 * make a fixed framerate video recording of a play through at some point, when there are more features.

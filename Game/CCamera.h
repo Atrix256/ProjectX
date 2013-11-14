@@ -9,33 +9,40 @@ This is the camera singleton class.  Manipulate this object to change the view o
 #pragma once
 
 #include "Platform/float3.h"
-#include "KernelCode/Shared/SCamera.h"
+#include "KernelCode/Shared/SSharedDataRoot.h"
 
 class CCamera
 {
 public:
 	CCamera ()
 	{
-		m_cameraData.m_pos[0] = 0.0f;
-		m_cameraData.m_pos[1] = 0.0f;
-		m_cameraData.m_pos[2] = 0.0f;
+		SCamera &cameraShared = SSharedDataRoot::Camera();
+		cameraShared.m_pos[0] = 0.0f;
+		cameraShared.m_pos[1] = 0.0f;
+		cameraShared.m_pos[2] = 0.0f;
 
-		m_cameraData.m_fwd[0] = 0.0f;
-		m_cameraData.m_fwd[1] = 0.0f;
-		m_cameraData.m_fwd[2] = 1.0f;
+		cameraShared.m_fwd[0] = 0.0f;
+		cameraShared.m_fwd[1] = 0.0f;
+		cameraShared.m_fwd[2] = 1.0f;
 
-		m_cameraData.m_up[0] = 0.0f;
-		m_cameraData.m_up[1] = 1.0f;
-		m_cameraData.m_up[2] = 0.0f;
+		cameraShared.m_up[0] = 0.0f;
+		cameraShared.m_up[1] = 1.0f;
+		cameraShared.m_up[2] = 0.0f;
 
-		m_cameraData.m_left[0] = -1.0f;
-		m_cameraData.m_left[1] =  0.0f;
-		m_cameraData.m_left[2] =  0.0f;
+		cameraShared.m_left[0] = -1.0f;
+		cameraShared.m_left[1] =  0.0f;
+		cameraShared.m_left[2] =  0.0f;
 
-		m_viewDistance = 6.0f;
-		m_viewWidth = 6.0f;
+		// width
+		cameraShared.m_viewWidthHeightDistance[0] = 6.0f;
 
-		m_cameraAngleX = 1.57f;
+		// height (will be calculated later)
+		cameraShared.m_viewWidthHeightDistance[1] = 1.0f;
+
+		// distance
+		cameraShared.m_viewWidthHeightDistance[2] = 6.0f;
+
+		m_cameraAngleX = 0.0f;
 		m_cameraAngleY = 0.0f;
 
 		UpdateCameraFacing();
@@ -44,51 +51,48 @@ public:
 	// singleton access
 	static CCamera& Get () { return s_camera; }
 
-	// camera data access
-	SCamera& GetCameraData () { return m_cameraData; }
-
-	float ViewDistance () const { return m_viewDistance; }
-	float ViewWidth () const { return m_viewWidth; }
-
 	void SetPosition(const float3 &pos)
 	{
-		m_cameraData.m_pos = pos;
+		SSharedDataRoot::Camera().m_pos = pos;
 	}
 
-	float3 Forward ()
+	float3 Forward () const
 	{
-		return m_cameraData.m_fwd;
+		return SSharedDataRoot::CameraConst().m_fwd;
 	}
 
-	float3 Forward2D ()
+	float3 Forward2D () const
 	{
-		float3 fwd2D = m_cameraData.m_fwd;
+		float3 fwd2D = SSharedDataRoot::CameraConst().m_fwd;
 		fwd2D[1] = 0.0f;
 		fwd2D = normalize(fwd2D);
 		return fwd2D;
 	}
 	
-	float3 Left ()
+	float3 Left () const
 	{
-		return m_cameraData.m_left;
+		return SSharedDataRoot::CameraConst().m_left;
 	}
 
 	void MoveForward (float amount)
 	{
-		m_cameraData.m_pos = m_cameraData.m_pos + m_cameraData.m_fwd * amount;
+		SCamera &cameraShared = SSharedDataRoot::Camera();
+		cameraShared.m_pos += cameraShared.m_fwd * amount;
 	}
 
 	void MoveForward2D (float amount)
 	{
-		float3 fwd2D = m_cameraData.m_fwd;
+		SCamera &cameraShared = SSharedDataRoot::Camera();
+		float3 fwd2D = cameraShared.m_fwd;
 		fwd2D[1] = 0.0f;
 		fwd2D = normalize(fwd2D);
-		m_cameraData.m_pos = m_cameraData.m_pos + fwd2D * amount;
+		cameraShared.m_pos += fwd2D * amount;
 	}
 
 	void MoveLeft (float amount)
 	{
-		m_cameraData.m_pos = m_cameraData.m_pos + m_cameraData.m_left * amount;
+		SCamera &cameraShared = SSharedDataRoot::Camera();
+		cameraShared.m_pos += cameraShared.m_left * amount;
 	}
 
 	void YawRight (float amount)
@@ -117,22 +121,19 @@ public:
 
 	void UpdateCameraFacing ()
 	{
-		m_cameraData.m_fwd[0] = cos(m_cameraAngleX) * cos(m_cameraAngleY);
-		m_cameraData.m_fwd[1] = sin(m_cameraAngleY);
-		m_cameraData.m_fwd[2] = sin(m_cameraAngleX) * cos(m_cameraAngleY);
+		SCamera &cameraShared = SSharedDataRoot::Camera();
+		cameraShared.m_fwd[0] = cos(m_cameraAngleX) * cos(m_cameraAngleY);
+		cameraShared.m_fwd[1] = sin(m_cameraAngleY);
+		cameraShared.m_fwd[2] = sin(m_cameraAngleX) * cos(m_cameraAngleY);
 
 		float3 tempUp = {0.0f, 1.0f, 0.0f};
-		m_cameraData.m_left = normalize(cross(m_cameraData.m_fwd, tempUp));
+		cameraShared.m_left = normalize(cross(cameraShared.m_fwd, tempUp));
 
-		m_cameraData.m_up = normalize(cross(m_cameraData.m_left, m_cameraData.m_fwd));
+		cameraShared.m_up = normalize(cross(cameraShared.m_left, cameraShared.m_fwd));
 	}
 
 private:
-	// camera data in shared camera data format
-	SCamera m_cameraData;
-	float m_viewDistance;
-	float m_viewWidth;
-
+	// spherical coordinates of the camera (just angular coordinates to describe a direction)
 	float m_cameraAngleX;
 	float m_cameraAngleY;
 

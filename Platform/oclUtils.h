@@ -8,6 +8,9 @@
  * is strictly prohibited.
  *
  */
+
+// TODO: this is temporary
+#pragma warning ( disable : 4005 )
  
 #ifndef OCL_UTILS_H
 #define OCL_UTILS_H

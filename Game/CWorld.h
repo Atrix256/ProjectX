@@ -10,6 +10,7 @@ This class holds all information about the world
 
 #include "Platform/SharedArray.h"
 #include "KernelCode/Shared/SharedGeometry.h"
+#include "KernelCode/Shared/SSharedDataRoot.h"
 
 class CWorld
 {
@@ -30,7 +31,6 @@ public:
 private:
 	friend class CDirectX;
 
-	float3						m_ambientLight;
 	CSharedArray<SPointLight>	m_pointLights;
 	CSharedArray<SSphere>		m_spheres;
 	CSharedArray<SAABox>		m_boxes;

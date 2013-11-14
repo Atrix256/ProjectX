@@ -6,7 +6,7 @@ The kernel code
 
 ==================================================================================================*/
 
-#include "Shared/SCamera.h"
+#include "Shared/SSharedDataRoot.h"
 #include "Shared/SharedGeometry.h"
 
 #define c_maxRayBounces 6
@@ -256,20 +256,17 @@ void ApplyPointLight (
 }
 
 void TraceRay (
-	float3 ambientLight,
+	__constant struct SSharedDataRoot *dataRoot,
 	float3 rayPos,
 	float3 rayDir,
 	float3 *pixelColor,
-	int numLights,
 	__constant struct SPointLight *lights,
-	int numSpheres,
 	__constant struct SSphere *spheres,
-	int numBoxes,
 	__constant struct SAABox *boxes,
-	int numMaterials,
 	__constant struct SMaterial *materials
 )
 {
+	float3 ambientLight = dataRoot->m_world.m_ambientLight;
 	TObjectId lastHitPrimitiveId = c_invalidObjectId;
 
 	float colorMultiplier = 1.0f;
@@ -288,10 +285,10 @@ void TraceRay (
 			0,
 		};
 
-		for (int sphereIndex = 0; sphereIndex < numSpheres; ++sphereIndex)
+		for (int sphereIndex = 0; sphereIndex < dataRoot->m_world.m_numSpheres; ++sphereIndex)
 			RayIntersectSphere(&spheres[sphereIndex], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
 
-		for (int boxIndex = 0; boxIndex < numBoxes; ++boxIndex)
+		for (int boxIndex = 0; boxIndex < dataRoot->m_world.m_numBoxes; ++boxIndex)
 			RayIntersectAABox(&boxes[boxIndex], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
 
 		// if no hit, set pixel to ambient light and bail out
@@ -310,7 +307,7 @@ void TraceRay (
 		diffuseColor = diffuseColor * ambientLight + material->m_emissiveColor;
 
 		// apply diffuse / specular from a point light
-		for (int lightIndex = 0; lightIndex < numLights; ++lightIndex)
+		for (int lightIndex = 0; lightIndex < dataRoot->m_world.m_numLights; ++lightIndex)
 			ApplyPointLight(
 				&diffuseColor,
 				&collisionInfo,
@@ -318,9 +315,9 @@ void TraceRay (
 				&lights[lightIndex],
 				colorMultiplier,
 				rayDir,
-				numSpheres,
+				dataRoot->m_world.m_numSpheres,
 				spheres,
-				numBoxes,
+				dataRoot->m_world.m_numBoxes,
 				boxes
 			);
 
@@ -360,18 +357,10 @@ void TraceRay (
 
 __kernel void clrt (
 	__write_only image2d_t texOut, 
-	struct SCamera camera,
-	float cameraViewDistance,
-	float cameraViewWidth,
-	float cameraViewHeight,
-	float3 ambientLight,
-	int numLights,
+	__constant struct SSharedDataRoot *dataRoot,
 	__constant struct SPointLight *lights,
-	int numSpheres,
 	__constant struct SSphere *spheres,
-	int numBoxes,
 	__constant struct SAABox *boxes,
-	int numMaterials,
 	__constant struct SMaterial *materials
 )
 {
@@ -386,12 +375,12 @@ __kernel void clrt (
 
 	// calculate the ray direction
 	const float2 percent = (float2)(((float)coord.x / (float)dims.x) - 0.5f, ((float)coord.y / (float)dims.y) - 0.5f);
-	float3 rayDir = normalize((camera.m_fwd * cameraViewDistance)
-		- (camera.m_left * percent.x * cameraViewWidth)
-		- (camera.m_up * percent.y * cameraViewHeight));
+	float3 rayDir = normalize((dataRoot->m_camera.m_fwd * dataRoot->m_camera.m_viewWidthHeightDistance.z)
+		- (dataRoot->m_camera.m_left * percent.x * dataRoot->m_camera.m_viewWidthHeightDistance.x)
+		- (dataRoot->m_camera.m_up * percent.y * dataRoot->m_camera.m_viewWidthHeightDistance.y));
 
 	// trace the ray
 	float3 color = (float3)(0);
-	TraceRay(ambientLight, camera.m_pos, rayDir, &color, numLights, lights, numSpheres, spheres, numBoxes, boxes, numMaterials, materials);
+	TraceRay(dataRoot, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, materials);
 	write_imagef(texOut, coord, (float4)(color, 1.0)); 
 }

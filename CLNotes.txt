@@ -30,3 +30,4 @@
  * either that or perhaps just do #defines in the kernel code so it's easier to visualize what the final code looks like
 * on my machine, kernel only rebuilds if kernel code changed, but doesn't check files the kernel includes!!
 * "uint8" = 8 bits or 8 uints?  in opencl it's 8 uints hehe.  cl_uint8 for code side usage.
+* made a "SSharedDataRoot" that had all constant sized data in it.  pass that as a single param to the kernel program.

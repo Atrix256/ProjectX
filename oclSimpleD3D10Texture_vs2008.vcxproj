@@ -216,9 +216,13 @@
     <ClInclude Include="DataSchemas\DataSchemasXML.h" />
     <ClInclude Include="External\tinyxml\tinyxml2.h" />
     <ClInclude Include="Game\CCamera.h" />
+    <ClInclude Include="Game\CInput.h" />
     <ClInclude Include="Game\CWorld.h" />
+    <ClInclude Include="Game\CGame.h" />
+    <ClInclude Include="Game\CPlayer.h" />
     <ClInclude Include="KernelCode\Shared\SCamera.h" />
     <ClInclude Include="KernelCode\Shared\SharedGeometry.h" />
+    <ClInclude Include="Platform\Assert.h" />
     <ClInclude Include="Platform\CDirectx.h" />
     <ClInclude Include="Platform\float3.h" />
     <ClInclude Include="Platform\oclUtils.h" />
@@ -228,7 +232,10 @@
     <ClCompile Include="DataSchemas\DataSchemasStructs.cpp" />
     <ClCompile Include="External\tinyxml\tinyxml2.cpp" />
     <ClCompile Include="Game\CCamera.cpp" />
+    <ClCompile Include="Game\CInput.cpp" />
     <ClCompile Include="Game\CWorld.cpp" />
+    <ClCompile Include="Game\CGame.cpp" />
+    <ClCompile Include="Game\CPlayer.cpp" />
     <ClCompile Include="Platform\CDirectx.cpp" />
     <ClCompile Include="Platform\oclUtils.cpp" />
   </ItemGroup>

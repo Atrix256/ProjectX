@@ -45,6 +45,14 @@ public:
 		return ret;
 	}
 
+	inline float3 operator+= (const float3& other)
+	{
+		(*this)[0] += other[0];
+		(*this)[1] += other[1];
+		(*this)[2] += other[2];
+		return *this;
+	}
+
 	inline float3 operator- (const float3& other) const
 	{
 		float3 ret;
@@ -52,6 +60,14 @@ public:
 		ret[1] = m_data.s[1] - other[1];
 		ret[2] = m_data.s[2] - other[2];
 		return ret;
+	}
+
+	inline float3 operator-= (const float3& other)
+	{
+		(*this)[0] -= other[0];
+		(*this)[1] -= other[1];
+		(*this)[2] -= other[2];
+		return *this;
 	}
 
 	inline float3 operator/ (const float v) const

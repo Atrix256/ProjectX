@@ -7,6 +7,7 @@ This class holds all information about the world
 ==================================================================================================*/
 
 #include "CWorld.h"
+#include "CGame.h"
 
 #include "DataSchemas/DataSchemasXML.h"
 
@@ -42,6 +43,10 @@ bool CWorld::Load(const char *worldFileName)
 	SData_World worldData;
 	if (!DataSchemasXML::Load(worldData, worldFileName, "World"))
 		return false;
+
+	// Starting Position and facing
+	CGame::SetPlayerPos(worldData.m_StartPoint.m_x, worldData.m_StartPoint.m_y, worldData.m_StartPoint.m_z);
+	CGame::SetPlayerFacing(worldData.m_StartFacing * 3.1415f / 180.0f);
 
 	// ambient light
 	Copy(m_ambientLight, worldData.m_AmbientLight);

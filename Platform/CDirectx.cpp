@@ -8,6 +8,8 @@ DirectX and OpenCL code lives here
 
 #include "CDirectx.h"
 #include "Game/CCamera.h"
+#include "Game/CGame.h"
+#include "Game/CInput.h"
 
 #include <vector>
 #include <string>
@@ -15,23 +17,6 @@ DirectX and OpenCL code lives here
 #pragma comment(lib, "d3d10.lib")
 #pragma comment(lib, "d3dx10.lib")
 #pragma comment(lib, "dxgi.lib")
-
-#ifndef HID_USAGE_PAGE_GENERIC
-#define HID_USAGE_PAGE_GENERIC         ((USHORT) 0x01)
-#endif
-#ifndef HID_USAGE_GENERIC_MOUSE
-#define HID_USAGE_GENERIC_MOUSE        ((USHORT) 0x02)
-#endif
-
-bool g_keyDownW = false;
-bool g_keyDownA = false;
-bool g_keyDownS = false;
-bool g_keyDownD = false;
-
-bool g_keyDownUp = false;
-bool g_keyDownDown = false;
-bool g_keyDownLeft = false;
-bool g_keyDownRight = false;
 
 LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -617,24 +602,8 @@ void CDirectX::RunCL(float elapsed)
 //-----------------------------------------------------------------------------
 void CDirectX::RunKernels(float elapsed)
 {
-    static float time = 0.0f;
-	time += elapsed;
-
-	const float moveAmount = 5.0f;
-	if (g_keyDownW || g_keyDownUp)
-		CCamera::Get().MoveForward2D(moveAmount * elapsed);
-
-	if (g_keyDownS || g_keyDownDown)
-		CCamera::Get().MoveForward2D(-moveAmount * elapsed);
-
-	if (g_keyDownA || g_keyDownLeft)
-		CCamera::Get().MoveLeft(moveAmount * elapsed);
-
-	if (g_keyDownD || g_keyDownRight)
-		CCamera::Get().MoveLeft(-moveAmount * elapsed);
-
 	// ----------------------------------------------------------------
-    // populate the 2d texture
+    // render the scene
     {
 		// set global and local work item dimensions
 		m_szLocalWorkSize[0] = 16;
@@ -698,62 +667,43 @@ static LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 							lpb, &dwSize, sizeof(RAWINPUTHEADER));
     
 			RAWINPUT* raw = (RAWINPUT*)lpb;
-    
-			if (raw->header.dwType == RIM_TYPEMOUSE && GetFocus() == hWnd) 
-			{
-				int xPosRelative = raw->data.mouse.lLastX;
-				int yPosRelative = raw->data.mouse.lLastY;
 
-				const float m_mouseSensitivity = 0.01f;
-
-				CCamera::Get().YawRight(-m_mouseSensitivity * (float)xPosRelative);
-				CCamera::Get().YawUp(-m_mouseSensitivity * (float)yPosRelative);
-
-				RECT windowRect;
-				GetClientRect(hWnd, &windowRect);
-				POINT pt;
-				pt.x = (windowRect.left + windowRect.right) / 2;
-				pt.y = (windowRect.top + windowRect.bottom) / 2;
-				ScreenToClient(hWnd, &pt);
-				SetCursorPos(pt.x, pt.y);
-			} 
-			break;
-		}
-        case WM_KEYUP:
-		{
-            switch(wParam)
-			{
-				case 'W': g_keyDownW = false; break;
-				case 'A': g_keyDownA = false; break;
-				case 'S': g_keyDownS = false; break;
-				case 'D': g_keyDownD = false; break;
-				case VK_UP: g_keyDownUp = false; break;
-				case VK_DOWN: g_keyDownDown = false; break;
-				case VK_LEFT: g_keyDownLeft = false; break;
-				case VK_RIGHT: g_keyDownRight = false; break;
-			}
-            break;
-		}
-        case WM_KEYDOWN:
-		{
-            switch(wParam)
-			{
-				case VK_ESCAPE:
+			if (GetFocus() == hWnd)
+			{    
+				if (raw->header.dwType == RIM_TYPEMOUSE) 
 				{
-					PostQuitMessage(0);
-					exit(1);
-					return 0;
+					CInput::OnMouseMove(raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+
+					RECT windowRect;
+					GetClientRect(hWnd, &windowRect);
+					POINT pt;
+					pt.x = (windowRect.left + windowRect.right) / 2;
+					pt.y = (windowRect.top + windowRect.bottom) / 2;
+					ScreenToClient(hWnd, &pt);
+					SetCursorPos(pt.x, pt.y);
+				} 
+				else if (raw->header.dwType == RIM_TYPEKEYBOARD)
+				{
+					if (raw->data.keyboard.Flags == RI_KEY_MAKE || raw->data.keyboard.Flags == RI_KEY_BREAK)
+					{
+						bool pressed = (raw->data.keyboard.Flags == RI_KEY_MAKE);
+						switch(raw->data.keyboard.VKey)
+						{
+							case VK_ESCAPE: PostQuitMessage(0); exit(1); return 0;
+							case 'W': CInput::SetInputToggle(CInput::e_inputToggleWalkForward, pressed); break;
+							case 'A': CInput::SetInputToggle(CInput::e_inputToggleWalkLeft, pressed); break;
+							case 'S': CInput::SetInputToggle(CInput::e_inputToggleWalkBack, pressed); break;
+							case 'D': CInput::SetInputToggle(CInput::e_inputToggleWalkRight, pressed); break;
+							case VK_UP: CInput::SetInputToggle(CInput::e_inputToggleWalkForward, pressed); break;
+							case VK_DOWN: CInput::SetInputToggle(CInput::e_inputToggleWalkBack, pressed); break;
+							case VK_LEFT: CInput::SetInputToggle(CInput::e_inputToggleWalkLeft, pressed); break;
+							case VK_RIGHT: CInput::SetInputToggle(CInput::e_inputToggleWalkRight, pressed); break;
+							case VK_SPACE: CInput::SetInputToggle(CInput::e_inputToggleJump, pressed); break;
+						}
+					}
 				}
-				case 'W': g_keyDownW = true; break;
-				case 'A': g_keyDownA = true; break;
-				case 'S': g_keyDownS = true; break;
-				case 'D': g_keyDownD = true; break;
-				case VK_UP: g_keyDownUp = true; break;
-				case VK_DOWN: g_keyDownDown = true; break;
-				case VK_LEFT: g_keyDownLeft = true; break;
-				case VK_RIGHT: g_keyDownRight = true; break;
 			}
-            break;
+			break;
 		}
         case WM_DESTROY:
             PostQuitMessage(0);
@@ -769,15 +719,6 @@ static LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 
 
-#include <string>
-#include <fstream>
-
-#ifndef HID_USAGE_PAGE_GENERIC
-#define HID_USAGE_PAGE_GENERIC         ((USHORT) 0x01)
-#endif
-#ifndef HID_USAGE_GENERIC_MOUSE
-#define HID_USAGE_GENERIC_MOUSE        ((USHORT) 0x02)
-#endif
 
 //-----------------------------------------------------------------------------
 // Forward declarations
@@ -797,12 +738,21 @@ int main(int argc, char** argv)
 	if(!CDirectX::Get().Init(1000, 1000))
 		return 0;
 
-    RAWINPUTDEVICE Rid[1];
-    Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC; 
-    Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE; 
-    Rid[0].dwFlags = RIDEV_INPUTSINK;   
+    RAWINPUTDEVICE Rid[2];
+
+	// mouse
+    Rid[0].usUsagePage = 0x01; 
+    Rid[0].usUsage = 0x02; 
+    Rid[0].dwFlags = RIDEV_NOLEGACY;   
 	Rid[0].hwndTarget = CDirectX::Get().GetHWND();
-    RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
+
+	// keyboard
+    Rid[1].usUsagePage = 0x01; 
+    Rid[1].usUsage = 0x06; 
+    Rid[1].dwFlags = RIDEV_NOLEGACY;   
+	Rid[1].hwndTarget = CDirectX::Get().GetHWND();
+
+    RegisterRawInputDevices(Rid, 2, sizeof(Rid[0]));
 
 	//
 	// the main loop
@@ -811,6 +761,8 @@ int main(int argc, char** argv)
 	{
 		Update(0.0f);
 		CDirectX::Get().DrawScene(0.0f);
+		CGame::Update(0.0f);
+		CInput::Update();
 
 		MSG msg;
 		ZeroMemory( &msg, sizeof(msg) );
@@ -829,6 +781,8 @@ int main(int argc, char** argv)
 
 		    Update(delta);
 			CDirectX::Get().DrawScene(delta);
+			CGame::Update(delta);
+			CInput::Update();
 		}
     };
 }

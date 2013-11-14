@@ -54,6 +54,8 @@ SchemaBegin(Sphere)
 SchemaEnd
 
 SchemaBegin(World)
+	Field_Schema(Vec3, StartPoint)
+	Field(float, StartFacing, 0.0f)
 	Field_Schema(Vec3, AmbientLight)
 	Field_Schema_Array(PointLight, PointLight)
 	Field_Schema_Array(Material, Material)

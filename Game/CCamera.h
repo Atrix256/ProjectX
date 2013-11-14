@@ -18,7 +18,7 @@ public:
 	{
 		m_cameraData.m_pos[0] = 0.0f;
 		m_cameraData.m_pos[1] = 0.0f;
-		m_cameraData.m_pos[2] = -6.0f;
+		m_cameraData.m_pos[2] = 0.0f;
 
 		m_cameraData.m_fwd[0] = 0.0f;
 		m_cameraData.m_fwd[1] = 0.0f;
@@ -50,6 +50,29 @@ public:
 	float ViewDistance () const { return m_viewDistance; }
 	float ViewWidth () const { return m_viewWidth; }
 
+	void SetPosition(const float3 &pos)
+	{
+		m_cameraData.m_pos = pos;
+	}
+
+	float3 Forward ()
+	{
+		return m_cameraData.m_fwd;
+	}
+
+	float3 Forward2D ()
+	{
+		float3 fwd2D = m_cameraData.m_fwd;
+		fwd2D[1] = 0.0f;
+		fwd2D = normalize(fwd2D);
+		return fwd2D;
+	}
+	
+	float3 Left ()
+	{
+		return m_cameraData.m_left;
+	}
+
 	void MoveForward (float amount)
 	{
 		m_cameraData.m_pos = m_cameraData.m_pos + m_cameraData.m_fwd * amount;
@@ -74,7 +97,7 @@ public:
 		UpdateCameraFacing();
 	}
 
-	void YawUp (float amount)
+	void PitchUp (float amount)
 	{
 		m_cameraAngleY += amount;
 
@@ -83,6 +106,12 @@ public:
 		else if (m_cameraAngleY < -1.5f)
 			m_cameraAngleY = -1.5f;
 
+		UpdateCameraFacing();
+	}
+
+	void SetYaw (float angle)
+	{
+		m_cameraAngleX = angle;
 		UpdateCameraFacing();
 	}
 

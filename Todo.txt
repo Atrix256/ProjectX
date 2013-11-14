@@ -14,8 +14,14 @@ NEXT
 * move "game code" out of directx file into game code files (ie logic that moves camera, moves objects, etc)
 * make some kind of "control state" struct that holds input info to query instead of globals
 * textures and bumpmapping
+* have a starting camera position and facing in the map file?
 
 
+* distance fog & volumetric fog
+* should we prevent the issue of moving diagonally being faster?
+* should there be so many static objects? i kinda think not
+* make asserts show their failed assert? (can do #x in a printf maybe?)
+* should we abstract a hotkey system?  we should properly "refcount" key downs and ups, but key repeat kinda screws that up so need to figure that out.
 * if needed, could break code up into multiple projects to help compile time if it ends up being an issue
 * CDirectX.cpp / .h needs some cleaning up
 * xml file to describe graphics options for now?

@@ -13,10 +13,14 @@ Holds info about the player and also handles player input
 class CPlayer
 {
 public:
+	CPlayer();
+
 	void Update (float elapsed);
 	void SetPosition(float X, float Y, float Z);
 	void SetFacing(float angle);
 
 private:
-	float3 m_position;
+	float3	m_position;
+	float3	m_velocity;
+	bool	m_onGround;
 };

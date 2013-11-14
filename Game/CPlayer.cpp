@@ -13,7 +13,10 @@ Holds info about the player and also handles player input
 //--------------------------------------------------------------------------------------------------
 CPlayer::CPlayer()
 {
+	m_crouched = false;
 	m_onGround = false;
+
+	m_playerHeight = 2.0;
 
 	m_position[0] = 0.0f;
 	m_position[1] = 0.0f;
@@ -27,7 +30,7 @@ CPlayer::CPlayer()
 //--------------------------------------------------------------------------------------------------
 void CPlayer::Update (float elapsed)
 {
-	const float moveAmount = 5.0f;
+	const float moveAmount = m_crouched ? 1.5f : 5.0f;
 	float3 moveDelta = {0.0f, 0.0f, 0.0f};
 
 	if (CInput::InputToggleOn(CInput::e_inputToggleWalkForward))
@@ -60,7 +63,25 @@ void CPlayer::Update (float elapsed)
 		m_velocity[1] = 0.0f;
 	}
 
-	CCamera::Get().SetPosition(m_position);
+	// handle toggling crouch
+	if (CInput::InputToggleOn(CInput::e_inputToggleCrouch) != m_crouched)
+		m_crouched = !m_crouched;
+
+	if (m_crouched && m_playerHeight > 1.0f)
+	{
+		m_playerHeight -= elapsed * 10.0f;
+		if (m_playerHeight < 1.0f)
+			m_playerHeight = 1.0f;
+	}
+	else if (!m_crouched && m_playerHeight < 2.0f)
+	{
+		m_playerHeight += elapsed * 10.0f;
+		if (m_playerHeight > 2.0f)
+			m_playerHeight = 2.0f;
+	}
+
+	float3 playerHeight = {0.0f, m_playerHeight, 0.0f};
+	CCamera::Get().SetPosition(m_position + playerHeight);
 }
 
 //--------------------------------------------------------------------------------------------------

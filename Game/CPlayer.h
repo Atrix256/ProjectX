@@ -20,7 +20,9 @@ public:
 	void SetFacing(float angle);
 
 private:
+	float	m_playerHeight;
 	float3	m_position;
 	float3	m_velocity;
 	bool	m_onGround;
+	bool	m_crouched;
 };

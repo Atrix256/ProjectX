@@ -22,6 +22,7 @@ public:
 		e_inputToggleWalkBack,
 
 		e_inputToggleJump,
+		e_inputToggleCrouch,
 
 		e_inputToggleCount,
 	};

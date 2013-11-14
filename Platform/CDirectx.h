@@ -61,6 +61,14 @@ public:
 
 	void SetWorld (const char *world) {m_worldFileName = world;}
 
+	void TakeScreenshot (const char *fileName);
+
+	void ToggleRecording ();
+
+	bool IsRecording () const { return m_recording; }
+
+	static const int c_recordingFPS = 30;
+
 private:
 	CDirectX ();
 	HRESULT InitD3D10 ();
@@ -119,4 +127,6 @@ private:
 
 	unsigned int			m_width;
 	unsigned int			m_height;
+	bool					m_recording;
+	unsigned int			m_recordingFrameNumber;
 };

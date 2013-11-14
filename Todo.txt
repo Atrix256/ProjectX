@@ -9,12 +9,16 @@ TO "SHIP" TO TEAM
 
 
 NEXT
-* jumping, falling, crouching.
 * walk on boxes, under objects, can't walk through walls?
 * textures and bumpmapping
 
 
-
+* improve the video recording quality
+* make the recorded video frame rate and sleep interval be specified in data
+* make a fixed framerate video recording of a play through at some point, when there are more features.
+* put crouch heights and blend time in some kind of data catalog
+* weather effects like rain and snow and fog
+* if you change compile defines, will it recompile the script? it better!
 * some cool raytracing features: http://srodal.blogspot.com
 * beers law for absorption of color over distance while light travels through it
 * if the window doesn't have focus, i think we shoudl make it sleep (multiplayer?) or just not do rendering (as often?) or something.  it eats up a ton of cpu otherwise
@@ -30,21 +34,18 @@ NEXT
 * if no reflection or refraction from #define settings, remove loop completely.
 * mouse input doesnt work in 64 bit build
 * build warning about: c:\program files (x86)\microsoft directx sdk (june 2010)\include\dxgitype.h(12): warning C4005: 'DXGI_STATUS_OCCLUDED' : macro redefinition
-* mouse sensitivity / invert mouse
-* gamma
-* make a way to make a publishable build (grabs exe, shared code, kernel code, etc and puts into some folder and possibly zips it up or whatever?)
-* be able to take screenshots and video
+* mouse sensitivity / invert mouse settings
+* gamma setting
+* make a way (a script for example) to make a publishable build (grabs exe, shared code, kernel code, etc and puts into some folder and possibly zips it up or whatever?)
 * make an xml settings file and pass those as #defines to the compiler thing?
-* do the material field names make sense in xml? might try "transparency" or some other stuff
-* error on unknown xml attribute? possible on unknown xml tag too?
 * make sure material id is unique.  error on not unique?
 * do something else to map material names to indices instead of storing a temporary std::vector of strings?  maybe generalize the id's somehow to all xml types and have some sort of lookup table to objects?
 * should a float4 be made like the float3 guy?  is float3 a good idea? maybe call it something else entirely and have it convert to a cl_float3 as needed
-* formalize some xml definition parsing stuff.  macro definitions may be enough
-* some way to trigger a map reload
+* some way to trigger a map reload (need a console?)
 * bump mapping - especially for refraction since it looks so rad
  * animated texture or even procedural bump texture - like for water droplets running down glass
   * also for tentacly / bio bumped stuff.
+* texture to control transparency and specularness etc.  try the things out.
 * twist and manipulate camera rays. static and over time
 * C# property grid for generic data editor?
 * how do you profile opencl?
@@ -55,69 +56,57 @@ NEXT
 * verify that colorMultiplier is used correctly.  passed to apply light, but then also applied to result?!
  * should bail out if it gets too small?
 * verify material index is in range before indexing in kernel somehow.  maybe have material zero be the default / error material?
-* do something to make build errors more obvious, since it exits now before you can read it. like sscanf on build error or something? idk
+* do something to make kernel code build errors more obvious, since it exits now before you can read it. like sscanf on build error or something? idk
 * red blue 3d mode, toggle with a key
-* it seems like reflective objects that have sections in shadow vs light should somehow not reflect as strongly in shadow?
-* should we try having objects that don't RECIEVE shadows? not just ones that don't cast them...
+* it seems like reflective objects that have sections in shadow vs light should somehow not reflect as strongly in shadow?  might be ok actually though
+* should we try having objects that don't RECIEVE shadows? not just ones that don't cast them... should be easy, they just don't do shadow test.
 * try light attenuation over distance
 * can you somehow precompile kernel so you dont have to worry about packing and paddnig and shit?
  * appaerntly yes, but it makes it too device specific.  investigate
-* make a way to show how many ray bounces per pixel
+* make a way to show how many ray bounces per pixel for profiling purposes
 * also show how many object tests per pixel (whiter dots = more)
-* assert support and put it in where needed
+* put asserts where needed
 * review the querying and creation of opencl platforms, devices and contexts
  * make sure doing right and taking advantage of all options.  probably want a graphics option to choose device!
-* figure out why dynlinkUnloadD3D10API causes a crash on exit
 * trybump mapping and other usages of textures to modify things per pixel
-* add some randomness to specular / diffuse coloration to get rid of the banding
+* add some randomness to specular / diffuse coloration to get rid of the banding.  graphics option for this?
 * alt+enter full screen toggle (or at least graphics option)
 * have some way to do autodetection of graphics settings?
 * figure out a way to do reflection AND refraction (as a graphics option or something)
 * mouse sensitivity setting
 * quaternion camera?  polar coordinate camera may actually be enough.  quaternion would only be needed for flight controls etc
-* make material be pointed to by collision info, not coppied
 * directional lighting support later.  need to basically shoot a ray in the reverse direction towards infinity.  need to know the extents of what to test to make directional lights work so leaving it out for now.
-* is there a perf penalty for storing thigns in float4's and casting to float3* to just work with the first 3 components?
-* refraction: color absorption over distance?
 * see what other kinds of RT effects there are out there besides what's implemented... ask around if needed?
 * dispersion / aberation investigation
 * investigate depth of field.  people say you have to cast multiple rays, but maybe you don't if you configure the ray sources correctly?
-* generate permutations based on object properties for faster, more custom fit code?
-* gotta watch out for instruction cache problems though...
-* cl permutation compiler would be for when changing graphics settings so the tests for "should i shadow?" don't need to be run, it just does or does not
- * or maybe just #defines so it's easier to see the end result code & debug5
+* look at generating permutations based on object properties for faster, more custom fit code?  like call a function CubeIntersect_TextureNormal_TextureSpecular()
+ * gotta watch out for instruction cache problems though...
+* pass graphics settings as #defines to kernel code
 * attempt to run it on cpu only? might be super super slow, but may be ok at low resolutions and graphics settings?
-* async build of cl scripts... you pass a function pointer to clBuildProgram 
+* async build of cl scripts... you pass a function pointer to clBuildProgram, it will do this
 * interlaced mode if needed as a faster rendering option
 * red/blue 3d mode (screen door render if needed)
 * figure out optimizations for kernal (check link in notes).  like maybe do full opts in release mode or something?
  * make denormals zero! and other nice things
 * oclCheckErrorEX <-- go away!!
-* port rt code from cuda to this -> or just redo it :P
-* see if these exes run at work / on other computers? esp non nvidia machines
-* figure out how to partition work on "threads" for opencl
-* port other todo list
 * see how to get CPU involved.  Maybe having it help would be useful too? dunno.
   * maybe end user can choose device it runs on somehow...
 * is it running in SLI? how can i check
-* is there a way to share code between the .cl file and the rest of the code base?
-  * could have files included by source code which also included by .cl file maybe
-  * can .cl include files?
-  * would have to put them in a dir that gets included in binary
+* can we hide kernelcode/shared include files in the exe or encrypt somehow or something?
 * lua binding so can use this thing from lua and make lots of diff games.
  * is there a way to protect the lua / opencl or embed it into the exe or something?
  * lua swig or lua bind (bind not as good apparently)
-* get into svn
 * better app title for window?
-* test exiting by pressing X and by using escape
 * test device lost if still relevant
 * clean up dx & cl init & handling stuff better. split dx and cl into 2 seperate classes
-* don't need to set kernel arguments each kernel call
+* don't need to set kernel arguments each kernel call (is this still relevant?)
 * do cpu stuff while waiting on gpu?
 * can we bake lighting at all? bake in bsp somehow
 * can we enable vsync?
 * depth of field / bokeh
+ * depth of field is some kind of ring for the source of the rays, can we set that up instead of doing multiple samples like everyone else does?
 * use a compressor or limiter for brightness of scene?
+ * would need a quick way to get scene brightness
 
 * texture lookup for opacity, reflectiveness, refraction index and something else? (could pack 4 values per pixel in)
   * alternately, could let people specify a texture for those various things.
@@ -158,6 +147,9 @@ NEXT
 --11/13/13
 * got formalized schema based xml parser done... been working on it on and off the last several days
 * organized and cleaned up the code a bit
+* got jumping and gravity working
+* got crouching working
+* got video recording and screenshots working
 
 --11/4/13
 * command line to load a specific xml scene file so people can make their own maps

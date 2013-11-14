@@ -28,3 +28,7 @@ builderrors.txt
 
 # OpenCL files we don't care about
 *.ptx
+
+# recorded video stuff
+RecordedVideo/Frames/*.bmp
+RecordedVideo/*.mp4

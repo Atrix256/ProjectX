@@ -10,6 +10,7 @@ DirectX and OpenCL code lives here
 #include "Game/CCamera.h"
 #include "Game/CGame.h"
 #include "Game/CInput.h"
+#include <direct.h>
 
 #include <vector>
 #include <string>
@@ -90,6 +91,8 @@ CDirectX::CDirectX ()
 	, m_clCreateFromD3D10Texture2DKHR(NULL)
 	, m_clEnqueueAcquireD3D10ObjectsKHR(NULL)
 	, m_clEnqueueReleaseD3D10ObjectsKHR(NULL)
+	, m_recording(false)
+	, m_recordingFrameNumber(0)
 {
 }
 
@@ -244,6 +247,83 @@ HRESULT CDirectX::InitCL()
 }
 
 //-----------------------------------------------------------------------------
+void CDirectX::TakeScreenshot (const char *fileName)
+{
+	// backbufferSurfDesc is saved at OnResizedSwapChain call
+	ID3D10Resource *backbufferRes;
+	m_pSwapChainRTV->GetResource(&backbufferRes);
+	
+	D3D10_TEXTURE2D_DESC texDesc;
+	texDesc.ArraySize = 1;
+	texDesc.BindFlags = 0;
+	texDesc.CPUAccessFlags = D3D10_CPU_ACCESS_READ;
+	texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	texDesc.Height = m_height;
+	texDesc.Width = m_width;
+	texDesc.MipLevels = 1;
+	texDesc.MiscFlags = 0;
+    texDesc.SampleDesc.Count = 1;
+    texDesc.SampleDesc.Quality = 0;
+	texDesc.Usage = D3D10_USAGE_STAGING;
+
+	ID3D10Texture2D *texture;
+	HRESULT hr;
+	hr = m_pd3dDevice->CreateTexture2D(&texDesc, 0, &texture);
+	m_pd3dDevice->CopyResource(texture, backbufferRes);
+
+	hr = D3DX10SaveTextureToFile(texture, D3DX10_IFF_BMP, fileName);
+	texture->Release();
+}
+
+//-----------------------------------------------------------------------------
+void CDirectX::ToggleRecording ()
+{
+	m_recording = !m_recording;
+
+	// if we are starting recording, make sure the directory for frames exists
+	// and set the frame number to zero;
+	if (m_recording)
+	{
+		_mkdir("RecordedVideo");
+		_chdir("RecordedVideo");
+		_mkdir("Frames");
+		_chdir("Frames");
+		system("del *.bmp");
+		_chdir("../..");
+		m_recordingFrameNumber = 0;
+		return;
+	}
+
+	// if we are done recording, we need to make a video out of our frames
+	//find what the next output filename we can use is
+	FILE *File = NULL;
+	bool done = false;
+	char szVideoFilename[256];
+	int nextVideoIndex = 1;
+	do 
+	{
+		sprintf(szVideoFilename,"RecordedVideo/Video%i.mp4",nextVideoIndex);
+		File = fopen(szVideoFilename,"rb");
+
+		if(File)
+		{
+			fclose(File);
+			nextVideoIndex++;
+		}
+		else
+		{
+			done = true;
+		}
+	} 
+	while(!done);
+
+	//encode our video!
+	char szBuffer[256];
+	sprintf(szBuffer,"RecordedVideo\\ffmpeg -r %i -b:v 1800 -i RecordedVideo/Frames/frame%%d.bmp %s",c_recordingFPS,szVideoFilename);
+	system(szBuffer);
+}
+
+//-----------------------------------------------------------------------------
 void CDirectX::DrawScene (float elapsed)
 {
 	RunCL(elapsed);
@@ -256,6 +336,15 @@ void CDirectX::DrawScene (float elapsed)
 
     // Present the backbuffer contents to the display
     m_pSwapChain->Present( 0, 0);
+
+	// if we are recording, take a screenshot
+	if (m_recording)
+	{
+		char fileName[256];
+		sprintf(fileName,"RecordedVideo/Frames/frame%i.bmp", m_recordingFrameNumber);
+		m_recordingFrameNumber++;
+		TakeScreenshot(fileName);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -684,22 +773,26 @@ static LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				} 
 				else if (raw->header.dwType == RIM_TYPEKEYBOARD)
 				{
-					if (raw->data.keyboard.Flags == RI_KEY_MAKE || raw->data.keyboard.Flags == RI_KEY_BREAK)
+					bool pressed = !(raw->data.keyboard.Flags & RI_KEY_BREAK);
+					switch(raw->data.keyboard.VKey)
 					{
-						bool pressed = (raw->data.keyboard.Flags == RI_KEY_MAKE);
-						switch(raw->data.keyboard.VKey)
-						{
-							case VK_ESCAPE: PostQuitMessage(0); exit(1); return 0;
-							case 'W': CInput::SetInputToggle(CInput::e_inputToggleWalkForward, pressed); break;
-							case 'A': CInput::SetInputToggle(CInput::e_inputToggleWalkLeft, pressed); break;
-							case 'S': CInput::SetInputToggle(CInput::e_inputToggleWalkBack, pressed); break;
-							case 'D': CInput::SetInputToggle(CInput::e_inputToggleWalkRight, pressed); break;
-							case VK_UP: CInput::SetInputToggle(CInput::e_inputToggleWalkForward, pressed); break;
-							case VK_DOWN: CInput::SetInputToggle(CInput::e_inputToggleWalkBack, pressed); break;
-							case VK_LEFT: CInput::SetInputToggle(CInput::e_inputToggleWalkLeft, pressed); break;
-							case VK_RIGHT: CInput::SetInputToggle(CInput::e_inputToggleWalkRight, pressed); break;
-							case VK_SPACE: CInput::SetInputToggle(CInput::e_inputToggleJump, pressed); break;
-						}
+						case VK_ESCAPE: PostQuitMessage(0); exit(1); return 0;
+
+						case 'W': CInput::SetInputToggle(CInput::e_inputToggleWalkForward, pressed); break;
+						case 'A': CInput::SetInputToggle(CInput::e_inputToggleWalkLeft, pressed); break;
+						case 'S': CInput::SetInputToggle(CInput::e_inputToggleWalkBack, pressed); break;
+						case 'D': CInput::SetInputToggle(CInput::e_inputToggleWalkRight, pressed); break;
+						case VK_UP: CInput::SetInputToggle(CInput::e_inputToggleWalkForward, pressed); break;
+						case VK_DOWN: CInput::SetInputToggle(CInput::e_inputToggleWalkBack, pressed); break;
+						case VK_LEFT: CInput::SetInputToggle(CInput::e_inputToggleWalkLeft, pressed); break;
+						case VK_RIGHT: CInput::SetInputToggle(CInput::e_inputToggleWalkRight, pressed); break;
+
+						case VK_SPACE: CInput::SetInputToggle(CInput::e_inputToggleJump, pressed); break;
+
+						case 'C': CInput::SetInputToggle(CInput::e_inputToggleCrouch, pressed); break;
+						case VK_CONTROL: CInput::SetInputToggle(CInput::e_inputToggleCrouch, pressed); break;
+
+						case 'Z': if (!pressed) CDirectX::Get().ToggleRecording(); break;
 					}
 				}
 			}
@@ -778,6 +871,12 @@ int main(int argc, char** argv)
 			DWORD newTime = GetTickCount();
 			float delta = lastTime > 0 ? (float)(newTime - lastTime) / 1000.0f : 0.0f;
 			lastTime = newTime;
+
+			if (CDirectX::Get().IsRecording())
+			{
+				delta = 1.0f/((float)CDirectX::c_recordingFPS);
+				Sleep(100);
+			}
 
 		    Update(delta);
 			CDirectX::Get().DrawScene(delta);

@@ -17,8 +17,8 @@ This holds all constant sized data that we send to the kernal program
 
 struct SSharedDataRoot
 {
-	struct SCamera	m_camera;
-	struct SWorld	m_world;
+	struct SCamera		m_camera;
+	struct SWorld		m_world;
 
 #ifndef OPENCL
 	static CSharedObject<SSharedDataRoot>& Get();

@@ -8,20 +8,21 @@
   <PointLight Position="-2, 2, 0" Color="1, 0.5, 1"/>
   <PointLight Position="0, 2, 5" Color="0.5, 1, 1"/>
 
-  <Material id="RedReflective" DiffuseColor="0.9, 0.1, 0.1" DiffuseAmount="1" SpecularColor="1, 1, 1" SpecularAmount="28" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
-  <Material id="BlueReflective" DiffuseColor="0.1, 0.1, 0.9" DiffuseAmount="1" SpecularColor="1, 1, 1" SpecularAmount="28" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
-  <Material id="Lense" DiffuseColor="1, 1, 1" DiffuseAmount="0.1" SpecularColor="0, 0, 0" SpecularAmount="28" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="0.52" RefractionAmount="0"/>
-  <Material id="YellowLight" DiffuseColor="0, 0, 0" DiffuseAmount="0.1" SpecularColor="0, 0, 0" SpecularAmount="28" EmissiveColor="1, 1, 0.5" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
-  <Material id="PurpleLight" DiffuseColor="0, 0, 0" DiffuseAmount="0.1" SpecularColor="0, 0, 0" SpecularAmount="28" EmissiveColor="1, 0.5, 1" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
-  <Material id="CyanLight" DiffuseColor="0, 0, 0" DiffuseAmount="0.1" SpecularColor="0, 0, 0" SpecularAmount="28" EmissiveColor="0.5, 1, 1" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
-  <Material id="Floor" DiffuseColor="0.09, 0.075, 0.1" DiffuseAmount="1" SpecularColor="0, 0, 0" SpecularAmount="28" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="TexturedWall" DiffuseColor="1.0, 1.0, 1.0" SpecularColor="1, 1, 1" SpecularPower="100" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="RedReflective" DiffuseColor="0.9, 0.1, 0.1" SpecularColor="1, 1, 1" SpecularPower="28" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="BlueReflective" DiffuseColor="0.5, 0.5, 0.9" SpecularColor="1, 1, 1" SpecularPower="28" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="Lense" DiffuseColor="0.1, 0.1, 0.1" SpecularColor="0, 0, 0" SpecularPower="28" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="0.52" RefractionAmount="0"/>
+  <Material id="YellowLight" DiffuseColor="0, 0, 0" SpecularColor="0, 0, 0" SpecularPower="28" EmissiveColor="1, 1, 0.5" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="PurpleLight" DiffuseColor="0, 0, 0" SpecularColor="0, 0, 0" SpecularPower="28" EmissiveColor="1, 0.5, 1" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="CyanLight" DiffuseColor="0, 0, 0" SpecularColor="0, 0, 0" SpecularPower="28" EmissiveColor="0.5, 1, 1" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="Floor" DiffuseColor="0.09, 0.075, 0.1" SpecularColor="0, 0, 0" SpecularPower="28" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
 
-  <Box Position="0, 2, 0" Scale="0.5, 0.5, 0.5" Material="RedReflective" CastShadows="1"/>
-  <Box Position="4, 2, 1.25" Scale="0.25, 2, 2" Material="RedReflective" CastShadows="true"/>
+  <Box Position="0, 2, 0" Scale="0.5, 2.0, 0.5" Material="RedReflective" CastShadows="1"/>
+  <Box Position="4, 2, 1.25" Scale="0.25, 2, 2" Material="Textured" CastShadows="true"/>
   <Box Position="0, 0, 0" Scale="100, 0.0625, 100" Material="Floor" CastShadows="1"/>
 
   <Sphere Position="2, 2.5, 2" Radius="0.5" Material="RedReflective" CastShadows="1"/>
-  <Sphere Position="-1, 0, 5" Radius="1" Material="BlueReflective" CastShadows="1"/>
+  <Sphere Position="-1, 1, 5" Radius="1" Material="BlueReflective" CastShadows="1"/>
   <Sphere Position="1, 6, 0" Radius="1" Material="RedReflective" CastShadows="1"/>
 
   <!-- alternate ways of defining data-->

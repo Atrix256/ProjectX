@@ -11,8 +11,14 @@ TO "SHIP" TO TEAM
 NEXT
 * walk on boxes, under objects, can't walk through walls?
 * textures and bumpmapping
+ * need to generalize textures so you can have N textures instead of just 1.
 
-
+* you get really neat effects if you texture things with the same texture you are rendering to!
+* make the max # of textures be a graphics setting?
+* graphics setting for texture sampling options
+* normal mapping
+* let the texture coordinates for spheres and boxes be scaled in data?
+* load images in another thread or something?
 * make it so we don't update the global root each frame, only when the data actually changes.  That will keep it "cleaner" more often hopefully.
  * maybe have a shared object struct where things are updated every frame (like, camera position) and another where things are seldom changed?
 * #pragma warning ( disable : 4005 ) // fix this eventually

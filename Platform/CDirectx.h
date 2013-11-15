@@ -8,6 +8,9 @@ DirectX and OpenCL code lives here
 
 #pragma once
 
+// TODO: this is temporary
+#pragma warning ( disable : 4005 )
+
 // Direct3D9 includes
 #include <d3d9.h>
 #include <d3dx9.h>
@@ -30,18 +33,8 @@ DirectX and OpenCL code lives here
 #include <CL/cl_ext.h>
 
 #include "Game/CWorld.h"
-
-// Data structure for 2D texture shared between DX9 and CL
-struct STexture2D
-{
-    ID3D10Texture2D			*pTexture;
-    ID3D10ShaderResourceView *pSRView;
-	cl_mem				clTexture;
-	cl_mem				clMem;
-	unsigned int		pitch;
-	unsigned int		width;
-	unsigned int		height;	
-};
+#include "STexture2D.h"
+#include "CTextureManager.h"
 
 class CDirectX
 {
@@ -69,7 +62,11 @@ public:
 
 	static const int c_recordingFPS = 30;
 
+	static CTextureManager &TextureManager() { return Get().m_textureManager; };
+
 private:
+	friend class CTextureManager;
+
 	CDirectX ();
 	HRESULT InitD3D10 ();
 
@@ -86,6 +83,8 @@ private:
 		cl_program			&cpProgram,
 		cl_kernel			&ckKernel
 	);
+
+	bool LoadTexture(const char *fileName, ID3D10Texture2D **d3dTexture, cl_mem & clTexture);
 
 private:
 	static CDirectX			s_singleton;
@@ -118,6 +117,8 @@ private:
 
 	CWorld				m_world;
 	std::string			m_worldFileName;
+
+	CTextureManager		m_textureManager;
 
 	HWND			      g_hWnd;
 	D3DDISPLAYMODE        g_d3ddm;    

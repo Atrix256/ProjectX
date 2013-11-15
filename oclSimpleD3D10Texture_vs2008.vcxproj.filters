@@ -84,6 +84,12 @@
     <ClInclude Include="Platform\SharedObject.h">
       <Filter>Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\CTextureManager.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\STexture2D.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\tinyxml\tinyxml2.cpp">
@@ -115,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="KernelCode\Shared\SSharedDataRoot.cpp">
       <Filter>Kernel Code\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\CTextureManager.cpp">
+      <Filter>Platform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

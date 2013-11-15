@@ -226,10 +226,12 @@
     <ClInclude Include="KernelCode\Shared\SWorld.h" />
     <ClInclude Include="Platform\Assert.h" />
     <ClInclude Include="Platform\CDirectx.h" />
+    <ClInclude Include="Platform\CTextureManager.h" />
     <ClInclude Include="Platform\float3.h" />
     <ClInclude Include="Platform\oclUtils.h" />
     <ClInclude Include="Platform\SharedArray.h" />
     <ClInclude Include="Platform\SharedObject.h" />
+    <ClInclude Include="Platform\STexture2D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DataSchemas\DataSchemasStructs.cpp" />
@@ -241,6 +243,7 @@
     <ClCompile Include="Game\CPlayer.cpp" />
     <ClCompile Include="KernelCode\Shared\SSharedDataRoot.cpp" />
     <ClCompile Include="Platform\CDirectx.cpp" />
+    <ClCompile Include="Platform\CTextureManager.cpp" />
     <ClCompile Include="Platform\oclUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -248,7 +251,9 @@
     <Text Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="Data\default.xml" />
+    <Xml Include="Data\default.xml">
+      <SubType>Designer</SubType>
+    </Xml>
     <Xml Include="Data\simple.xml" />
   </ItemGroup>
   <ItemGroup>

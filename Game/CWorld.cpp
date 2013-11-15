@@ -6,6 +6,8 @@ This class holds all information about the world
 
 ==================================================================================================*/
 
+#include "Platform\CDirectx.h"
+
 #include "CWorld.h"
 #include "CGame.h"
 
@@ -31,12 +33,6 @@ void Copy(cl_float4 &lhs, const SData_Vec3 &rhs, const float w)
 //-----------------------------------------------------------------------------
 bool CWorld::Load(const char *worldFileName)
 {
-	// clear the existing world data
-	m_pointLights.Clear();
-	m_materials.Clear();
-	m_boxes.Clear();
-	m_spheres.Clear();
-
 	SData_World worldData;
 	if (!DataSchemasXML::Load(worldData, worldFileName, "World"))
 		worldData.SetDefault();
@@ -57,12 +53,17 @@ bool CWorld::Load(const char *worldFileName)
 	m_materials.Resize(worldData.m_Material.size());
 	for (unsigned int index = 0, count = worldData.m_Material.size(); index < count; ++index)
 	{
-		Copy(m_materials[index].m_diffuseColorAndAmount, worldData.m_Material[index].m_DiffuseColor, worldData.m_Material[index].m_DiffuseAmount);
-		Copy(m_materials[index].m_specularColorAndAmount, worldData.m_Material[index].m_SpecularColor, worldData.m_Material[index].m_SpecularAmount);
+		Copy(m_materials[index].m_diffuseColor, worldData.m_Material[index].m_DiffuseColor);
+		Copy(m_materials[index].m_specularColorAndPower, worldData.m_Material[index].m_SpecularColor, worldData.m_Material[index].m_SpecularPower);
 		Copy(m_materials[index].m_emissiveColor, worldData.m_Material[index].m_EmissiveColor);
 		m_materials[index].m_reflectionAmount = worldData.m_Material[index].m_ReflectionAmount;
 		m_materials[index].m_refractionAmount = worldData.m_Material[index].m_RefractionAmount;
 		m_materials[index].m_refractionIndex = worldData.m_Material[index].m_RefractionIndex;
+		
+		if (worldData.m_Material[index].m_DiffuseTexture.length() > 0)
+			m_materials[index].m_diffuseTextureIndex = CDirectX::TextureManager().GetOrLoad(worldData.m_Material[index].m_DiffuseTexture.c_str());
+		else
+			m_materials[index].m_diffuseTextureIndex = 0;
 	}
 
 	unsigned int nextObjectId = 1;

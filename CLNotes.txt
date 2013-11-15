@@ -31,3 +31,5 @@
 * on my machine, kernel only rebuilds if kernel code changed, but doesn't check files the kernel includes!!
 * "uint8" = 8 bits or 8 uints?  in opencl it's 8 uints hehe.  cl_uint8 for code side usage.
 * made a "SSharedDataRoot" that had all constant sized data in it.  pass that as a single param to the kernel program.
+ * a shared array class, and a shared object class to hide the details
+* can't pass an array of cl_mem which makes it difficult to do things like pass an array of textures to the kernel (shit!)

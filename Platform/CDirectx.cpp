@@ -6,9 +6,6 @@ DirectX and OpenCL code lives here
 
 ==================================================================================================*/
 
-// TODO: this is temporary
-#pragma warning ( disable : 4005 )
-
 #include "CDirectx.h"
 #include "Game/CCamera.h"
 #include "Game/CGame.h"
@@ -116,11 +113,9 @@ CDirectX::~CDirectX ()
     if (m_pSwapChain)
 		m_pSwapChain->Release();
 
-    if (m_texture_2d.pSRView)
-		m_texture_2d.pSRView->Release();
+	m_texture_2d.Release();
 
-	if (m_texture_2d.pTexture)
-		m_texture_2d.pTexture->Release();
+	m_textureManager.Release();
 
 	m_world.Release();
 
@@ -417,7 +412,7 @@ HRESULT CDirectX::InitD3D10 ()
     hr = D3D10CreateDeviceAndSwapChain( 
         pCLCapableAdapter, 
         D3D10_DRIVER_TYPE_HARDWARE, 
-        NULL, 
+        NULL,
         0,
         D3D10_SDK_VERSION, 
         &sd, 
@@ -605,15 +600,37 @@ HRESULT CDirectX::CreateKernelProgram(
 }
 
 //-----------------------------------------------------------------------------
+bool CDirectX::LoadTexture(const char *fileName, ID3D10Texture2D **d3dTexture, cl_mem & clTexture)
+{
+	*d3dTexture = NULL;
+	if(FAILED(D3DX10CreateTextureFromFile( m_pd3dDevice, fileName, NULL, NULL, (ID3D10Resource**)d3dTexture, NULL )))
+		return false;
+
+	int ciErrNum = 0;
+	clTexture = m_clCreateFromD3D10Texture2DKHR(
+		m_cxGPUContext,
+		CL_MEM_READ_ONLY,
+		*d3dTexture,
+		0,
+		&ciErrNum
+	);
+
+	return ciErrNum == CL_SUCCESS;
+}
+
+//-----------------------------------------------------------------------------
 void CDirectX::AcquireTexturesForOpenCL()
 {
 	cl_event event;
-	cl_mem memToAcquire[1];
+	cl_mem memToAcquire[1 + CTextureManager::c_maxTextures];
 	memToAcquire[0] = m_texture_2d.clTexture;
+	for (unsigned int index = 0, count = m_textureManager.NumTextures(); index < count; ++index)
+		memToAcquire[1 + index] = m_textureManager.GetCLTexture(index);
+
     // do the acquire
     cl_int ciErrNum = m_clEnqueueAcquireD3D10ObjectsKHR(
         m_cqCommandQueue,
-        1, // tex2d
+        1 + m_textureManager.NumTextures(),
         memToAcquire,
         0,
         NULL,
@@ -642,12 +659,15 @@ void CDirectX::AcquireTexturesForOpenCL()
 void CDirectX::ReleaseTexturesFromOpenCL()
 {
 	cl_event event;
-	cl_mem memToAcquire[1];
+	cl_mem memToAcquire[1 + CTextureManager::c_maxTextures];
 	memToAcquire[0] = m_texture_2d.clTexture;
+	for (unsigned int index = 0, count = m_textureManager.NumTextures(); index < count; ++index)
+		memToAcquire[1 + index] = m_textureManager.GetCLTexture(index);
+
     // do the acquire
     cl_int ciErrNum = m_clEnqueueReleaseD3D10ObjectsKHR(
         m_cqCommandQueue,
-        1, // tex2d
+		1 + m_textureManager.NumTextures(), // tex2d
         memToAcquire,
         0,
         NULL,
@@ -708,27 +728,32 @@ void CDirectX::RunKernels(float elapsed)
 		m_szGlobalWorkSize[1] = shrRoundUp((int)m_szLocalWorkSize[1], m_texture_2d.height);
 
 		// set the args values
-		cl_int ciErrNum = clSetKernelArg(m_ckKernel_tex2d, 0, sizeof(m_texture_2d.clTexture), (void *) &(m_texture_2d.clTexture));
+		cl_uint argNumber = 0;
+		cl_int ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(m_texture_2d.clTexture), (void *) &(m_texture_2d.clTexture));
+		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
+
+		cl_mem texture = m_textureManager.NumTextures() > 0 ? m_textureManager.GetCLTexture(0) : m_texture_2d.clTexture;
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(texture), &texture);
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
 		CSharedObject<SSharedDataRoot> &sharedDataRoot = SSharedDataRoot::Get();
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 1, sizeof(cl_mem), &sharedDataRoot.GetAndUpdateCLMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &sharedDataRoot.GetAndUpdateCLMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 2, sizeof(cl_mem), &m_world.m_pointLights.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_pointLights.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 3, sizeof(cl_mem), &m_world.m_spheres.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_spheres.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 4, sizeof(cl_mem), &m_world.m_boxes.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_boxes.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
-		ciErrNum |= clSetKernelArg(m_ckKernel_tex2d, 5, sizeof(cl_mem), &m_world.m_materials.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_materials.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
 		// launch computation kernel
-		ciErrNum |= clEnqueueNDRangeKernel(m_cqCommandQueue, m_ckKernel_tex2d, 2, NULL,
+		ciErrNum = clEnqueueNDRangeKernel(m_cqCommandQueue, m_ckKernel_tex2d, 2, NULL,
 										  m_szGlobalWorkSize, m_szLocalWorkSize, 
 										 0, NULL, NULL);
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
@@ -812,7 +837,7 @@ static LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 //-----------------------------------------------------------------------------
 // Forward declarations
 //-----------------------------------------------------------------------------
-void Update(float elapsed);
+void UpdateFPS(float elapsed);
 
 //-----------------------------------------------------------------------------
 // Program main
@@ -848,7 +873,7 @@ int main(int argc, char** argv)
 	//
 	while(true) 
 	{
-		Update(0.0f);
+		UpdateFPS(0.0f);
 		CDirectX::Get().DrawScene(0.0f);
 		CGame::Update(0.0f);
 		CInput::Update();
@@ -870,11 +895,15 @@ int main(int argc, char** argv)
 
 			if (CDirectX::Get().IsRecording())
 			{
-				delta = 1.0f/((float)CDirectX::c_recordingFPS);
-				Sleep(100);
+				float wantedDelta = 1.0f/((float)CDirectX::c_recordingFPS);
+
+				if (delta < wantedDelta)
+					Sleep((DWORD)((wantedDelta - delta) * 1000.0f));
+
+				delta = wantedDelta;
 			}
 
-		    Update(delta);
+		    UpdateFPS(delta);
 			CDirectX::Get().DrawScene(delta);
 			CGame::Update(delta);
 			CInput::Update();
@@ -883,7 +912,7 @@ int main(int argc, char** argv)
 }
 
 //-----------------------------------------------------------------------------
-void Update(float elapsed)
+void UpdateFPS(float elapsed)
 {
 	static float time = 0.0f;
 	static DWORD frameCount = 0;

@@ -22,13 +22,13 @@ typedef cl_uint TObjectId;
 
 struct SMaterial
 {
-	cl_float4 m_diffuseColorAndAmount;
-	cl_float4 m_specularColorAndAmount;
+	float3 m_diffuseColor;
+	cl_float4 m_specularColorAndPower;
 	float3 m_emissiveColor;
 	cl_float m_reflectionAmount;
 	cl_float m_refractionIndex;
 	cl_float m_refractionAmount;
-	cl_uint m_pack1;
+	cl_uint m_diffuseTextureIndex;
 };
 
 struct SSphere

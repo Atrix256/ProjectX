@@ -11,6 +11,8 @@ The kernel code
 
 #define c_maxRayBounces 6
 
+const sampler_t g_textureSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_REPEAT | CLK_FILTER_NEAREST; 
+
 struct SCollisionInfo
 {
 	TObjectId			m_objectHit;
@@ -18,6 +20,7 @@ struct SCollisionInfo
 	float3				m_intersectionPoint;
 	float				m_intersectionTime;
 	float3				m_surfaceNormal;
+	float2				m_textureCoordinates;
 	unsigned int		m_materialIndex;
 };
 
@@ -73,6 +76,10 @@ bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollis
 	// calculate the normal
 	info->m_surfaceNormal = info->m_intersectionPoint - sphere->m_positionAndRadius.xyz;
 	info->m_surfaceNormal = normalize(info->m_surfaceNormal);
+
+	// texture coordinates are just the angular part of spherical coordiantes of normal
+	info->m_textureCoordinates.x = atan2(info->m_surfaceNormal.y, info->m_surfaceNormal.x);
+	info->m_textureCoordinates.y = acos(info->m_surfaceNormal.z );
 
 	// we found a hit!
 	info->m_objectHit = sphere->m_objectId;
@@ -144,6 +151,7 @@ bool RayIntersectAABox (__constant const struct SAABox *box, struct SCollisionIn
 
 	// figure out the surface normal by figuring out which axis we are closest to
 	float closestDist = FLT_MAX;
+	int closestAxis = 0;
 	for(int axis = 0; axis < 3; ++axis)
 	{
 		float distFromPos= fabs(((__constant float*)&box->m_position)[axis] - ((float*)&info->m_intersectionPoint)[axis]);
@@ -151,6 +159,7 @@ bool RayIntersectAABox (__constant const struct SAABox *box, struct SCollisionIn
 
 		if(distFromEdge < closestDist)
 		{
+			closestAxis = axis;
 			closestDist = distFromEdge;
 			info->m_surfaceNormal = (float3)( 0.0f, 0.0f, 0.0f);
 			if(((float*)&info->m_intersectionPoint)[axis] < ((__constant float*)&box->m_position)[axis])
@@ -159,6 +168,29 @@ bool RayIntersectAABox (__constant const struct SAABox *box, struct SCollisionIn
 				((float*)&info->m_surfaceNormal)[axis] =  1.0;
 		}
 	}
+
+	// texture coordinates 
+	float3 uaxis = {1.0,0.0,0.0};
+	float3 vaxis = {0.0,1.0,0.0};
+	
+	if (closestAxis == 0)
+	{
+		float3 u = { 0.0,1.0,0.0 };
+		float3 v = { 0.0,0.0,1.0 };
+		uaxis = u;
+		vaxis = v;
+	}
+	else if (closestAxis == 1)
+	{
+		float3 u = { 1.0,0.0,0.0 };
+		float3 v = { 0.0,0.0,1.0 };
+		uaxis = u;
+		vaxis = v;
+	}
+	
+	float3 relPoint = info->m_intersectionPoint - box->m_position;
+	info->m_textureCoordinates.x = dot(relPoint, uaxis);
+	info->m_textureCoordinates.y = dot(relPoint, vaxis);
 
 	// we found a hit!
 	info->m_objectHit = box->m_objectId;
@@ -192,9 +224,10 @@ bool PointCanSeePoint(
 	{
 		c_invalidObjectId,
 		false,
-		{ 0.0f, 0.0f, 0.0f},
+		{ 0.0f, 0.0f, 0.0f },
 		FLT_MAX,
 		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f },
 		0,
 	};
 	
@@ -228,7 +261,8 @@ void ApplyPointLight (
 	int numSpheres,
 	__constant struct SSphere *spheres,
 	int numBoxes,
-	__constant struct SAABox *boxes
+	__constant struct SAABox *boxes,
+	float3 diffuseColor
 )
 {
 	if (!PointCanSeePoint(
@@ -246,17 +280,18 @@ void ApplyPointLight (
 	float3 hitToLight = normalize(light->m_position - collisionInfo->m_intersectionPoint);
 	float dp = dot(collisionInfo->m_surfaceNormal, hitToLight);
 	if(dp > 0.0)
-		*pixelColor += material->m_diffuseColorAndAmount.xyz * dp * light->m_color * material->m_diffuseColorAndAmount.w * reflectionAmount;
+		*pixelColor += diffuseColor * dp * light->m_color * reflectionAmount;
 				
 	// specular
 	float3 reflection = reflect(hitToLight, collisionInfo->m_surfaceNormal);
 	dp = dot(rayDir, reflection);
 	if (dp > 0.0)
-		*pixelColor += material->m_specularColorAndAmount.xyz * pow(dp, material->m_specularColorAndAmount.w) * light->m_color * reflectionAmount;
+		*pixelColor += material->m_specularColorAndPower.xyz * pow(dp, material->m_specularColorAndPower.w) * light->m_color * reflectionAmount;
 }
 
 void TraceRay (
 	__constant struct SSharedDataRoot *dataRoot,
+	__read_only image2d_t texIn,
 	float3 rayPos,
 	float3 rayDir,
 	float3 *pixelColor,
@@ -279,9 +314,10 @@ void TraceRay (
 		{
 			c_invalidObjectId,
 			false,
-			{ 0.0f, 0.0f, 0.0f},
+			{ 0.0f, 0.0f, 0.0f },
 			FLT_MAX,
 			{ 0.0f, 0.0f, 0.0f },
+			{ 0.0f, 0.0f },
 			0,
 		};
 
@@ -301,10 +337,12 @@ void TraceRay (
 		__constant const struct SMaterial *material = &materials[collisionInfo.m_materialIndex];
 
 		// get the diffuse color of the object we hit
-		float3 diffuseColor = material->m_diffuseColorAndAmount.xyz * material->m_diffuseColorAndAmount.w;
+		float3 diffuseColorBase = material->m_diffuseColor;
+		if (material->m_diffuseTextureIndex != 0)
+			diffuseColorBase *= read_imagef(texIn, g_textureSampler, collisionInfo.m_textureCoordinates).xyz;
 
 		// apply ambient lighting and emissive color
-		diffuseColor = diffuseColor * ambientLight + material->m_emissiveColor;
+		float3 diffuseColor = diffuseColorBase * ambientLight + material->m_emissiveColor;
 
 		// apply diffuse / specular from a point light
 		for (int lightIndex = 0; lightIndex < dataRoot->m_world.m_numLights; ++lightIndex)
@@ -318,7 +356,8 @@ void TraceRay (
 				dataRoot->m_world.m_numSpheres,
 				spheres,
 				dataRoot->m_world.m_numBoxes,
-				boxes
+				boxes,
+				diffuseColorBase
 			);
 
 		// add the color in
@@ -357,6 +396,7 @@ void TraceRay (
 
 __kernel void clrt (
 	__write_only image2d_t texOut, 
+	__read_only image2d_t texIn, 
 	__constant struct SSharedDataRoot *dataRoot,
 	__constant struct SPointLight *lights,
 	__constant struct SSphere *spheres,
@@ -381,6 +421,6 @@ __kernel void clrt (
 
 	// trace the ray
 	float3 color = (float3)(0);
-	TraceRay(dataRoot, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, materials);
+	TraceRay(dataRoot, texIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, materials);
 	write_imagef(texOut, coord, (float4)(color, 1.0)); 
 }

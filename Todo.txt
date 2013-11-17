@@ -9,145 +9,165 @@ TO "SHIP" TO TEAM
 
 
 NEXT
-* walk on boxes, under objects, can't walk through walls?
-* make sure all cl_mem objects are getting released properly with clReleaseMemObject
-* normal texturing for bump maps
+* collision detection: walk on boxes, under objects, can't walk through walls?
+* make a more "FPS-ish" type map instead of a raytracing showroom map
+* make better geometry support - bsp , possibly model loading etc
 
 
 
+--RENDERING
 * why dont things show up when reflected on something that is pure white? it looks wrong...
 * when something is black, it still reflects full on, which looks weird sometimes
-
 * we need to look at having "reflection color" instead of reflection amount.  same for other "amount" things?
 * make a fallback for when graphics options are off? like if no textures, set the diffuse color to something to aproximate it?
-* make Field_Schema default work for more than just xml loading.
-* figure out a decent number to choose for max textures, or make it dynamic in the future or something?
-* try out emissive textures
-* specular textures
-* refraction index textures?
-* texture manager likely doesn't need STexture2d struct since it doesn't use a lot of the fields
- * similar for cdirectx....
-* graphics setting for whether to use mips for textures or not? currently no mipmaps used
-* graphics option for texture size if doing a 3d texture to hold all the textures, since they have to be the same size
-* graphics option for vsync.  if vsync is on, it will pass (1, 0) to  m_pSwapChain->Present
-* use +/- buttons to increase and decrease render quality (actually maybe just do low, med, high since it needs to recompile the kernel code for each one!)
+* try specular textures
+* try refraction index textures?
 * you get really neat effects if you texture things with the same texture you are rendering to!
-* make the max # of textures be a graphics setting?
-* graphics setting for texture sampling options
-* normal mapping
-* let the texture coordinates for spheres and boxes be scaled in data?
-* load images in another thread or something?
-* make it so we don't update the global root each frame, only when the data actually changes.  That will keep it "cleaner" more often hopefully.
- * maybe have a shared object struct where things are updated every frame (like, camera position) and another where things are seldom changed?
-* #pragma warning ( disable : 4005 ) // fix this eventually
-* put array counts into the shared data root
-* have the kernel pass the data root around (as a pointer) instead of passing each field around individually
-* is it better to send the shared data root to kernel as a pointer?
-* see about minimizing what is sent to the kernal program... is there a limit to what can be sent?
- * maybe we can make some kind of globally shared struct for non dynamic things
- * maybe it can include the count for dynamic things
-* some command to reload a map file? (like, pressing R?)
-* skybox or skysphere? (eventually could do raymarching for terrain but ::shrug::)
-* handle the warnings under the code analasys option under the build menu
-* improve the video recording quality
-* make the recorded video frame rate and sleep interval be specified in data
-* make a fixed framerate video recording of a play through at some point, when there are more features.
-* put crouch heights and blend time in some kind of data catalog
 * weather effects like rain and snow and fog
-* if you change compile defines, will it recompile the script? it better!
 * some cool raytracing features: http://srodal.blogspot.com
 * beers law for absorption of color over distance while light travels through it
-* if the window doesn't have focus, i think we shoudl make it sleep (multiplayer?) or just not do rendering (as often?) or something.  it eats up a ton of cpu otherwise
 * distance fog & volumetric fog
-* should we prevent the issue of moving diagonally being faster?
-* should there be so many static classes? i kinda think not, or they should have real singleton interfaces
-* make asserts show their failed assert? (can do #x in a printf maybe?)
-* should we abstract a hotkey system?  we should properly "refcount" key downs and ups, but key repeat kinda screws that up so need to figure that out.
-* if needed, could break code up into multiple projects to help compile time if it ends up being an issue
-* CDirectX.cpp / .h needs some cleaning up
-* xml file to describe graphics options for now?
-* if making a data catalog, allow it to be used for network messages as well
-* if no reflection or refraction from #define settings, remove loop completely.
-* mouse input doesnt work in 64 bit build
-* build warning about: c:\program files (x86)\microsoft directx sdk (june 2010)\include\dxgitype.h(12): warning C4005: 'DXGI_STATUS_OCCLUDED' : macro redefinition
-* mouse sensitivity / invert mouse settings
-* gamma setting
-* make a way (a script for example) to make a publishable build (grabs exe, shared code, kernel code, etc and puts into some folder and possibly zips it up or whatever?)
-* make an xml settings file and pass those as #defines to the compiler thing?
-* make sure material id is unique.  error on not unique?
-* do something else to map material names to indices instead of storing a temporary std::vector of strings?  maybe generalize the id's somehow to all xml types and have some sort of lookup table to objects?
-* should a float4 be made like the float3 guy?  is float3 a good idea? maybe call it something else entirely and have it convert to a cl_float3 as needed
-* some way to trigger a map reload (need a console?)
-* bump mapping - especially for refraction since it looks so rad
- * animated texture or even procedural bump texture - like for water droplets running down glass
-  * also for tentacly / bio bumped stuff.
+* skybox or skysphere? (eventually could do raymarching for terrain but ::shrug::)
+* try animated bump mapping textures.  like for water droplets running down glass, or tentacly bio bumped stuff
 * texture to control transparency and specularness etc.  try the things out.
 * twist and manipulate camera rays. static and over time
-* C# property grid for generic data editor?
-* how do you profile opencl?
 * verify that specular calculation is correct
 * verify that reflection calculation is correct
 * verify that refraction calculation is correct. i think raytocameradir is wrong
 * verify ambient light is correct... should it be used as many places as it is?
 * verify that colorMultiplier is used correctly.  passed to apply light, but then also applied to result?!
  * should bail out if it gets too small?
-* verify material index is in range before indexing in kernel somehow.  maybe have material zero be the default / error material?
-* do something to make kernel code build errors more obvious, since it exits now before you can read it. like sscanf on build error or something? idk
 * red blue 3d mode, toggle with a key
 * it seems like reflective objects that have sections in shadow vs light should somehow not reflect as strongly in shadow?  might be ok actually though
 * should we try having objects that don't RECIEVE shadows? not just ones that don't cast them... should be easy, they just don't do shadow test.
 * try light attenuation over distance
-* can you somehow precompile kernel so you dont have to worry about packing and paddnig and shit?
- * appaerntly yes, but it makes it too device specific.  investigate
-* make a way to show how many ray bounces per pixel for profiling purposes
-* also show how many object tests per pixel (whiter dots = more)
-* put asserts where needed
-* review the querying and creation of opencl platforms, devices and contexts
- * make sure doing right and taking advantage of all options.  probably want a graphics option to choose device!
 * trybump mapping and other usages of textures to modify things per pixel
 * add some randomness to specular / diffuse coloration to get rid of the banding.  graphics option for this?
-* alt+enter full screen toggle (or at least graphics option)
-* have some way to do autodetection of graphics settings?
 * figure out a way to do reflection AND refraction (as a graphics option or something)
-* mouse sensitivity setting
-* quaternion camera?  polar coordinate camera may actually be enough.  quaternion would only be needed for flight controls etc
-* directional lighting support later.  need to basically shoot a ray in the reverse direction towards infinity.  need to know the extents of what to test to make directional lights work so leaving it out for now.
-* see what other kinds of RT effects there are out there besides what's implemented... ask around if needed?
-* dispersion / aberation investigation
-* investigate depth of field.  people say you have to cast multiple rays, but maybe you don't if you configure the ray sources correctly?
-* look at generating permutations based on object properties for faster, more custom fit code?  like call a function CubeIntersect_TextureNormal_TextureSpecular()
- * gotta watch out for instruction cache problems though...
-* pass graphics settings as #defines to kernel code
-* attempt to run it on cpu only? might be super super slow, but may be ok at low resolutions and graphics settings?
-* async build of cl scripts... you pass a function pointer to clBuildProgram, it will do this
-* interlaced mode if needed as a faster rendering option
-* red/blue 3d mode (screen door render if needed)
-* figure out optimizations for kernal (check link in notes).  like maybe do full opts in release mode or something?
- * make denormals zero! and other nice things
-* oclCheckErrorEX <-- go away!!
-* see how to get CPU involved.  Maybe having it help would be useful too? dunno.
-  * maybe end user can choose device it runs on somehow...
-* is it running in SLI? how can i check
-* can we hide kernelcode/shared include files in the exe or encrypt somehow or something?
-* lua binding so can use this thing from lua and make lots of diff games.
- * is there a way to protect the lua / opencl or embed it into the exe or something?
- * lua swig or lua bind (bind not as good apparently)
-* better app title for window?
-* test device lost if still relevant
-* clean up dx & cl init & handling stuff better. split dx and cl into 2 seperate classes
-* don't need to set kernel arguments each kernel call (is this still relevant?)
-* do cpu stuff while waiting on gpu?
 * can we bake lighting at all? bake in bsp somehow
 * can we enable vsync?
 * depth of field / bokeh
  * depth of field is some kind of ring for the source of the rays, can we set that up instead of doing multiple samples like everyone else does?
 * use a compressor or limiter for brightness of scene?
  * would need a quick way to get scene brightness
-
 * texture lookup for opacity, reflectiveness, refraction index and something else? (could pack 4 values per pixel in)
   * alternately, could let people specify a texture for those various things.
+* directional lighting support later.  need to basically shoot a ray in the reverse direction towards infinity.  need to know the extents of what to test to make directional lights work so leaving it out for now.
+* see what other kinds of RT effects there are out there besides what's implemented... ask around if needed?
+* interlaced mode if needed as a faster rendering option
+* red/blue 3d mode (screen door render if needed)
+* dispersion / aberation investigation
+* investigate depth of field.  people say you have to cast multiple rays, but maybe you don't if you configure the ray sources correctly?
+* look at generating permutations based on object properties for faster, more custom fit code?  like call a function CubeIntersect_TextureNormal_TextureSpecular()
+ * gotta watch out for instruction cache problems though...
 
+
+
+--GFX SETTINGS
+* let maps turn off gfx settings.  AKA if a map doesn't have any refraction, no need to test for it so turn off the setting.
+* maybe sometime if a texture is lower resolution that our texture setting (like if it's 256x256 and our texture size is 512x512) we can put multiple onto one sheet somehow?  texture coordinates would need to be fixed up somehow
+* window size as a graphics option
+* figure out a decent number to choose for max textures, or make it dynamic in the future or something?
+* graphics setting for whether to use mips for textures or not? currently no mipmaps used
+* graphics option for texture size if doing a 3d texture to hold all the textures, since they have to be the same size
+* graphics option for vsync.  if vsync is on, it will pass (1, 0) to  m_pSwapChain->Present
+* use +/- buttons to increase and decrease render quality (actually maybe just do low, med, high since it needs to recompile the kernel code for each one!)
+* make the max # of textures be a graphics setting?
+* graphics setting for texture sampling options? (linear vs nearest? although it's weird with 3d textures since the other texture shows through)
+* xml file to describe graphics options for now?
+* gamma setting
+* if no reflection or refraction from #define settings, remove loop completely.
+* make an xml settings file and pass those as #defines to the compiler thing?
+* have some way to do autodetection of graphics settings?
+* pass graphics settings as #defines to kernel code
+
+
+--GAME SETTINGS
+* mouse sensitivity / invert mouse settings
+
+
+--DATA SCHEMAS
+* make Field_Schema default work for more than just xml loading.
+* generalize the ID system somehow, the thing that materials use.  need a "material ref" or the like etc.
+* make sure material id (name) is unique.  error on not unique?
+* C# property grid for generic data editor?
+
+
+--CODE
+* texture manager likely doesn't need STexture2d struct since it doesn't use a lot of the fields
+ * similar for cdirectx....
+* load images in another thread or something?
+* make it so we don't update the global root each frame, only when the data actually changes.  That will keep it "cleaner" more often hopefully.
+ * maybe have a shared object struct where things are updated every frame (like, camera position) and another where things are seldom changed?
+* #pragma warning ( disable : 4005 ) // fix this eventually
+* is it better to send the shared data root to kernel as a pointer?
+* some command to reload a map file? (like, pressing R?)
+* handle the warnings under the code analasys option under the build menu
+* improve the video recording quality
+* make the recorded video frame rate be specified in data somewhere
+* put crouch heights and blend time in some kind of data catalog
+* if the window doesn't have focus, i think we shoudl make it sleep (multiplayer?) or just not do rendering (as often?) or something.  it eats up a ton of cpu otherwise
+* should we prevent the issue of moving diagonally being faster?
+* should there be so many static classes? i kinda think not, or they should have real singleton interfaces
+* make asserts show their failed assert? (can do #x in a printf maybe?)
+* should we abstract a hotkey system?  we should properly "refcount" key downs and ups, but key repeat kinda screws that up so need to figure that out.
+* if needed, could break code up into multiple projects to help compile time if it ends up being an issue
+* CDirectX.cpp / .h needs some cleaning up
+* if making a data catalog, allow it to be used for network messages as well
+* make a way (a script for example) to make a publishable build (grabs exe, shared code, kernel code, etc and puts into some folder and possibly zips it up or whatever?)
+* some way to trigger a map reload (need a console?)
+* verify material index is in range before indexing in kernel somehow.  maybe have material zero be the default / error material?
+* do something to make kernel code build errors more obvious, since it exits now before you can read it. like sscanf on build error or something? idk
+* put asserts where needed
+* alt+enter full screen toggle (or at least graphics option)
+* better app title for window?
+* test device lost if still relevant
+* can we do any cpu stuff while waiting on gpu?
+* quaternion camera?  polar coordinate camera may actually be enough.  quaternion would only be needed for flight controls etc
+* attempt to run it on cpu only? might be super super slow, but may be ok at low resolutions and graphics settings?
+* async build of cl scripts... you pass a function pointer to clBuildProgram, it will do this
+* oclCheckErrorEX <-- go away!!
+* can we hide kernelcode/shared include files in the exe or encrypt somehow or something?
+
+
+--OPENCL INVESTIGATION
+* is there a limit to what can be sent to the kernel as arguments? max size or max count?
+* there is some way to get the capabilities of the system, we should probably use that to verify the things we are doing are ok
+* if you change compile defines, will it recompile the script? it better!
+* how do you profile opencl?
+* review the querying and creation of opencl platforms, devices and contexts
+ * make sure doing right and taking advantage of all options.  probably want a graphics option to choose device!
+* see how to get CPU involved.  Maybe having it help would be useful too? dunno.
+ * maybe end user can choose device it runs on somehow...
+* is it running in SLI? how can i check
+* figure out optimizations for kernal (check link in notes).  like maybe do full opts in release mode or something?
+ * make denormals zero! and other nice things
+
+
+--BUGS
+* mouse input doesnt work in 64 bit build
+* build warning about: c:\program files (x86)\microsoft directx sdk (june 2010)\include\dxgitype.h(12): warning C4005: 'DXGI_STATUS_OCCLUDED' : macro redefinition
+
+--PROFILING
+* can you somehow precompile kernel so you dont have to worry about packing and paddnig and shit?
+ * appaerntly yes, but it makes it too device specific.  investigate
+* make a way to show how many ray bounces per pixel for profiling purposes
+* also show how many object tests per pixel (whiter dots = more)
+
+
+--MODELS
 * animated meshes: Have it make bsp trees for each pose?
+
+
+--LUA
+* lua binding so can use this thing from lua and make lots of diff games.
+ * is there a way to protect the lua / opencl or embed it into the exe or something?
+ * lua swig or lua bind (bind not as good apparently)
+
+
+
+
+
 
 =====NOTES=====
 ? is there an instruction limit in opencl?
@@ -180,6 +200,11 @@ NEXT
  * refraction
 
 =====DONE=====
+--11/17/13
+* finished getting bump maps working
+* got emissive texture working
+* make sure all cl_mem objects are getting released properly with clReleaseMemObject
+
 --11/16/13
 * been working on textures, got it working as a 3d texture.  textures need to be square, but they are bilinear filtered to the appropriate texture size.
 

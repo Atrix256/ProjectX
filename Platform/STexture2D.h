@@ -38,6 +38,12 @@ struct STexture2D
 			pTexture->Release();
 			pTexture = NULL;
 		}
+
+		if (clTexture)
+		{
+			clReleaseMemObject(clTexture);
+			clTexture = NULL;
+		}
 	}
 
 	std::string				m_fileName;

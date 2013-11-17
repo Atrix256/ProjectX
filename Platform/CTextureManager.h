@@ -37,17 +37,17 @@ public:
 
 		m_numTextures = 0;
 
+		if(m_clTexture3d)
+		{
+			clReleaseMemObject(m_clTexture3d);
+			m_clTexture3d = NULL;
+		}
+
 		if (m_texture3d)
 		{
 			m_texture3d->Release();
 			m_texture3d = NULL;
 		}
-	}
-
-	cl_mem GetCLTexture (unsigned int index)
-	{
-		Assert_(index < m_numTextures);
-		return m_textures[index].clTexture;
 	}
 
 	cl_mem GetCLTexture3d ()

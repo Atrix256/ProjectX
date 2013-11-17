@@ -33,3 +33,4 @@
 * made a "SSharedDataRoot" that had all constant sized data in it.  pass that as a single param to the kernel program.
  * a shared array class, and a shared object class to hide the details
 * can't pass an array of cl_mem which makes it difficult to do things like pass an array of textures to the kernel (shit!)
+ * worked around texture problem by using a 3d texture.  downside is all textures have to be the same size.  I made the requirement that textures have to be square, make the 3d texture width / height to be the texture size (graphics setting) and use bilinear sampling to resize the textures into the 3d texture array

@@ -338,6 +338,25 @@ void TraceRay (
 
 		__constant const struct SMaterial *material = &materials[collisionInfo.m_materialIndex];
 
+		// handle normal mapping if there is any
+		if (material->m_normalTextureIndex >= 0)
+		{
+			float3 up = {0, 1, 0};
+			float3 uaxis = normalize(cross(up, collisionInfo.m_surfaceNormal));
+			float3 vaxis = normalize(cross(uaxis, collisionInfo.m_surfaceNormal));
+
+			float4 textureCoords = {collisionInfo.m_textureCoordinates.x, collisionInfo.m_textureCoordinates.y, material->m_normalTextureIndex, 0};
+			float3 textureNormal = read_imagef(tex3dIn, g_textureSampler, textureCoords).xyz;
+			textureNormal = normalize(textureNormal * 2.0 - 1.0);
+
+			float3 adjustedNormal;
+			adjustedNormal.x = textureNormal.x * uaxis.x + textureNormal.y * vaxis.x + textureNormal.z * collisionInfo.m_surfaceNormal.x;
+			adjustedNormal.y = textureNormal.x * uaxis.y + textureNormal.y * vaxis.y + textureNormal.z * collisionInfo.m_surfaceNormal.y;
+			adjustedNormal.z = textureNormal.x * uaxis.z + textureNormal.y * vaxis.z + textureNormal.z * collisionInfo.m_surfaceNormal.z;
+
+			collisionInfo.m_surfaceNormal = normalize(adjustedNormal);
+		}
+
 		// get the diffuse color of the object we hit
 		float3 diffuseColorBase = material->m_diffuseColor;
 		if (material->m_diffuseTextureIndex >= 0)
@@ -346,8 +365,16 @@ void TraceRay (
 			diffuseColorBase *= read_imagef(tex3dIn, g_textureSampler, textureCoords).xyz;
 		}
 
+		// get the emissive color of the object we hit
+		float3 emissiveColor = material->m_emissiveColor;
+		if (material->m_emissiveTextureIndex >= 0)
+		{
+			float4 textureCoords = {collisionInfo.m_textureCoordinates.x, collisionInfo.m_textureCoordinates.y, material->m_emissiveTextureIndex, 0};
+			emissiveColor *= read_imagef(tex3dIn, g_textureSampler, textureCoords).xyz;
+		}
+
 		// apply ambient lighting and emissive color
-		float3 diffuseColor = diffuseColorBase * ambientLight + material->m_emissiveColor;
+		float3 diffuseColor = diffuseColorBase * ambientLight + emissiveColor;
 
 		// apply diffuse / specular from a point light
 		for (int lightIndex = 0; lightIndex < dataRoot->m_world.m_numLights; ++lightIndex)

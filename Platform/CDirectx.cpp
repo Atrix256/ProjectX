@@ -337,7 +337,10 @@ void CDirectX::DrawScene (float elapsed)
     m_pd3dDevice->Draw( 3, 0 );
 
     // Present the backbuffer contents to the display
-    m_pSwapChain->Present( 0, 0);
+	if (m_recording)
+		m_pSwapChain->Present( 1, 0);
+	else
+		m_pSwapChain->Present( 0, 0);
 
 	// if we are recording, take a screenshot
 	if (m_recording)

@@ -84,8 +84,6 @@ private:
 		cl_kernel			&ckKernel
 	);
 
-	bool LoadTexture(const char *fileName, ID3D10Texture2D **d3dTexture, cl_mem & clTexture);
-
 private:
 	static CDirectX			s_singleton;
 

@@ -16,7 +16,7 @@ This expands the schemas defined in DataSchemas.h into structs
 	void SetDefault ();
 #define SchemaEnd };
 #define Field(type, name, default)	type m_##name;
-#define Field_Schema(type, name) SData_##type m_##name;
+#define Field_Schema(type, name, default) SData_##type m_##name;
 #define Field_Schema_Array(type, name) std::vector<SData_##type> m_##name;
 
 #include "DataSchemas.h"

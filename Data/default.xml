@@ -5,21 +5,23 @@
   <AmbientLight Value="0.01, 0.01, 0.01"/>
 
   <PointLight Position="5, 2, 0" Color="1, 1, 0.5"/>
-  <PointLight Position="-2, 2, 0" Color="1, 0.5, 1"/>
+  <PointLight Position="-7, 2, 3" Color="1, 0.5, 1"/>
   <PointLight Position="0, 2, 5" Color="0.5, 1, 1"/>
   
-  <Material id="TexturedWall" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="1.0, 1.0, 1.0" SpecularColor="1, 1, 1" SpecularPower="100" EmissiveColor="0, 0, 0" ReflectionAmount="0.5" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="TexturedWall" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="1.0, 1.0, 1.0" SpecularColor="1, 1, 1" SpecularPower="100" EmissiveColor="0, 0, 0" ReflectionAmount="0.25" RefractionIndex="1" RefractionAmount="0"/>
   <Material id="RedReflective" DiffuseColor="0.9, 0.1, 0.1" SpecularColor="1, 1, 1" SpecularPower="28" EmissiveColor="0, 0, 0" ReflectionAmount="1" RefractionIndex="1" RefractionAmount="0"/>
-  <Material id="BlueReflective" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="0.5, 0.5, 0.9" SpecularColor="1, 1, 1" SpecularPower="28" EmissiveColor="0, 0, 0" ReflectionAmount="0.8" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="BlueReflective" DiffuseTexture="Art/grid.png" DiffuseColor="0.5, 0.5, 0.9" SpecularColor="1, 1, 1" SpecularPower="28" EmissiveColor="0, 0, 0" ReflectionAmount="0.8" RefractionIndex="1" RefractionAmount="0"/>
   <Material id="Lense" DiffuseColor="0.1, 0.1, 0.1" SpecularColor="0, 0, 0" SpecularPower="28" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="0.52" RefractionAmount="0.8"/>
   <Material id="YellowLight" DiffuseColor="0, 0, 0" SpecularColor="0, 0, 0" SpecularPower="28" EmissiveColor="1, 1, 0.5" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
   <Material id="PurpleLight" DiffuseColor="0, 0, 0" SpecularColor="0, 0, 0" SpecularPower="28" EmissiveColor="1, 0.5, 1" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
   <Material id="CyanLight" DiffuseColor="0, 0, 0" SpecularColor="0, 0, 0" SpecularPower="28" EmissiveColor="0.5, 1, 1" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
-  <Material id="Floor" DiffuseColor="0.09, 0.075, 0.1" SpecularColor="0, 0, 0" SpecularPower="28" EmissiveColor="0, 0, 0" ReflectionAmount="0.5" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="Floor" DiffuseTexture="Art/grid.png" DiffuseColor="1, 1, 1" SpecularColor="0, 0, 0" SpecularPower="28" EmissiveColor="0, 0, 0" ReflectionAmount="0.5" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="GlassWall" DiffuseColor="0.0, 0.0, 0.0" SpecularColor="0.5, 0.5, 0.5" SpecularPower="28" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="0.9" RefractionAmount="1.0"/>
 
   <Box Position="0, 2, 0" Scale="0.5, 2.0, 0.5" Material="RedReflective" CastShadows="1"/>
-  <Box Position="4, 2, 1.25" Scale="0.25, 2, 2" Material="Textured" CastShadows="true"/>
-  <Box Position="0, 0, 0" Scale="100, 0.0625, 100" Material="Floor" CastShadows="1"/>
+  <Box Position="4, 2, 1.25" Scale="0.25, 2, 2" Material="TexturedWall" CastShadows="true"/>
+  <Box Position="0, 0, 0" Scale="100, 0.0625, 100" Material="Floor" TextureScale="0.125,0.125" CastShadows="1"/>
+  <Box Position="-6, 2, 3" Scale="0.25, 2, 2" Material="GlassWall" CastShadows="false"/>
 
   <Sphere Position="2, 2.5, 2" Radius="0.5" Material="RedReflective" CastShadows="1"/>
   <Sphere Position="-1, 1, 5" Radius="1" Material="BlueReflective" CastShadows="1"/>
@@ -34,6 +36,6 @@
 
   <!--spheres to show where the point lights are.  they dont cast shadows and have emissive colored materials-->
   <Sphere Position="5, 2, 0" Radius="0.05" Material="YellowLight" CastShadows="0"/>
-  <Sphere Position="-2, 2, 0" Radius="0.05" Material="PurpleLight" CastShadows="false"/>
+  <Sphere Position="-7, 2, 3" Radius="0.05" Material="PurpleLight" CastShadows="false"/>
   <Sphere Position="0, 2, 5" Radius="0.05" Material="CyanLight" CastShadows="0"/>
 </World>

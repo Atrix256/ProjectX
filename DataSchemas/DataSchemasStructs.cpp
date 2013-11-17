@@ -11,7 +11,7 @@ This expands the schemas defined in DataSchemas.h into structs
 #define SchemaBegin(name) void SData_##name::SetDefault () {
 #define SchemaEnd }
 #define Field(type, name, default)	m_##name = default;
-#define Field_Schema(type, name) m_##name.SetDefault();
+#define Field_Schema(type, name, default) m_##name.SetDefault();
 #define Field_Schema_Array(type, name) m_##name.clear();
 
 #include "DataSchemas.h"

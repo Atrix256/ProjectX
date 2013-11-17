@@ -18,7 +18,14 @@ Data structure for 2D texture shared between DX and CL
 
 struct STexture2D
 {
-	void Release()
+	STexture2D ()
+	{
+		pTexture = NULL;
+		pSRView = NULL;
+		clTexture = NULL;
+	}
+
+	void Release ()
 	{
 		if (pSRView)
 		{

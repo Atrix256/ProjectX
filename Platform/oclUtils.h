@@ -15,6 +15,8 @@
 #ifndef OCL_UTILS_H
 #define OCL_UTILS_H
 
+#include "Assert.h"
+
 // *********************************************************************
 // Utilities specific to OpenCL samples in NVIDIA GPU Computing SDK 
 // *********************************************************************
@@ -179,6 +181,7 @@ inline void __oclCheckErrorEX(cl_int iSample, cl_int iReference, void (*pCleanup
     // An error condition is defined by the sample/test value not equal to the reference
     if (iReference != iSample)
     {
+		Assert_(false);
         // If the sample/test value isn't equal to the ref, it's an error by defnition, so override 0 sample/test value
         iSample = (iSample == 0) ? -9999 : iSample; 
 

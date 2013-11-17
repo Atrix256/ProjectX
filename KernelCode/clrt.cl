@@ -29,10 +29,10 @@ bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollis
 	if (ignorePrimitiveId == sphere->m_objectId)
 		return false;
 
-	//get the vector from the center of this circle to where the ray begins.
+	// get the vector from the center of this circle to where the ray begins.
 	float3 m = rayPos - sphere->m_positionAndRadius.xyz;
 
-    //get the dot product of the above vector and the ray's vector
+    // get the dot product of the above vector and the ray's vector
 	float b = dot(m, rayDir);
 
 	float c = dot(m, m) - sphere->m_positionAndRadius.w * sphere->m_positionAndRadius.w;
@@ -80,6 +80,7 @@ bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollis
 	// texture coordinates are just the angular part of spherical coordiantes of normal
 	info->m_textureCoordinates.x = atan2(info->m_surfaceNormal.y, info->m_surfaceNormal.x);
 	info->m_textureCoordinates.y = acos(info->m_surfaceNormal.z );
+	info->m_textureCoordinates *= sphere->m_textureScale;
 
 	// we found a hit!
 	info->m_objectHit = sphere->m_objectId;
@@ -191,6 +192,7 @@ bool RayIntersectAABox (__constant const struct SAABox *box, struct SCollisionIn
 	float3 relPoint = info->m_intersectionPoint - box->m_position;
 	info->m_textureCoordinates.x = dot(relPoint, uaxis);
 	info->m_textureCoordinates.y = dot(relPoint, vaxis);
+	info->m_textureCoordinates *= box->m_textureScale;
 
 	// we found a hit!
 	info->m_objectHit = box->m_objectId;
@@ -291,7 +293,7 @@ void ApplyPointLight (
 
 void TraceRay (
 	__constant struct SSharedDataRoot *dataRoot,
-	__read_only image2d_t texIn,
+	__read_only image3d_t tex3dIn,
 	float3 rayPos,
 	float3 rayDir,
 	float3 *pixelColor,
@@ -338,8 +340,11 @@ void TraceRay (
 
 		// get the diffuse color of the object we hit
 		float3 diffuseColorBase = material->m_diffuseColor;
-		if (material->m_diffuseTextureIndex != 0)
-			diffuseColorBase *= read_imagef(texIn, g_textureSampler, collisionInfo.m_textureCoordinates).xyz;
+		if (material->m_diffuseTextureIndex >= 0)
+		{
+			float4 textureCoords = {collisionInfo.m_textureCoordinates.x, collisionInfo.m_textureCoordinates.y, material->m_diffuseTextureIndex, 0};
+			diffuseColorBase *= read_imagef(tex3dIn, g_textureSampler, textureCoords).xyz;
+		}
 
 		// apply ambient lighting and emissive color
 		float3 diffuseColor = diffuseColorBase * ambientLight + material->m_emissiveColor;
@@ -396,7 +401,7 @@ void TraceRay (
 
 __kernel void clrt (
 	__write_only image2d_t texOut, 
-	__read_only image2d_t texIn, 
+	__read_only image3d_t tex3dIn,
 	__constant struct SSharedDataRoot *dataRoot,
 	__constant struct SPointLight *lights,
 	__constant struct SSphere *spheres,
@@ -421,6 +426,6 @@ __kernel void clrt (
 
 	// trace the ray
 	float3 color = (float3)(0);
-	TraceRay(dataRoot, texIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, materials);
+	TraceRay(dataRoot, tex3dIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, materials);
 	write_imagef(texOut, coord, (float4)(color, 1.0)); 
 }

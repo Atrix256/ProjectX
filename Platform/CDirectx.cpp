@@ -600,42 +600,20 @@ HRESULT CDirectX::CreateKernelProgram(
 }
 
 //-----------------------------------------------------------------------------
-bool CDirectX::LoadTexture(const char *fileName, ID3D10Texture2D **d3dTexture, cl_mem & clTexture)
-{
-	*d3dTexture = NULL;
-	if(FAILED(D3DX10CreateTextureFromFile( m_pd3dDevice, fileName, NULL, NULL, (ID3D10Resource**)d3dTexture, NULL )))
-		return false;
-
-	int ciErrNum = 0;
-	clTexture = m_clCreateFromD3D10Texture2DKHR(
-		m_cxGPUContext,
-		CL_MEM_READ_ONLY,
-		*d3dTexture,
-		0,
-		&ciErrNum
-	);
-
-	return ciErrNum == CL_SUCCESS;
-}
-
-//-----------------------------------------------------------------------------
 void CDirectX::AcquireTexturesForOpenCL()
 {
 	cl_event event;
-	cl_mem memToAcquire[1 + CTextureManager::c_maxTextures];
+	cl_mem memToAcquire[1];
 	memToAcquire[0] = m_texture_2d.clTexture;
-	for (unsigned int index = 0, count = m_textureManager.NumTextures(); index < count; ++index)
-		memToAcquire[1 + index] = m_textureManager.GetCLTexture(index);
 
-    // do the acquire
+	// do the acquire
     cl_int ciErrNum = m_clEnqueueAcquireD3D10ObjectsKHR(
         m_cqCommandQueue,
-        1 + m_textureManager.NumTextures(),
+        1,
         memToAcquire,
         0,
         NULL,
         &event);
-	//oclCheckErrorEX(ciErrNum, CL_SUCCESS, pCleanup);
 	oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
     // make sure the event type is correct
@@ -659,15 +637,13 @@ void CDirectX::AcquireTexturesForOpenCL()
 void CDirectX::ReleaseTexturesFromOpenCL()
 {
 	cl_event event;
-	cl_mem memToAcquire[1 + CTextureManager::c_maxTextures];
+	cl_mem memToAcquire[1];
 	memToAcquire[0] = m_texture_2d.clTexture;
-	for (unsigned int index = 0, count = m_textureManager.NumTextures(); index < count; ++index)
-		memToAcquire[1 + index] = m_textureManager.GetCLTexture(index);
 
     // do the acquire
     cl_int ciErrNum = m_clEnqueueReleaseD3D10ObjectsKHR(
         m_cqCommandQueue,
-		1 + m_textureManager.NumTextures(), // tex2d
+		1,
         memToAcquire,
         0,
         NULL,
@@ -732,8 +708,8 @@ void CDirectX::RunKernels(float elapsed)
 		cl_int ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(m_texture_2d.clTexture), (void *) &(m_texture_2d.clTexture));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
-		cl_mem texture = m_textureManager.NumTextures() > 0 ? m_textureManager.GetCLTexture(0) : m_texture_2d.clTexture;
-		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(texture), &texture);
+		cl_mem texture3d = m_textureManager.GetCLTexture3d();
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(texture3d), &texture3d);
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
 		CSharedObject<SSharedDataRoot> &sharedDataRoot = SSharedDataRoot::Get();

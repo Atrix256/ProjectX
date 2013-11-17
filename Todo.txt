@@ -10,9 +10,27 @@ TO "SHIP" TO TEAM
 
 NEXT
 * walk on boxes, under objects, can't walk through walls?
-* textures and bumpmapping
- * need to generalize textures so you can have N textures instead of just 1.
+* make sure all cl_mem objects are getting released properly with clReleaseMemObject
+* normal texturing for bump maps
 
+
+
+* why dont things show up when reflected on something that is pure white? it looks wrong...
+* when something is black, it still reflects full on, which looks weird sometimes
+
+* we need to look at having "reflection color" instead of reflection amount.  same for other "amount" things?
+* make a fallback for when graphics options are off? like if no textures, set the diffuse color to something to aproximate it?
+* make Field_Schema default work for more than just xml loading.
+* figure out a decent number to choose for max textures, or make it dynamic in the future or something?
+* try out emissive textures
+* specular textures
+* refraction index textures?
+* texture manager likely doesn't need STexture2d struct since it doesn't use a lot of the fields
+ * similar for cdirectx....
+* graphics setting for whether to use mips for textures or not? currently no mipmaps used
+* graphics option for texture size if doing a 3d texture to hold all the textures, since they have to be the same size
+* graphics option for vsync.  if vsync is on, it will pass (1, 0) to  m_pSwapChain->Present
+* use +/- buttons to increase and decrease render quality (actually maybe just do low, med, high since it needs to recompile the kernel code for each one!)
 * you get really neat effects if you texture things with the same texture you are rendering to!
 * make the max # of textures be a graphics setting?
 * graphics setting for texture sampling options
@@ -162,6 +180,9 @@ NEXT
  * refraction
 
 =====DONE=====
+--11/16/13
+* been working on textures, got it working as a 3d texture.  textures need to be square, but they are bilinear filtered to the appropriate texture size.
+
 --11/13/13
 * got formalized schema based xml parser done... been working on it on and off the last several days
 * organized and cleaned up the code a bit

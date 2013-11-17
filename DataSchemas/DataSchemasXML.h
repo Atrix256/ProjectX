@@ -97,6 +97,16 @@ namespace DataSchemasXML {
 	}
 
 	template <>
+	inline bool LoadFromString<SData_Vec2> (SData_Vec2 &data, const char *stringData)
+	{
+		if (sscanf(stringData, "%f, %f", &data.m_x, &data.m_y) == 2)
+			return true;
+
+		XMLError(__FUNCTION__" failure");
+		return false;
+	}
+
+	template <>
 	inline bool LoadFromString<SData_Vec3> (SData_Vec3 &data, const char *stringData)
 	{
 		if (sscanf(stringData, "%f, %f, %f", &data.m_x, &data.m_y, &data.m_z) == 3)
@@ -175,8 +185,12 @@ namespace DataSchemasXML {
 				return false; \
 			} \
 		}
-#define Field_Schema(type, name) \
+#define Field_Schema(type, name, default) \
 		XMLLog(__FUNCTION__" attempting to load schema field '%s'", #name); \
+		if (default != NULL && !LoadFromString(data.m_##name, default)) { \
+			XMLError(__FUNCTION__" failed to load schema field '%s' default value from string", #name); \
+			return false; \
+		} \
 		attr = node->FindAttribute(#name); \
 		if (attr) \
 		{ \

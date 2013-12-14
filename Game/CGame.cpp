@@ -9,11 +9,19 @@ The root class for game logic
 #include "CGame.h"
 
 CPlayer CGame::m_player;
+float CGame::m_timeBucket = 0.0f;
+const float CGame::c_gameLogicInterval = 1.0f / 60.0f;
 
 //--------------------------------------------------------------------------------------------------
 void CGame::Update(float elapsed)
 {
-	m_player.Update(elapsed);
+	m_timeBucket += elapsed;
+
+	while (m_timeBucket > c_gameLogicInterval)
+	{
+		m_player.Update(c_gameLogicInterval);
+		m_timeBucket -= c_gameLogicInterval;
+	}
 }
 
 //--------------------------------------------------------------------------------------------------

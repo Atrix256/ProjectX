@@ -20,6 +20,8 @@ struct SCollisionInfo
 	float3				m_intersectionPoint;
 	float				m_intersectionTime;
 	float3				m_surfaceNormal;
+	float3				m_surfaceU;
+	float3				m_surfaceV;
 	float2				m_textureCoordinates;
 	unsigned int		m_materialIndex;
 };
@@ -76,6 +78,11 @@ bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollis
 	// calculate the normal
 	info->m_surfaceNormal = info->m_intersectionPoint - sphere->m_positionAndRadius.xyz;
 	info->m_surfaceNormal = normalize(info->m_surfaceNormal);
+
+	// calculate U and V
+	float3 up = {0, 1, 0};
+	info->m_surfaceU = normalize(cross(up, info->m_surfaceNormal));
+	info->m_surfaceV = normalize(cross(info->m_surfaceU, info->m_surfaceNormal));
 
 	// texture coordinates are just the angular part of spherical coordiantes of normal
 	info->m_textureCoordinates.x = atan2(info->m_surfaceNormal.y, info->m_surfaceNormal.x);
@@ -162,32 +169,43 @@ bool RayIntersectAABox (__constant const struct SAABox *box, struct SCollisionIn
 		{
 			closestAxis = axis;
 			closestDist = distFromEdge;
-			info->m_surfaceNormal = (float3)( 0.0f, 0.0f, 0.0f);
-			if(((float*)&info->m_intersectionPoint)[axis] < ((__constant float*)&box->m_position)[axis])
-				((float*)&info->m_surfaceNormal)[axis] = -1.0;
-			else
-				((float*)&info->m_surfaceNormal)[axis] =  1.0;
 		}
 	}
 
+	float multiplier = 1.0f;
+	info->m_surfaceNormal = (float3)( 0.0f, 0.0f, 0.0f);
+	if(((float*)&info->m_intersectionPoint)[closestAxis] < ((__constant float*)&box->m_position)[closestAxis])
+	{
+		multiplier = -1.0f;
+		((float*)&info->m_surfaceNormal)[closestAxis] = -1.0;
+	}
+	else
+	{
+		((float*)&info->m_surfaceNormal)[closestAxis] =  1.0;
+	}
+
 	// texture coordinates 
-	float3 uaxis = {1.0,0.0,0.0};
-	float3 vaxis = {0.0,1.0,0.0};
+	float3 uaxis = {0.0,0.0,0.0};
+	float3 vaxis = {0.0,0.0,0.0};
 	
 	if (closestAxis == 0)
 	{
-		float3 u = { 0.0,1.0,0.0 };
-		float3 v = { 0.0,0.0,1.0 };
-		uaxis = u;
-		vaxis = v;
+		uaxis.z = multiplier;
+		vaxis.y = -1.0f;
 	}
 	else if (closestAxis == 1)
 	{
-		float3 u = { 1.0,0.0,0.0 };
-		float3 v = { 0.0,0.0,1.0 };
-		uaxis = u;
-		vaxis = v;
+		uaxis.z = multiplier * -1.0f;
+		vaxis.x = -1.0f;
 	}
+	else
+	{
+		uaxis.x = multiplier * -1.0f;
+		vaxis.y = -1.0f;
+	}
+
+	info->m_surfaceU = uaxis;
+	info->m_surfaceV = vaxis;
 	
 	float3 relPoint = info->m_intersectionPoint - box->m_position;
 	info->m_textureCoordinates.x = dot(relPoint, uaxis);
@@ -197,6 +215,58 @@ bool RayIntersectAABox (__constant const struct SAABox *box, struct SCollisionIn
 	// we found a hit!
 	info->m_objectHit = box->m_objectId;
 	return true;	
+}
+
+bool RayIntersectPlane (__constant const struct SPlane *plane, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
+{
+	if (ignorePrimitiveId == plane->m_objectId)
+		return false;
+
+	float denom = dot(plane->m_equation.xyz, rayDir);
+
+	// ray is paralel.  Could do >= for "back face culling".  BFC would be a nice feature
+	// except for objects that want transparency.
+	if (denom == 0)
+		return false;
+
+	float num = -(dot(plane->m_equation.xyz, rayPos) + plane->m_equation.w);
+
+	//t = - (n·org +D) / (n·dir)
+	float collisionTime = num / denom;
+
+	if (collisionTime < 0)
+		return false;
+
+	//enforce max distance
+	if(collisionTime > info->m_intersectionTime)
+		return false;
+
+	// set all the info params since we are garaunteed a hit at this point
+	info->m_materialIndex = plane->m_materialIndex;
+
+	// see if we are inside or not (in the negative half space)
+	info->m_fromInside = denom > 0;
+
+	//compute the point of intersection
+	info->m_intersectionPoint = rayPos + rayDir * collisionTime;
+	info->m_intersectionTime = collisionTime;
+
+	// calculate the normal
+	info->m_surfaceNormal = plane->m_equation.xyz;
+
+	// calculate U and V
+	info->m_surfaceU = plane->m_UAxis;
+	info->m_surfaceV = normalize(cross(info->m_surfaceU, info->m_surfaceNormal));
+
+	// texture coordinates are just the angular part of spherical coordiantes of normal
+	info->m_textureCoordinates.x = dot(info->m_intersectionPoint, info->m_surfaceU);
+	info->m_textureCoordinates.y = dot(info->m_intersectionPoint, info->m_surfaceV);
+	info->m_textureCoordinates *= plane->m_textureScale;
+
+	// we found a hit!
+	info->m_objectHit = plane->m_objectId;
+	return true;	
+
 }
 
 float3 reflect(float3 V, float3 N)
@@ -218,7 +288,9 @@ bool PointCanSeePoint(
 	int numSpheres,
 	__constant struct SSphere *spheres,
 	int numBoxes,
-	__constant struct SAABox *boxes
+	__constant struct SAABox *boxes,
+	int numPlanes,
+	__constant struct SPlane *planes
 )
 {
 	// see if we can hit the target point from the starting point
@@ -228,6 +300,8 @@ bool PointCanSeePoint(
 		false,
 		{ 0.0f, 0.0f, 0.0f },
 		FLT_MAX,
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 0.0f },
 		0,
@@ -249,6 +323,12 @@ bool PointCanSeePoint(
 			return false;
 	}
 
+	for (int planeIndex = 0; planeIndex < numPlanes; ++planeIndex) {
+		if (planes[planeIndex].m_castsShadows
+		 && RayIntersectPlane(&planes[planeIndex], &collisionInfo, startPos, rayDir, ignorePrimitiveId))
+			return false;
+	}
+
 	// if no hit, set pixel to ambient light and bail out
 	return true;
 }
@@ -264,6 +344,8 @@ void ApplyPointLight (
 	__constant struct SSphere *spheres,
 	int numBoxes,
 	__constant struct SAABox *boxes,
+	int numPlanes,
+	__constant struct SPlane *planes,
 	float3 diffuseColor
 )
 {
@@ -274,7 +356,9 @@ void ApplyPointLight (
 		numSpheres,
 		spheres,
 		numBoxes,
-		boxes)
+		boxes,
+		numPlanes,
+		planes)
 	)
 		return;
 
@@ -300,6 +384,7 @@ void TraceRay (
 	__constant struct SPointLight *lights,
 	__constant struct SSphere *spheres,
 	__constant struct SAABox *boxes,
+	__constant struct SPlane *planes,
 	__constant struct SMaterial *materials
 )
 {
@@ -319,6 +404,8 @@ void TraceRay (
 			{ 0.0f, 0.0f, 0.0f },
 			FLT_MAX,
 			{ 0.0f, 0.0f, 0.0f },
+			{ 0.0f, 0.0f, 0.0f },
+			{ 0.0f, 0.0f, 0.0f },
 			{ 0.0f, 0.0f },
 			0,
 		};
@@ -329,6 +416,9 @@ void TraceRay (
 		for (int boxIndex = 0; boxIndex < dataRoot->m_world.m_numBoxes; ++boxIndex)
 			RayIntersectAABox(&boxes[boxIndex], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
 
+		for (int planeIndex = 0; planeIndex < dataRoot->m_world.m_numPlanes; ++planeIndex)
+			RayIntersectPlane(&planes[planeIndex], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
+
 		// if no hit, set pixel to ambient light and bail out
 		if (collisionInfo.m_objectHit == c_invalidObjectId)
 		{
@@ -338,21 +428,21 @@ void TraceRay (
 
 		__constant const struct SMaterial *material = &materials[collisionInfo.m_materialIndex];
 
+		if (collisionInfo.m_fromInside)
+			collisionInfo.m_surfaceNormal *= -1.0f;
+
 		// handle normal mapping if there is any
 		if (material->m_normalTextureIndex >= 0)
 		{
-			float3 up = {0, 1, 0};
-			float3 uaxis = normalize(cross(up, collisionInfo.m_surfaceNormal));
-			float3 vaxis = normalize(cross(uaxis, collisionInfo.m_surfaceNormal));
-
 			float4 textureCoords = {collisionInfo.m_textureCoordinates.x, collisionInfo.m_textureCoordinates.y, material->m_normalTextureIndex, 0};
 			float3 textureNormal = read_imagef(tex3dIn, g_textureSampler, textureCoords).xyz;
+
 			textureNormal = normalize(textureNormal * 2.0 - 1.0);
 
 			float3 adjustedNormal;
-			adjustedNormal.x = textureNormal.x * uaxis.x + textureNormal.y * vaxis.x + textureNormal.z * collisionInfo.m_surfaceNormal.x;
-			adjustedNormal.y = textureNormal.x * uaxis.y + textureNormal.y * vaxis.y + textureNormal.z * collisionInfo.m_surfaceNormal.y;
-			adjustedNormal.z = textureNormal.x * uaxis.z + textureNormal.y * vaxis.z + textureNormal.z * collisionInfo.m_surfaceNormal.z;
+			adjustedNormal.x = textureNormal.x * collisionInfo.m_surfaceU.x + textureNormal.y * collisionInfo.m_surfaceV.x + textureNormal.z * collisionInfo.m_surfaceNormal.x;
+			adjustedNormal.y = textureNormal.x * collisionInfo.m_surfaceU.y + textureNormal.y * collisionInfo.m_surfaceV.y + textureNormal.z * collisionInfo.m_surfaceNormal.y;
+			adjustedNormal.z = textureNormal.x * collisionInfo.m_surfaceU.z + textureNormal.y * collisionInfo.m_surfaceV.z + textureNormal.z * collisionInfo.m_surfaceNormal.z;
 
 			collisionInfo.m_surfaceNormal = normalize(adjustedNormal);
 		}
@@ -389,6 +479,8 @@ void TraceRay (
 				spheres,
 				dataRoot->m_world.m_numBoxes,
 				boxes,
+				dataRoot->m_world.m_numPlanes,
+				planes,
 				diffuseColorBase
 			);
 
@@ -406,10 +498,7 @@ void TraceRay (
 		}
 		// if refractive, set up the refracted ray
 		else if (material->m_refractionAmount > 0.0f)
-		{
-			if (collisionInfo.m_fromInside)
-				collisionInfo.m_surfaceNormal *= -1.0f;
-				
+		{				
 			// if we are entering a refractive object, we can't ignore it since we need to go out the back
 			// side possibly.  Since we can't ignore it, we need to push a little bit past the point of
 			// intersection so we don't intersect it again.
@@ -433,6 +522,7 @@ __kernel void clrt (
 	__constant struct SPointLight *lights,
 	__constant struct SSphere *spheres,
 	__constant struct SAABox *boxes,
+	__constant struct SPlane *planes,
 	__constant struct SMaterial *materials
 )
 {
@@ -453,6 +543,6 @@ __kernel void clrt (
 
 	// trace the ray
 	float3 color = (float3)(0);
-	TraceRay(dataRoot, tex3dIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, materials);
+	TraceRay(dataRoot, tex3dIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, planes, materials);
 	write_imagef(texOut, coord, (float4)(color, 1.0)); 
 }

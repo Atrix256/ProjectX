@@ -65,6 +65,21 @@ struct SAABox
 	cl_uint m_pack2;
 };
 
+struct SPlane
+{
+	cl_float4 m_equation;
+	float3 m_UAxis;
+	cl_float2 m_textureScale;
+	cl_float2 m_pack3;
+	cl_uint m_materialIndex;
+	TObjectId m_objectId;
+	cl_uchar m_castsShadows;
+	cl_uchar m_pack1b;
+	cl_uchar m_pack1c;
+	cl_uchar m_pack1d;
+	cl_uint m_pack2;
+};
+
 struct SPointLight
 {
 	float3 m_position;

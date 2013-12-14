@@ -126,6 +126,54 @@ bool CWorld::Load(const char *worldFileName)
 		}
 	}
 
+	// planes
+	m_planes.Resize(worldData.m_Plane.size());
+	for (unsigned int index = 0, count = worldData.m_Plane.size(); index < count; ++index)
+	{
+		m_planes[index].m_objectId = nextObjectId++;
+		Copy(m_planes[index].m_equation, worldData.m_Plane[index].m_Normal, worldData.m_Plane[index].m_D);
+		Copy(m_planes[index].m_UAxis, worldData.m_Plane[index].m_UAxis);
+		m_planes[index].m_castsShadows = worldData.m_Plane[index].m_CastShadows;
+		Copy(m_planes[index].m_textureScale, worldData.m_Plane[index].m_TextureScale);
+
+		// make sure the normal is normalized in the equation
+		float mag = sqrtf(
+			m_planes[index].m_equation.s[0] * m_planes[index].m_equation.s[0] + 
+			m_planes[index].m_equation.s[1] * m_planes[index].m_equation.s[1] + 
+			m_planes[index].m_equation.s[2] * m_planes[index].m_equation.s[2]);
+
+		if (mag != 0)
+		{
+			m_planes[index].m_equation.s[0] /= mag;
+			m_planes[index].m_equation.s[1] /= mag;
+			m_planes[index].m_equation.s[2] /= mag;
+		}
+
+		// normalize the UAxis
+		mag = sqrtf(
+			m_planes[index].m_UAxis[0] * m_planes[index].m_UAxis[0] + 
+			m_planes[index].m_UAxis[1] * m_planes[index].m_UAxis[1] + 
+			m_planes[index].m_UAxis[2] * m_planes[index].m_UAxis[2]);
+
+		if (mag != 0)
+		{
+			m_planes[index].m_UAxis[0] /= mag;
+			m_planes[index].m_UAxis[1] /= mag;
+			m_planes[index].m_UAxis[2] /= mag;
+		}
+
+		// set the material index
+		m_planes[index].m_materialIndex = 0;
+		for(unsigned int matIndex = 0, matCount = worldData.m_Material.size(); matIndex < matCount; ++matIndex)
+		{
+			if (!stricmp(worldData.m_Plane[index].m_Material.c_str(), worldData.m_Material[matIndex].m_id.c_str()))
+			{
+				m_planes[index].m_materialIndex = matIndex;
+				break;
+			}
+		}
+	}
+
 	// calculate our texture indices
 	for (unsigned int index = 0, count = worldData.m_Material.size(); index < count; ++index)
 	{
@@ -148,6 +196,7 @@ bool CWorld::Load(const char *worldFileName)
 	worldShared.m_numLights = m_pointLights.Count();
 	worldShared.m_numSpheres = m_spheres.Count();
 	worldShared.m_numBoxes = m_boxes.Count();
+	worldShared.m_numPlanes = m_planes.Count();
 	worldShared.m_numMaterials = m_materials.Count();
 
 	return true;

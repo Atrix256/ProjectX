@@ -64,6 +64,15 @@ SchemaBegin(Sphere)
 	Field(bool, CastShadows, true)
 SchemaEnd
 
+SchemaBegin(Plane)
+	Field_Schema(Vec3, Normal, "0,0,0")
+	Field_Schema(Vec3, UAxis, "0,0,0")
+	Field(float, D, 0.0f)
+	Field(std::string, Material, "")
+	Field_Schema(Vec2, TextureScale, "1,1")
+	Field(bool, CastShadows, true)
+SchemaEnd
+
 SchemaBegin(World)
 	Field_Schema(Vec3, StartPoint, "0,0,0")
 	Field(float, StartFacing, 0.0f)
@@ -72,4 +81,5 @@ SchemaBegin(World)
 	Field_Schema_Array(Material, Material)
 	Field_Schema_Array(Box, Box)
 	Field_Schema_Array(Sphere, Sphere)
+	Field_Schema_Array(Plane, Plane)
 SchemaEnd

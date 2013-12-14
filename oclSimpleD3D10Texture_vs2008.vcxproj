@@ -251,9 +251,12 @@
     <Text Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Xml Include="Data\basictexturing.xml" />
     <Xml Include="Data\default.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="Data\FPSLevel.xml" />
+    <Xml Include="Data\showroom.xml" />
     <Xml Include="Data\simple.xml" />
   </ItemGroup>
   <ItemGroup>

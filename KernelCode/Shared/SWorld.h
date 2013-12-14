@@ -20,5 +20,6 @@ struct SWorld
 	cl_int m_numLights;
 	cl_int m_numSpheres;
 	cl_int m_numBoxes;
+	cl_int m_numPlanes;
 	cl_int m_numMaterials;
 };

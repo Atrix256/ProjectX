@@ -137,6 +137,15 @@
     <Xml Include="Data\simple.xml">
       <Filter>Data</Filter>
     </Xml>
+    <Xml Include="Data\basictexturing.xml">
+      <Filter>Data</Filter>
+    </Xml>
+    <Xml Include="Data\showroom.xml">
+      <Filter>Data</Filter>
+    </Xml>
+    <Xml Include="Data\FPSLevel.xml">
+      <Filter>Data</Filter>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
     <None Include="KernelCode\clrt.cl">

@@ -23,6 +23,7 @@ public:
 		m_pointLights.Release();
 		m_spheres.Release();
 		m_boxes.Release();
+		m_planes.Release();
 		m_materials.Release();
 	}
 
@@ -34,5 +35,6 @@ private:
 	CSharedArray<SPointLight>	m_pointLights;
 	CSharedArray<SSphere>		m_spheres;
 	CSharedArray<SAABox>		m_boxes;
+	CSharedArray<SPlane>		m_planes;
 	CSharedArray<SMaterial>		m_materials;
 };

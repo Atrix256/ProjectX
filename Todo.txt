@@ -9,13 +9,25 @@ TO "SHIP" TO TEAM
 
 
 NEXT
+* BSP!
+* back face culling for bsp test?
 * collision detection: walk on boxes, under objects, can't walk through walls?
 * make a more "FPS-ish" type map instead of a raytracing showroom map
 * make better geometry support - bsp , possibly model loading etc
-
-
+ * oriented boxes, triangles, bsp
+* static vs dyanmic objects in maps
+ * Static objects get made into bsp.  Dynamic objects get put into bsp in dynamic list.
+ * Spheres can't be static?
+* "baked cache" - for bsp and such.  if it's out of date (hash is different, non existant or whatever) it builds it.
+ * can use this to do "bake time" operations as well.
+ * could use this time to figure out average color of a texture, for "backup color" of objects for when textures are off!
+ 
 
 --RENDERING
+* we could do back face culling for objects that aren't transparent (esp planes)
+* smoothish bump maps + reflection shows how the bump maps are somehow inherantly fucked up
+* bump mapping doesn't look quite right... something is wrong with it.
+* get full screen working
 * why dont things show up when reflected on something that is pure white? it looks wrong...
 * when something is black, it still reflects full on, which looks weird sometimes
 * we need to look at having "reflection color" instead of reflection amount.  same for other "amount" things?
@@ -60,7 +72,17 @@ NEXT
 * investigate depth of field.  people say you have to cast multiple rays, but maybe you don't if you configure the ray sources correctly?
 * look at generating permutations based on object properties for faster, more custom fit code?  like call a function CubeIntersect_TextureNormal_TextureSpecular()
  * gotta watch out for instruction cache problems though...
+* when doing normal mapping, it's crossing against (0, 1, 0) which doesn't work for flat surfaces.  need to figure out how to fix that.
+* decal textures? both diffuse and normal maps, maybe other kinds too
+* investigate iridescence
+* rainy sidewalks have a reflectivity texture map
+* rainty/watery window has animated normal map on refractive glass
+* could mess w/ fish eye lense by changing the "camera distance" to a less good value
+* oriented objects can be sphere tested as a first step, since they will have a set radius where the farthest corner sticks out.
 
+
+--GAMEPLAY
+* maybe "named dynamic objects" list to more quickly find named objects?
 
 
 --GFX SETTINGS
@@ -200,6 +222,17 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--12/13/13
+* continued work on plane primitive for bsp
+
+--12/12/13
+* added plane primitive in preperation of BSP, some work left to do
+
+--12/10/13
+* fixed timestep logic - so you dont have times that you can jump higher etc
+* made collision info contain surface normal as well as U and V vectors
+
 --11/17/13
 * finished getting bump maps working
 * got emissive texture working

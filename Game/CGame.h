@@ -19,4 +19,7 @@ public:
 
 private:
 	static CPlayer m_player;
+	static float m_timeBucket;
+
+	static const float c_gameLogicInterval;
 };

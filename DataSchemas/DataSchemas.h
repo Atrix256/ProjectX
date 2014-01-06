@@ -14,9 +14,18 @@ Field_Schema(type, name, default) - define a field in the schema that is of a ty
 	schema.  If you give a string for default it will try to load it as a string.  If you give a null
 	it won't try to load a default.  Note the default only works for xml loaded objects.
 
-Field_Schema_Array(type, name) - define a field in the schema that is an array of schema types
+Field_Schema_Array(type, name) - define a field in the schema that is an array of schema types.
+	Note that if the type has a field named "id", it will enforce that the id is unique on load,
+	and the type will be usable with the SData::GetEntryById() function.
 
 ==================================================================================================*/
+
+SchemaBegin(Vec4)
+	Field(float, x, 0.0f)
+	Field(float, y, 0.0f)
+	Field(float, z, 0.0f)
+	Field(float, w, 0.0f)
+SchemaEnd
 
 SchemaBegin(Vec3)
 	Field(float, x, 0.0f)
@@ -73,6 +82,22 @@ SchemaBegin(Plane)
 	Field(bool, CastShadows, true)
 SchemaEnd
 
+SchemaBegin(SectorPlane)
+	Field_Schema(Vec3, Normal, "0,0,0")
+	Field_Schema(Vec3, UAxis, "0,0,0")
+	Field(float, D, 0.0f)
+	Field(std::string, Material, "")
+	Field_Schema(Vec2, TextureScale, "1,1")
+	Field(std::string, PortalNextSector, "")
+	Field_Schema(Vec4, PortalWindow, "-10000,-10000,10000,10000")
+SchemaEnd
+
+SchemaBegin(Sector)
+	Field(std::string, id, "")
+	Field_Schema_Array(SectorPlane, Plane)
+	Field(bool, CastShadows, true)
+SchemaEnd
+
 SchemaBegin(World)
 	Field_Schema(Vec3, StartPoint, "0,0,0")
 	Field(float, StartFacing, 0.0f)
@@ -82,4 +107,5 @@ SchemaBegin(World)
 	Field_Schema_Array(Box, Box)
 	Field_Schema_Array(Sphere, Sphere)
 	Field_Schema_Array(Plane, Plane)
+	Field_Schema_Array(Sector, Sector)
 SchemaEnd

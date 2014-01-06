@@ -45,6 +45,23 @@ This expands the schemas defined in DataSchemas.h into xml parsing code
 
 namespace DataSchemasXML {
 
+	// schemas which have an 'id' field should have unique or empty id's for each entry
+	inline bool EnforceUniqueIds(...) { return true; }
+	template <typename T> 
+	inline bool EnforceUniqueIds(std::vector<T>& data, const char *schemaName, const char *fieldName, decltype(T::m_id) *p = NULL)
+	{
+		bool idsAreUnique = true;
+		for (unsigned int index = 0, count = data.size(); index < count; ++index)
+		{
+			if (data[index].m_id.c_str()[0] && SData::GetEntryById(data, data[index].m_id) != index)
+			{
+				idsAreUnique = false;
+				XMLError(__FUNCTION__" failure: Schema '%s', field '%s', id '%s'", schemaName, fieldName, data[index].m_id.c_str());
+			}
+		}
+		return idsAreUnique;
+	}
+
 	// LoadFromString() function
 	template <typename T>
 	inline bool LoadFromString (T &data, const char *stringData)
@@ -110,6 +127,16 @@ namespace DataSchemasXML {
 	inline bool LoadFromString<SData_Vec3> (SData_Vec3 &data, const char *stringData)
 	{
 		if (sscanf(stringData, "%f, %f, %f", &data.m_x, &data.m_y, &data.m_z) == 3)
+			return true;
+
+		XMLError(__FUNCTION__" failure");
+		return false;
+	}
+
+	template <>
+	inline bool LoadFromString<SData_Vec4> (SData_Vec4 &data, const char *stringData)
+	{
+		if (sscanf(stringData, "%f, %f, %f, %f", &data.m_x, &data.m_y, &data.m_z, &data.m_w) == 4)
 			return true;
 
 		XMLError(__FUNCTION__" failure");
@@ -221,7 +248,9 @@ namespace DataSchemasXML {
 		data.m_##name.push_back(dataItem); \
 		childNode = childNode->NextSiblingElement(#name); \
 		arrayIndex++;\
-	}
+	} \
+	if (!EnforceUniqueIds(data.m_##name, data.s_schemaName, #name)) \
+		return false;
 
 #include "DataSchemas.h"
 #undef SchemaBegin

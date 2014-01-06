@@ -15,20 +15,28 @@
   <Material id="Cieling" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="0.2, 0.2, 0.2" NormalTexture="Art/simplenormal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
   <Material id="Floor" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="1.0, 1.0, 1.0" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
 
+  <Sector CastShadows="false" id="Room1">
+    <Plane Normal="0, 1, 0" D="0" UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+    <Plane Normal="0, -1, 0" D="10" UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
 
-  <Material id="GlowRed" DiffuseColor="0,0,0" SpecularColor="1,1,1" SpecularPower="50" EmissiveColor="0.8, 0.1, 0.1" ReflectionAmount="0.0" RefractionIndex="1" RefractionAmount="0"/>
+    <Plane Normal="1, 0, 0" D="20" UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
+    <Plane Normal="-1, 0, 0" D="20" UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
 
-  <Plane Normal="0, 1, 0" D="0" UAxis="1,0,3" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
+    <Plane Normal="0, 0, 1" D="10" UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25" PortalNextSector="Hallway" PortalWindow="-2, -4, 2, 0"/>
+    <Plane Normal="0, 0, -1" D="10" UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
+  </Sector>
 
-  <Plane Normal="1, 0, 0" D="50" UAxis="0,1,5" Material="Cieling" TextureScale="0.0625,0.0625" CastShadows="true"/>
-  <Plane Normal="-1, 0, 0" D="-55" UAxis="0,1,5" Material="Cieling" TextureScale="0.0625,0.0625" CastShadows="true"/>
+  <Sector CastShadows="false" id="Hallway">
+    <Plane Normal="0, 1, 0" D="0" UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+    <Plane Normal="0, -1, 0" D="4" UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
 
-  <Box Position="-80, 3, 0" Scale="0.5, 6, 16" Material="GlowRed" TextureScale="0.25,0.25" CastShadows="true"/>
+    <Plane Normal="1, 0, 0" D="2" UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
+    <Plane Normal="-1, 0, 0" D="2" UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
+
+    <Plane Normal="0, 0, 1" D="30" UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
+    <Plane Normal="0, 0, -1" D="-10" UAxis="-1,0,0" Material="Cieling" TextureScale="0.25,0.25" PortalNextSector="Room1"/>
+</Sector>
   
-  <Box Position="-4, 3, 0" Scale="0.5, 6, 16" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="true"/>
-  <Box Position="4, 3, -8" Scale="16, 6, 0.5" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="true"/>
-  <Box Position="4, 3, 8" Scale="16, 6, 0.5" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="true"/>
-
   <!--spheres to show where the point lights are.  they dont cast shadows and have emissive colored materials-->
   <Sphere Position="-22, 3, 20" Radius="0.1" Material="Light" CastShadows="0"/>
   <Sphere Position="4, 3, 0" Radius="0.1" Material="Light" CastShadows="0"/>

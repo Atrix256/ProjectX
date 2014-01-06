@@ -38,6 +38,47 @@ void Copy(cl_float4 &lhs, const SData_Vec3 &rhs, const float w)
 }
 
 //-----------------------------------------------------------------------------
+void Copy(cl_float4 &lhs, const SData_Vec4 &rhs)
+{
+	lhs.s[0] = rhs.m_x;
+	lhs.s[1] = rhs.m_y;
+	lhs.s[2] = rhs.m_z;
+	lhs.s[3] = rhs.m_w;
+}
+
+//-----------------------------------------------------------------------------
+void Normalize(float3 &vec)
+{
+	float mag = sqrtf(
+		vec[0] * vec[0] + 
+		vec[1] * vec[1] + 
+		vec[2] * vec[2]);
+
+	if (mag != 0)
+	{
+		vec[0] /= mag;
+		vec[1] /= mag;
+		vec[2] /= mag;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void Normalize(cl_float4 &vec)
+{
+	float mag = sqrtf(
+		vec.s[0] * vec.s[0] + 
+		vec.s[1] * vec.s[1] + 
+		vec.s[2] * vec.s[2]);
+
+	if (mag != 0)
+	{
+		vec.s[0] /= mag;
+		vec.s[1] /= mag;
+		vec.s[2] /= mag;
+	}
+}
+
+//-----------------------------------------------------------------------------
 bool CWorld::Load(const char *worldFileName)
 {
 	SData_World worldData;
@@ -94,15 +135,7 @@ bool CWorld::Load(const char *worldFileName)
 		Copy(m_boxes[index].m_textureScale, worldData.m_Box[index].m_TextureScale);
 
 		// set the material index
-		m_boxes[index].m_materialIndex = 0;
-		for(unsigned int matIndex = 0, matCount = worldData.m_Material.size(); matIndex < matCount; ++matIndex)
-		{
-			if (!stricmp(worldData.m_Box[index].m_Material.c_str(), worldData.m_Material[matIndex].m_id.c_str()))
-			{
-				m_boxes[index].m_materialIndex = matIndex;
-				break;
-			}
-		}
+		m_boxes[index].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Box[index].m_Material);
 	}
 
 	// spheres
@@ -115,15 +148,7 @@ bool CWorld::Load(const char *worldFileName)
 		Copy(m_spheres[index].m_textureScale, worldData.m_Sphere[index].m_TextureScale);
 
 		// set the material index
-		m_spheres[index].m_materialIndex = 0;
-		for(unsigned int matIndex = 0, matCount = worldData.m_Material.size(); matIndex < matCount; ++matIndex)
-		{
-			if (!stricmp(worldData.m_Sphere[index].m_Material.c_str(), worldData.m_Material[matIndex].m_id.c_str()))
-			{
-				m_spheres[index].m_materialIndex = matIndex;
-				break;
-			}
-		}
+		m_spheres[index].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Sphere[index].m_Material);
 	}
 
 	// planes
@@ -136,41 +161,40 @@ bool CWorld::Load(const char *worldFileName)
 		m_planes[index].m_castsShadows = worldData.m_Plane[index].m_CastShadows;
 		Copy(m_planes[index].m_textureScale, worldData.m_Plane[index].m_TextureScale);
 
-		// make sure the normal is normalized in the equation
-		float mag = sqrtf(
-			m_planes[index].m_equation.s[0] * m_planes[index].m_equation.s[0] + 
-			m_planes[index].m_equation.s[1] * m_planes[index].m_equation.s[1] + 
-			m_planes[index].m_equation.s[2] * m_planes[index].m_equation.s[2]);
-
-		if (mag != 0)
-		{
-			m_planes[index].m_equation.s[0] /= mag;
-			m_planes[index].m_equation.s[1] /= mag;
-			m_planes[index].m_equation.s[2] /= mag;
-		}
-
-		// normalize the UAxis
-		mag = sqrtf(
-			m_planes[index].m_UAxis[0] * m_planes[index].m_UAxis[0] + 
-			m_planes[index].m_UAxis[1] * m_planes[index].m_UAxis[1] + 
-			m_planes[index].m_UAxis[2] * m_planes[index].m_UAxis[2]);
-
-		if (mag != 0)
-		{
-			m_planes[index].m_UAxis[0] /= mag;
-			m_planes[index].m_UAxis[1] /= mag;
-			m_planes[index].m_UAxis[2] /= mag;
-		}
+		// make sure the normal is normalized in the equation and normalize the U axis
+		Normalize(m_planes[index].m_equation);
+		Normalize(m_planes[index].m_UAxis);
 
 		// set the material index
-		m_planes[index].m_materialIndex = 0;
-		for(unsigned int matIndex = 0, matCount = worldData.m_Material.size(); matIndex < matCount; ++matIndex)
+		m_planes[index].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Plane[index].m_Material);
+	}
+
+	// sectors
+	m_sectors.Resize(worldData.m_Sector.size());
+	for (unsigned int index = 0, count = worldData.m_Sector.size(); index < count; ++index)
+	{
+		Assert_(worldData.m_Sector[index].m_Plane.size() == 6);
+
+		m_sectors[index].m_castsShadows = worldData.m_Sector[index].m_CastShadows;
+
+		for (unsigned int planeIndex = 0; planeIndex < SSECTOR_NUMPLANES; ++planeIndex)
 		{
-			if (!stricmp(worldData.m_Plane[index].m_Material.c_str(), worldData.m_Material[matIndex].m_id.c_str()))
-			{
-				m_planes[index].m_materialIndex = matIndex;
-				break;
-			}
+			m_sectors[index].m_planes[planeIndex].m_objectId = nextObjectId++;
+
+			Copy(m_sectors[index].m_planes[planeIndex].m_equation, worldData.m_Sector[index].m_Plane[planeIndex].m_Normal, worldData.m_Sector[index].m_Plane[planeIndex].m_D);
+			Copy(m_sectors[index].m_planes[planeIndex].m_UAxis, worldData.m_Sector[index].m_Plane[planeIndex].m_UAxis);
+			Copy(m_sectors[index].m_planes[planeIndex].m_textureScale, worldData.m_Sector[index].m_Plane[planeIndex].m_TextureScale);
+
+			// set the next sector
+			m_sectors[index].m_planes[planeIndex].m_portalNextSector = SData::GetEntryById(worldData.m_Sector, worldData.m_Sector[index].m_Plane[planeIndex].m_PortalNextSector);
+			Copy(m_sectors[index].m_planes[planeIndex].m_portalWindow, worldData.m_Sector[index].m_Plane[planeIndex].m_PortalWindow);
+
+			// make sure the normal is normalized in the equation, and that the Uaxis is normalized
+			Normalize(m_sectors[index].m_planes[planeIndex].m_equation);
+			Normalize(m_sectors[index].m_planes[planeIndex].m_UAxis);
+
+			// set the material index
+			m_sectors[index].m_planes[planeIndex].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Sector[index].m_Plane[planeIndex].m_Material);
 		}
 	}
 
@@ -197,7 +221,7 @@ bool CWorld::Load(const char *worldFileName)
 	worldShared.m_numSpheres = m_spheres.Count();
 	worldShared.m_numBoxes = m_boxes.Count();
 	worldShared.m_numPlanes = m_planes.Count();
+	worldShared.m_numSectors = m_sectors.Count();
 	worldShared.m_numMaterials = m_materials.Count();
-
 	return true;
 }

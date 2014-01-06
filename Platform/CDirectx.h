@@ -64,6 +64,8 @@ public:
 
 	static CTextureManager &TextureManager() { return Get().m_textureManager; };
 
+	static const CWorld& GetWorld () { return Get().m_world; }
+
 private:
 	friend class CTextureManager;
 

@@ -123,6 +123,8 @@ public:
 		}
 	}
 
+	const T* DataConst () const { return m_data; }
+
 private:
 	T			*m_data;
 	unsigned int m_dataSize;

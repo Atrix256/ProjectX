@@ -1,8 +1,8 @@
 /*==================================================================================================
 
-SWorld.h
+SharedTypes.h
 
-This holds the constant sized information about the world
+defines simple, common types for use in code shared between the cpu and gpu code
 
 ==================================================================================================*/
 
@@ -11,16 +11,9 @@ This holds the constant sized information about the world
 #ifndef OPENCL
 	#include "Platform/float3.h"
 #else
-	typedef int cl_int;
+	typedef unsigned int cl_uint;
+	typedef float cl_float;
+	typedef float2 cl_float2;
+	typedef float4 cl_float4;
+	typedef unsigned char cl_uchar;
 #endif
-
-struct SWorld
-{
-	float3 m_ambientLight;
-	cl_int m_numLights;
-	cl_int m_numSpheres;
-	cl_int m_numBoxes;
-	cl_int m_numPlanes;
-	cl_int m_numSectors;
-	cl_int m_numMaterials;
-};

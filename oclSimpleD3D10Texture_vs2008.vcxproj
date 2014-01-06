@@ -222,6 +222,7 @@
     <ClInclude Include="Game\CPlayer.h" />
     <ClInclude Include="KernelCode\Shared\SCamera.h" />
     <ClInclude Include="KernelCode\Shared\SharedGeometry.h" />
+    <ClInclude Include="KernelCode\Shared\SharedTypes.h" />
     <ClInclude Include="KernelCode\Shared\SSharedDataRoot.h" />
     <ClInclude Include="KernelCode\Shared\SWorld.h" />
     <ClInclude Include="Platform\Assert.h" />

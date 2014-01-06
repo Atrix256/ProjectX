@@ -21,3 +21,18 @@ This expands the schemas defined in DataSchemas.h into structs
 #undef Field
 #undef Field_Schema
 #undef Field_Schema_Array
+
+// make the static schema name field
+#define SchemaBegin(name) const char *SData_##name::s_schemaName = "SData_" #name;
+#define SchemaEnd
+#define Field(type, name, default)
+#define Field_Schema(type, name, default)
+#define Field_Schema_Array(type, name)
+
+#include "DataSchemas.h"
+
+#undef SchemaBegin
+#undef SchemaEnd
+#undef Field
+#undef Field_Schema
+#undef Field_Schema_Array

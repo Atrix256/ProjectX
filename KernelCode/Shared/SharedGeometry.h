@@ -8,15 +8,7 @@ Structs shared by both kernel and host code
 
 #pragma once
 
-#ifndef OPENCL
-	#include "Platform/float3.h"
-#else
-	typedef unsigned int cl_uint;
-	typedef float cl_float;
-	typedef float2 cl_float2;
-	typedef float4 cl_float4;
-	typedef unsigned char cl_uchar;
-#endif
+#include "SharedTypes.h"
 
 #define c_invalidObjectId 0
 typedef cl_uint TObjectId;
@@ -78,6 +70,31 @@ struct SPlane
 	cl_uchar m_pack1c;
 	cl_uchar m_pack1d;
 	cl_uint m_pack2;
+};
+
+#define SSECTOR_NUMPLANES 6
+
+struct SSectorPlane
+{
+	cl_float4 m_equation;
+	float3 m_UAxis;
+	cl_float2 m_textureScale;
+	cl_uint m_materialIndex;
+	cl_uint m_portalNextSector;
+	cl_float4 m_portalWindow;
+	TObjectId m_objectId;
+	cl_uint m_pack1a;
+	cl_uint m_pack1b;
+	cl_uint m_pack1c;
+};
+
+struct SSector
+{
+	struct SSectorPlane m_planes[SSECTOR_NUMPLANES];
+	cl_uint m_castsShadows;
+	cl_uint m_pack1a;
+	cl_uint m_pack1b;
+	cl_uint m_pack1c;
 };
 
 struct SPointLight

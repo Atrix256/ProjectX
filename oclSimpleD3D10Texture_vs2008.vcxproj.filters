@@ -90,6 +90,9 @@
     <ClInclude Include="Platform\STexture2D.h">
       <Filter>Platform</Filter>
     </ClInclude>
+    <ClInclude Include="KernelCode\Shared\SharedTypes.h">
+      <Filter>Kernel Code\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\tinyxml\tinyxml2.cpp">

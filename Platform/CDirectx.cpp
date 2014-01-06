@@ -731,6 +731,9 @@ void CDirectX::RunKernels(float elapsed)
 		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_planes.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_sectors.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
+
 		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_materials.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 

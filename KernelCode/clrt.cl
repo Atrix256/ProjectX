@@ -258,7 +258,7 @@ bool RayIntersectPlane (__constant const struct SPlane *plane, struct SCollision
 	info->m_surfaceU = plane->m_UAxis;
 	info->m_surfaceV = normalize(cross(info->m_surfaceU, info->m_surfaceNormal));
 
-	// texture coordinates are just the angular part of spherical coordiantes of normal
+	// texture coordinates
 	info->m_textureCoordinates.x = dot(info->m_intersectionPoint, info->m_surfaceU);
 	info->m_textureCoordinates.y = dot(info->m_intersectionPoint, info->m_surfaceV);
 	info->m_textureCoordinates *= plane->m_textureScale;
@@ -266,15 +266,102 @@ bool RayIntersectPlane (__constant const struct SPlane *plane, struct SCollision
 	// we found a hit!
 	info->m_objectHit = plane->m_objectId;
 	return true;	
-
 }
 
-float3 reflect(float3 V, float3 N)
+enum ESectorHitResult
+{
+	e_sectorMiss,
+	e_sectorHit,
+	e_sectorTraverse
+};
+
+enum ESectorHitResult RayIntersectSector (__constant const struct SSector *sector, unsigned int *currentSector, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
+{
+	float closestHitTime = info->m_intersectionTime;
+	int closestHitPlaneIndex = SSECTOR_NUMPLANES;
+	for (int planeIndex = 0; planeIndex < SSECTOR_NUMPLANES; ++planeIndex)
+	{
+		if (ignorePrimitiveId == sector->m_planes[planeIndex].m_objectId)
+			continue;
+
+		// if ray is paralel with plane or hits from the wrong side, bail out (back face culling and divide by zero protection)
+		float denom = dot(sector->m_planes[planeIndex].m_equation.xyz, rayDir);
+		if (denom >= 0)
+			continue;
+
+		float num = -(dot(sector->m_planes[planeIndex].m_equation.xyz, rayPos) + sector->m_planes[planeIndex].m_equation.w);
+
+		//t = - (n·org +D) / (n·dir)
+		float collisionTime = num / denom;
+
+		if (collisionTime < 0)
+			continue;
+
+		//enforce max distance, and make sure we take the closest hit
+		if(collisionTime > closestHitTime)
+			continue;
+
+		// remember that this was the closest plane hit and remmeber the collision time
+		// but put off the rest of the calculations til after the loop when we know
+		// which plane is the closest hit
+		closestHitPlaneIndex = planeIndex;
+		closestHitTime = collisionTime;
+	}
+
+	// if no planes hit, bail out
+	if (closestHitPlaneIndex == SSECTOR_NUMPLANES)
+		return e_sectorMiss;
+
+	// Calculate the common values we need to either traverse a sector, or to report a sector wall hit.
+	float3 intersectionPoint = rayPos + rayDir * closestHitTime;
+	float3 surfaceNormal = sector->m_planes[closestHitPlaneIndex].m_equation.xyz;
+	float3 surfaceU = sector->m_planes[closestHitPlaneIndex].m_UAxis;
+	float3 surfaceV = normalize(cross(surfaceU, surfaceNormal));
+	float2 textureCoordinates;
+	textureCoordinates.x = dot(intersectionPoint, surfaceU);
+	textureCoordinates.y = dot(intersectionPoint, surfaceV);
+
+	// if we are supposed to move to another sector, make that happen
+	if (sector->m_planes[closestHitPlaneIndex].m_portalNextSector != -1
+	 && textureCoordinates.x >= sector->m_planes[closestHitPlaneIndex].m_portalWindow.x
+	 && textureCoordinates.y >= sector->m_planes[closestHitPlaneIndex].m_portalWindow.y
+	 && textureCoordinates.x <= sector->m_planes[closestHitPlaneIndex].m_portalWindow.z
+	 && textureCoordinates.y <= sector->m_planes[closestHitPlaneIndex].m_portalWindow.w)
+	{
+		*currentSector = sector->m_planes[closestHitPlaneIndex].m_portalNextSector;
+		return e_sectorTraverse;
+	}
+
+	// else we hit a sector wall, so set our collision info data
+	info->m_intersectionTime = closestHitTime;
+
+	//compute the point of intersection
+	info->m_intersectionPoint = intersectionPoint;
+
+	// set the normal
+	info->m_surfaceNormal = surfaceNormal;
+
+	// calculate U and V
+	info->m_surfaceU = surfaceU;
+	info->m_surfaceV = surfaceV;
+
+	// texture coordinates
+	info->m_textureCoordinates = textureCoordinates * sector->m_planes[closestHitPlaneIndex].m_textureScale;
+
+	info->m_fromInside = false;
+	info->m_materialIndex = sector->m_planes[closestHitPlaneIndex].m_materialIndex;
+
+	// we found a hit!
+	info->m_objectHit = sector->m_planes[closestHitPlaneIndex].m_objectId;
+	return e_sectorHit;
+}
+
+inline float3 reflect(float3 V, float3 N)
 {
 	return V - 2.0f * dot( V, N ) * N;
 }
 
-float3 refract(float3 V, float3 N, float refrIndex)
+inline float3 refract(float3 V, float3 N, float refrIndex)
 {
 	float cosI = -dot( N, V );
 	float cosT2 = 1.0f - refrIndex * refrIndex * (1.0f - cosI * cosI);
@@ -385,6 +472,7 @@ void TraceRay (
 	__constant struct SSphere *spheres,
 	__constant struct SAABox *boxes,
 	__constant struct SPlane *planes,
+	__constant struct SSector *sectors,
 	__constant struct SMaterial *materials
 )
 {
@@ -394,6 +482,8 @@ void TraceRay (
 	float colorMultiplier = 1.0f;
 
 	float3 rayToCameraDir = rayDir;
+
+	unsigned int currentSector = dataRoot->m_camera.m_sector;
 
 	for(int index = 0; index < c_maxRayBounces; ++index)
 	{
@@ -418,6 +508,11 @@ void TraceRay (
 
 		for (int planeIndex = 0; planeIndex < dataRoot->m_world.m_numPlanes; ++planeIndex)
 			RayIntersectPlane(&planes[planeIndex], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
+
+		// test the rays against the sectors of the world
+		// TODO: would need to do this in a loop, testing the dynamic objects in each sector
+		while (currentSector < dataRoot->m_world.m_numSectors
+			&& RayIntersectSector(&sectors[currentSector], &currentSector, &collisionInfo, rayPos, rayDir, lastHitPrimitiveId) == e_sectorTraverse);
 
 		// if no hit, set pixel to ambient light and bail out
 		if (collisionInfo.m_objectHit == c_invalidObjectId)
@@ -523,6 +618,7 @@ __kernel void clrt (
 	__constant struct SSphere *spheres,
 	__constant struct SAABox *boxes,
 	__constant struct SPlane *planes,
+	__constant struct SSector *sectors,
 	__constant struct SMaterial *materials
 )
 {
@@ -543,6 +639,6 @@ __kernel void clrt (
 
 	// trace the ray
 	float3 color = (float3)(0);
-	TraceRay(dataRoot, tex3dIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, planes, materials);
+	TraceRay(dataRoot, tex3dIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, planes, sectors, materials);
 	write_imagef(texOut, coord, (float4)(color, 1.0)); 
 }

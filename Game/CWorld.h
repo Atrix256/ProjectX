@@ -24,10 +24,17 @@ public:
 		m_spheres.Release();
 		m_boxes.Release();
 		m_planes.Release();
+		m_sectors.Release();
 		m_materials.Release();
 	}
 
 	bool Load(const char *worldFileName);
+
+	const SSector* GetSectors(unsigned int& numSectors) const
+	{
+		numSectors = m_sectors.Count();
+		return m_sectors.DataConst();
+	}
 
 private:
 	friend class CDirectX;
@@ -36,5 +43,6 @@ private:
 	CSharedArray<SSphere>		m_spheres;
 	CSharedArray<SAABox>		m_boxes;
 	CSharedArray<SPlane>		m_planes;
+	CSharedArray<SSector>		m_sectors;
 	CSharedArray<SMaterial>		m_materials;
 };

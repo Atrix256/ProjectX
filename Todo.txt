@@ -1,4 +1,4 @@
-* Video cards / OpenCL support
+*  Video cards / OpenCL support
  * Mike: NVIDIA geforce GT, 2gb mem
  * Eric: Amd but josh and Matthew have nvidia and I have physx card.  we have hd7950 a 470 gtx and a 480 gtx
  * Katie: going to test her 2 cards
@@ -9,21 +9,38 @@ TO "SHIP" TO TEAM
 
 
 NEXT
-* BSP!
-* back face culling for bsp test?
+* make sector walls be able to cast shadows
+* make it so sector walls can have rays go to other sectors. AKA portals
+* portals: test dynamic objects, and if none hit, then test sector geometry.  if the ray enters a new sector, do again.  repeat until something hit, or max ray depth (or max sector traversals?) hit?
+* should we have "regular portals" and "teleport portals"? i kinda just wanna have teleport portals but more complex to implement, at least right away
+* need to put lighting and stuff into the sectors
+* need to specify starting sector and offset in that sector as part of map data, instead of an absolute coordinate
+* traverse portals when moving, instead of the temp thing going on right now where cpu tells gpu which portal the camera is in
+* find a better way to enforce / handle sectors needing 6 planes, than doing an assert (error / skip?)
+ * maybe also let the schema define a min and max size for the array so data parsing can catch it?
+* we use an ignore primitive id to make sure we don't hit the same object again on reflection.  that will give wrong results with certain usages of portals.
+ * like, an object will not be able to reflect itself!
+ * maybe clear ignore prim id when going through a portal?
+* somehow make portals contain dynamic geometry, or do some other dynamic geometry solution
 * collision detection: walk on boxes, under objects, can't walk through walls?
 * make a more "FPS-ish" type map instead of a raytracing showroom map
-* make better geometry support - bsp , possibly model loading etc
- * oriented boxes, triangles, bsp
-* static vs dyanmic objects in maps
- * Static objects get made into bsp.  Dynamic objects get put into bsp in dynamic list.
- * Spheres can't be static?
-* "baked cache" - for bsp and such.  if it's out of date (hash is different, non existant or whatever) it builds it.
- * can use this to do "bake time" operations as well.
- * could use this time to figure out average color of a texture, for "backup color" of objects for when textures are off!
  
 
 --RENDERING
+* try generating kernel code that is tailored to geometry - since it has to be compiled at run time anyhow.
+ * like have everything hard coded in there for static geometry, and only pass in dynamic geometry?
+ * that would make it so different sectors could have different numbers of planes defining them
+ * material data could also be hard coded in there, and texture data (??)
+* "baked cache" -  if it's out of date (hash is different, non existant or whatever) it builds it.
+ * can use this to do "bake time" operations as well.
+ * could use this time to figure out average color of a texture, for "backup color" of objects for when textures are off!
+* oriented shapes
+* BSPs for polygonal models? (model loading too)
+* could try something besides portals for rendering - like bsp with ropes or something.  KD trees.  bounding volume hierarchies (bvh)
+* look into processing rays in packets?
+* cloth physics & smooth interpolate the verts of the cloth?
+* maybe material should have texture scaling instead of object.
+* can we put off calculating some collision info things until we have our final object? like normal and texture coords
 * we could do back face culling for objects that aren't transparent (esp planes)
 * smoothish bump maps + reflection shows how the bump maps are somehow inherantly fucked up
 * bump mapping doesn't look quite right... something is wrong with it.
@@ -109,10 +126,12 @@ NEXT
 
 
 --DATA SCHEMAS
+* make it error when an id is not found, that is referenced from data.
+* make a templated data link type class
 * make Field_Schema default work for more than just xml loading.
-* generalize the ID system somehow, the thing that materials use.  need a "material ref" or the like etc.
-* make sure material id (name) is unique.  error on not unique?
 * C# property grid for generic data editor?
+* make the game spit out documentation for the schema files (put hint text into schema and field definitions)
+ * maybe done via generic xslt script or something, so other things can tie into it too?
 
 
 --CODE
@@ -222,6 +241,17 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--1/5/14
+* started formalizing an ID system for the data catalog.
+* started making it so sector walls could be see through & lead to other portals
+* enforce unique ids in data items that have ids
+* make it so portal walls can define a UV square for the portal, and it uses the material info for the rest of the box.
+* make sector walls each have their own id so reflection of sector walls works correctly
+
+--1/4/14
+* started working on portal rendering.
+* you can define sectors, and the game tells the renderer which sector the camera is in.  it only tests rays against that sector
 
 --12/13/13
 * continued work on plane primitive for bsp

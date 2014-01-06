@@ -17,6 +17,9 @@ public:
 	CCamera ()
 	{
 		SCamera &cameraShared = SSharedDataRoot::Camera();
+
+		cameraShared.m_sector = 0;
+
 		cameraShared.m_pos[0] = 0.0f;
 		cameraShared.m_pos[1] = 0.0f;
 		cameraShared.m_pos[2] = 0.0f;
@@ -54,6 +57,7 @@ public:
 	void SetPosition(const float3 &pos)
 	{
 		SSharedDataRoot::Camera().m_pos = pos;
+		OnMove();
 	}
 
 	float3 Forward () const
@@ -78,6 +82,7 @@ public:
 	{
 		SCamera &cameraShared = SSharedDataRoot::Camera();
 		cameraShared.m_pos += cameraShared.m_fwd * amount;
+		OnMove();
 	}
 
 	void MoveForward2D (float amount)
@@ -87,12 +92,14 @@ public:
 		fwd2D[1] = 0.0f;
 		fwd2D = normalize(fwd2D);
 		cameraShared.m_pos += fwd2D * amount;
+		OnMove();
 	}
 
 	void MoveLeft (float amount)
 	{
 		SCamera &cameraShared = SSharedDataRoot::Camera();
 		cameraShared.m_pos += cameraShared.m_left * amount;
+		OnMove();
 	}
 
 	void YawRight (float amount)
@@ -131,6 +138,8 @@ public:
 
 		cameraShared.m_up = normalize(cross(cameraShared.m_left, cameraShared.m_fwd));
 	}
+
+	void OnMove ();
 
 private:
 	// spherical coordinates of the camera (just angular coordinates to describe a direction)

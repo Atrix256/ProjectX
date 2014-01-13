@@ -2,7 +2,7 @@
 
 clrt.cl
 
-The kernel code
+The kernel code 
 
 ==================================================================================================*/
 
@@ -24,6 +24,7 @@ struct SCollisionInfo
 	float3				m_surfaceV;
 	float2				m_textureCoordinates;
 	unsigned int		m_materialIndex;
+	unsigned int		m_portalIndex;
 };
 
 bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
@@ -70,6 +71,7 @@ bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollis
 	// set all the info params since we are garaunteed a hit at this point
 	info->m_fromInside = fromInside;
 	info->m_materialIndex = sphere->m_materialIndex;
+	info->m_portalIndex = sphere->m_portalIndex;
 
 	//compute the point of intersection
 	info->m_intersectionPoint = rayPos + rayDir * collisionTime;
@@ -154,6 +156,7 @@ bool RayIntersectAABox (__constant const struct SAABox *box, struct SCollisionIn
 	else
 		info->m_intersectionTime = rayMinTime;
 	info->m_materialIndex = box->m_materialIndex;
+	info->m_portalIndex = box->m_portalIndex;
 	
 	info->m_intersectionPoint = rayPos + rayDir * info->m_intersectionTime;
 
@@ -259,6 +262,7 @@ bool RayIntersectPlane (__constant const struct SPlane *plane, struct SCollision
 
 	// set all the info params since we are garaunteed a hit at this point
 	info->m_materialIndex = plane->m_materialIndex;
+	info->m_portalIndex = plane->m_portalIndex;
 
 	// see if we are inside or not (in the negative half space)
 	info->m_fromInside = denom > 0;
@@ -282,14 +286,7 @@ bool RayIntersectPlane (__constant const struct SPlane *plane, struct SCollision
 	return true;	
 }
 
-enum ESectorHitResult
-{
-	e_sectorMiss,
-	e_sectorHit,
-	e_sectorTraverse
-};
-
-enum ESectorHitResult RayIntersectSector (__constant const struct SSector *sector, unsigned int *currentSector, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
+bool RayIntersectSector (__constant const struct SSector *sector, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
 {
 	float closestHitTime = info->m_intersectionTime;
 	int closestHitPlaneIndex = SSECTOR_NUMPLANES;
@@ -381,50 +378,49 @@ enum ESectorHitResult RayIntersectSector (__constant const struct SSector *secto
 
 	// if no planes hit, bail out
 	if (closestHitPlaneIndex == SSECTOR_NUMPLANES)
-		return e_sectorMiss;
+		return false;
 
-	// Calculate the common values we need to either traverse a sector, or to report a sector wall hit.
-	float3 intersectionPoint = rayPos + rayDir * closestHitTime;
-	float3 surfaceNormal = closestHitSurfaceNormal;
-	float3 surfaceU = sector->m_planes[closestHitPlaneIndex].m_UAxis;
-	float3 surfaceV = normalize(cross(surfaceU, surfaceNormal));
-	float2 textureCoordinates;
-	textureCoordinates.x = dot(intersectionPoint, surfaceU);
-	textureCoordinates.y = dot(intersectionPoint, surfaceV);
-
-	// if we are supposed to move to another sector, make that happen
-	if (sector->m_planes[closestHitPlaneIndex].m_portalNextSector != -1
-	 && textureCoordinates.x >= sector->m_planes[closestHitPlaneIndex].m_portalWindow.x
-	 && textureCoordinates.y >= sector->m_planes[closestHitPlaneIndex].m_portalWindow.y
-	 && textureCoordinates.x <= sector->m_planes[closestHitPlaneIndex].m_portalWindow.z
-	 && textureCoordinates.y <= sector->m_planes[closestHitPlaneIndex].m_portalWindow.w)
-	{
-		*currentSector = sector->m_planes[closestHitPlaneIndex].m_portalNextSector;
-		return e_sectorTraverse;
-	}
-
-	// else we hit a sector wall, so set our collision info data
+	// else we hit a sector wall, so set and calculate our collision info data
 	info->m_intersectionTime = closestHitTime;
 
 	//compute the point of intersection
-	info->m_intersectionPoint = intersectionPoint;
+	info->m_intersectionPoint = rayPos + rayDir * closestHitTime;
 
 	// set the normal
-	info->m_surfaceNormal = surfaceNormal;
+	info->m_surfaceNormal = closestHitSurfaceNormal;
 
 	// calculate U and V
-	info->m_surfaceU = surfaceU;
-	info->m_surfaceV = surfaceV;
+	info->m_surfaceU = sector->m_planes[closestHitPlaneIndex].m_UAxis;
+	info->m_surfaceV = normalize(cross(info->m_surfaceU, info->m_surfaceNormal));
 
-	// texture coordinates
-	info->m_textureCoordinates = textureCoordinates * sector->m_planes[closestHitPlaneIndex].m_textureScale;
+	// unscaled texture coordinates
+	info->m_textureCoordinates.x = dot(info->m_intersectionPoint, info->m_surfaceU);
+	info->m_textureCoordinates.y = dot(info->m_intersectionPoint, info->m_surfaceV);
+	
+	// for sector planes, only set the portal index if the ray is in the portal window
+	// this makes for more efficient portals when you can put the portal on a sector wall
+	if (sector->m_planes[closestHitPlaneIndex].m_portalIndex != -1
+	 && info->m_textureCoordinates.x >= sector->m_planes[closestHitPlaneIndex].m_portalWindow.x
+	 && info->m_textureCoordinates.y >= sector->m_planes[closestHitPlaneIndex].m_portalWindow.y
+	 && info->m_textureCoordinates.x <= sector->m_planes[closestHitPlaneIndex].m_portalWindow.z
+	 && info->m_textureCoordinates.y <= sector->m_planes[closestHitPlaneIndex].m_portalWindow.w)
+	{
+		info->m_portalIndex = sector->m_planes[closestHitPlaneIndex].m_portalIndex;
+	}
+	else
+	{
+		info->m_portalIndex = -1;
+	}
+
+	// scale the texture coordinates
+	info->m_textureCoordinates *= sector->m_planes[closestHitPlaneIndex].m_textureScale;
 
 	info->m_fromInside = false;
 	info->m_materialIndex = sector->m_planes[closestHitPlaneIndex].m_materialIndex;
 
 	// we found a hit!
 	info->m_objectHit = sector->m_planes[closestHitPlaneIndex].m_objectId;
-	return e_sectorHit;
+	return true;
 }
 
 inline float3 reflect(float3 V, float3 N)
@@ -462,6 +458,7 @@ bool PointCanSeePoint(
 		{ 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 0.0f },
+		0,
 		0,
 	};
 	
@@ -544,7 +541,8 @@ void TraceRay (
 	__constant struct SAABox *boxes,
 	__constant struct SPlane *planes,
 	__constant struct SSector *sectors,
-	__constant struct SMaterial *materials
+	__constant struct SMaterial *materials,
+	__constant struct SPortal *portals
 )
 {
 	float3 ambientLight = dataRoot->m_world.m_ambientLight;
@@ -569,6 +567,7 @@ void TraceRay (
 			{ 0.0f, 0.0f, 0.0f },
 			{ 0.0f, 0.0f },
 			0,
+			0,
 		};
 
 		for (int sphereIndex = 0; sphereIndex < dataRoot->m_world.m_numSpheres; ++sphereIndex)
@@ -580,18 +579,59 @@ void TraceRay (
 		for (int planeIndex = 0; planeIndex < dataRoot->m_world.m_numPlanes; ++planeIndex)
 			RayIntersectPlane(&planes[planeIndex], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
 
-		// test the rays against the sectors of the world
-		// TODO: would need to do this in a loop, testing the dynamic objects in each sector
-		int count = 0;
-		while (currentSector < dataRoot->m_world.m_numSectors
-			&& RayIntersectSector(&sectors[currentSector], &currentSector, &collisionInfo, rayPos, rayDir, lastHitPrimitiveId) == e_sectorTraverse
-			&& ++count < 3);
+		// test the rays against the current world sector if it's valid
+		if (currentSector < dataRoot->m_world.m_numSectors)
+			RayIntersectSector(&sectors[currentSector], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
 
 		// if no hit, set pixel to ambient light and bail out
 		if (collisionInfo.m_objectHit == c_invalidObjectId)
 		{
 			*pixelColor += ambientLight * colorMultiplier;
 			return;
+		}
+
+		// if we hit a portal, change our sector, transform the ray and bail out of this loop.
+		if (collisionInfo.m_portalIndex != -1)
+		{
+			// transform the collision point into sector space
+			float3 transformedPoint;
+			transformedPoint.x = collisionInfo.m_intersectionPoint.x * portals[collisionInfo.m_portalIndex].m_xaxis.x
+				               + collisionInfo.m_intersectionPoint.y * portals[collisionInfo.m_portalIndex].m_yaxis.x
+							   + collisionInfo.m_intersectionPoint.z * portals[collisionInfo.m_portalIndex].m_zaxis.x
+							   +                                1.0f * portals[collisionInfo.m_portalIndex].m_waxis.x;
+
+			transformedPoint.y = collisionInfo.m_intersectionPoint.x * portals[collisionInfo.m_portalIndex].m_xaxis.y
+				               + collisionInfo.m_intersectionPoint.y * portals[collisionInfo.m_portalIndex].m_yaxis.y
+							   + collisionInfo.m_intersectionPoint.z * portals[collisionInfo.m_portalIndex].m_zaxis.y
+							   +                                1.0f * portals[collisionInfo.m_portalIndex].m_waxis.y;
+
+			transformedPoint.z = collisionInfo.m_intersectionPoint.x * portals[collisionInfo.m_portalIndex].m_xaxis.z
+				               + collisionInfo.m_intersectionPoint.y * portals[collisionInfo.m_portalIndex].m_yaxis.z
+							   + collisionInfo.m_intersectionPoint.z * portals[collisionInfo.m_portalIndex].m_zaxis.z
+							   +                                1.0f * portals[collisionInfo.m_portalIndex].m_waxis.z;
+
+			// transform the ray direction into sector space
+			float3 transformedDir;
+			transformedDir.x = rayDir.x * portals[collisionInfo.m_portalIndex].m_xaxis.x
+				             + rayDir.y * portals[collisionInfo.m_portalIndex].m_yaxis.x
+							 + rayDir.z * portals[collisionInfo.m_portalIndex].m_zaxis.x;
+						   //+     0.0f * portals[collisionInfo.m_portalIndex].m_waxis.x;
+
+			transformedDir.y = rayDir.x * portals[collisionInfo.m_portalIndex].m_xaxis.y
+				             + rayDir.y * portals[collisionInfo.m_portalIndex].m_yaxis.y
+							 + rayDir.z * portals[collisionInfo.m_portalIndex].m_zaxis.y;
+						   //+     0.0f * portals[collisionInfo.m_portalIndex].m_waxis.y;
+
+			transformedDir.z = rayDir.x * portals[collisionInfo.m_portalIndex].m_xaxis.z
+				             + rayDir.y * portals[collisionInfo.m_portalIndex].m_yaxis.z
+							 + rayDir.z * portals[collisionInfo.m_portalIndex].m_zaxis.z;
+						   //+     0.0f * portals[collisionInfo.m_portalIndex].m_waxis.z;
+
+			rayPos = transformedPoint;
+			rayDir = normalize(transformedDir);
+			currentSector = portals[collisionInfo.m_portalIndex].m_sector;
+			lastHitPrimitiveId = collisionInfo.m_objectHit;
+			continue;
 		}
 
 		__constant const struct SMaterial *material = &materials[collisionInfo.m_materialIndex];
@@ -692,11 +732,17 @@ __kernel void clrt (
 	__constant struct SAABox *boxes,
 	__constant struct SPlane *planes,
 	__constant struct SSector *sectors,
-	__constant struct SMaterial *materials
+	__constant struct SMaterial *materials,
+	__constant struct SPortal *portals
 )
 {
     const int2 dims = (int2)(get_image_width(texOut), get_image_height(texOut));
 	const int2 coord = (int2)(get_global_id(0), get_global_id(1));
+
+	#if SETTINGS_INTERLACED == 1
+	if ((coord.y / 16) % 2 == dataRoot->m_camera.m_oddEven)
+		return;
+	#endif
 
     // in the case where, due to quantization into grids, we have
     // more threads than pixels, skip the threads which don't 
@@ -712,6 +758,6 @@ __kernel void clrt (
 
 	// trace the ray
 	float3 color = (float3)(0);
-	TraceRay(dataRoot, tex3dIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, planes, sectors, materials);
+	TraceRay(dataRoot, tex3dIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, planes, sectors, materials, portals);
 	write_imagef(texOut, coord, (float4)(color, 1.0)); 
 }

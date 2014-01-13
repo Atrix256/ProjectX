@@ -214,6 +214,9 @@
     <ClInclude Include="DataSchemas\DataSchemas.h" />
     <ClInclude Include="DataSchemas\DataSchemasStructs.h" />
     <ClInclude Include="DataSchemas\DataSchemasXML.h" />
+    <ClInclude Include="DataSchemas\Schemas\DataSchemas_GameData.h" />
+    <ClInclude Include="DataSchemas\Schemas\DataSchemas_GfxSettings.h" />
+    <ClInclude Include="DataSchemas\Schemas\DataSchemas_World.h" />
     <ClInclude Include="External\tinyxml\tinyxml2.h" />
     <ClInclude Include="Game\CCamera.h" />
     <ClInclude Include="Game\CInput.h" />
@@ -257,6 +260,8 @@
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="Data\FPSLevel.xml" />
+    <Xml Include="Data\GameData.xml" />
+    <Xml Include="Data\GfxSettings.xml" />
     <Xml Include="Data\showroom.xml" />
     <Xml Include="Data\simple.xml" />
   </ItemGroup>

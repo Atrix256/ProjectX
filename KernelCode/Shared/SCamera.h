@@ -18,8 +18,8 @@ struct SCamera
 	float3 m_left;
 	float3 m_viewWidthHeightDistance;
 	
-	cl_uint m_sector; // which portal sector the camera is in
-	cl_uint m_pad1a;
+	cl_uint m_sector;  // which portal sector the camera is in
+	cl_uint m_oddEven; // used for interlaced rendering
 	cl_uint m_pad1b;
 	cl_uint m_pad1c;
 };

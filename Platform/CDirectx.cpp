@@ -138,6 +138,8 @@ CDirectX::~CDirectX ()
 //-----------------------------------------------------------------------------
  bool CDirectX::Init (unsigned int width, unsigned int height)
 {
+	m_textureManager.Init();
+
 	m_width = width;
 	m_height = height;
 
@@ -246,6 +248,15 @@ HRESULT CDirectX::InitCL()
 	CreateKernelProgram("./KernelCode/clrt.cl", "clrt.ptx", "clrt", m_cpProgram_tex2d, m_ckKernel_tex2d);
 
 	return S_OK;
+}
+
+//-----------------------------------------------------------------------------
+void CDirectX::LoadGraphicsSettings ()
+{
+	//TODO: if graphics settings file doesn't exist, save it out so there is one!
+	//NOTE: can't just check for failure of load, since we don't want to stomp whatever changes the person is making
+	//      just because of a typo
+	DataSchemasXML::Load(m_graphicsSettings, "./data/gfxsettings.xml", "GfxSettings");
 }
 
 //-----------------------------------------------------------------------------
@@ -581,9 +592,16 @@ HRESULT CDirectX::CreateKernelProgram(
 	oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
     free(source);
 
+	// make our build options
+	std::string buildOptions;
+	buildOptions = "-cl-fast-relaxed-math -I ./KernelCode/ -D OPENCL=1";
+	if (m_graphicsSettings.m_InterlaceMode)
+		buildOptions.append(" -D SETTINGS_INTERLACED=1");
+	else
+		buildOptions.append(" -D SETTINGS_INTERLACED=0");
+
     // build the program
-	static char *opts = "-cl-fast-relaxed-math -I ./KernelCode/ -D=OPENCL";
-    ciErrNum = clBuildProgram(cpProgram, 0, NULL, opts, NULL, NULL);
+	ciErrNum = clBuildProgram(cpProgram, 0, NULL, buildOptions.c_str(), NULL, NULL);
     if (ciErrNum != CL_SUCCESS)
     {
         // write out standard error, Build Log and PTX, then cleanup and exit
@@ -700,6 +718,10 @@ void CDirectX::RunKernels(float elapsed)
 	// ----------------------------------------------------------------
     // render the scene
     {
+		// toggle the odd / even field
+		SCamera& camera = SSharedDataRoot::Camera();
+		camera.m_oddEven = camera.m_oddEven ? 0 : 1;
+
 		// set global and local work item dimensions
 		m_szLocalWorkSize[0] = 16;
 		m_szLocalWorkSize[1] = 16;
@@ -735,6 +757,9 @@ void CDirectX::RunKernels(float elapsed)
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
 		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_materials.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
+
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_portals.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
 		// launch computation kernel
@@ -829,13 +854,19 @@ void UpdateFPS(float elapsed);
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+	// load graphics settings and get those settings
+	CDirectX::Get().LoadGraphicsSettings();
+	const SData_GfxSettings& settings = CDirectX::Settings();
+
 	if (argc > 1)
 		CDirectX::Get().SetWorld(argv[1]);
 	else
-		CDirectX::Get().SetWorld("./data/default.xml");
+		CDirectX::Get().SetWorld(settings.m_DefaultMap.c_str());
 
-	if(!CDirectX::Get().Init(1000, 1000))
+	if(!CDirectX::Get().Init((unsigned int)settings.m_Resolution.m_x, (unsigned int)settings.m_Resolution.m_y))
 		return 0;
+
+	CGame::Init();
 
     RAWINPUTDEVICE Rid[2];
 

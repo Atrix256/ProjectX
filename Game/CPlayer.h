@@ -15,9 +15,11 @@ class CPlayer
 public:
 	CPlayer();
 
+	void Init ();
+
 	void Update (float elapsed);
-	void SetPosition(float X, float Y, float Z);
-	void SetFacing(float angle);
+	void SetPosition (float X, float Y, float Z);
+	void SetFacing (float angle);
 
 private:
 	float	m_playerHeight;

@@ -85,7 +85,8 @@ bool CWorld::Load(const char *worldFileName)
 	if (!DataSchemasXML::Load(worldData, worldFileName, "World"))
 		worldData.SetDefault();
 
-	// Starting Position and facing
+	// Starting Sector, Position and facing
+	SSharedDataRoot::Camera().m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_StartSector);
 	CGame::SetPlayerPos(worldData.m_StartPoint.m_x, worldData.m_StartPoint.m_y, worldData.m_StartPoint.m_z);
 	CGame::SetPlayerFacing(worldData.m_StartFacing * 3.1415f / 180.0f);
 
@@ -95,6 +96,17 @@ bool CWorld::Load(const char *worldFileName)
 	{
 		Copy(m_pointLights[index].m_color, worldData.m_PointLight[index].m_Color);
 		Copy(m_pointLights[index].m_position, worldData.m_PointLight[index].m_Position);
+	}
+
+	// portals
+	m_portals.Resize(worldData.m_Portal.size());
+	for (unsigned int index = 0, count = worldData.m_Portal.size(); index < count; ++index)
+	{
+		m_portals[index].m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_Portal[index].m_Sector);
+		Copy(m_portals[index].m_xaxis, worldData.m_Portal[index].m_XAxis);
+		Copy(m_portals[index].m_yaxis, worldData.m_Portal[index].m_YAxis);
+		Copy(m_portals[index].m_zaxis, worldData.m_Portal[index].m_ZAxis);
+		Copy(m_portals[index].m_waxis, worldData.m_Portal[index].m_WAxis);
 	}
 
 	// materials
@@ -136,6 +148,9 @@ bool CWorld::Load(const char *worldFileName)
 
 		// set the material index
 		m_boxes[index].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Box[index].m_Material);
+
+		// set the portal index
+		m_boxes[index].m_portalIndex = SData::GetEntryById(worldData.m_Portal, worldData.m_Box[index].m_Portal);
 	}
 
 	// spheres
@@ -149,6 +164,9 @@ bool CWorld::Load(const char *worldFileName)
 
 		// set the material index
 		m_spheres[index].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Sphere[index].m_Material);
+
+		// set the portal index
+		m_spheres[index].m_portalIndex = SData::GetEntryById(worldData.m_Portal, worldData.m_Sphere[index].m_Portal);
 	}
 
 	// planes
@@ -171,6 +189,9 @@ bool CWorld::Load(const char *worldFileName)
 
 		// set the material index
 		m_planes[index].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Plane[index].m_Material);
+
+		// set the portal index
+		m_planes[index].m_portalIndex = SData::GetEntryById(worldData.m_Portal, worldData.m_Plane[index].m_Portal);
 	}
 
 	// sectors
@@ -191,8 +212,7 @@ bool CWorld::Load(const char *worldFileName)
 			Copy(m_sectors[index].m_planes[planeIndex].m_UAxis, worldData.m_Sector[index].m_Plane[planeIndex].m_UAxis);
 			Copy(m_sectors[index].m_planes[planeIndex].m_textureScale, worldData.m_Sector[index].m_Plane[planeIndex].m_TextureScale);
 
-			// set the next sector
-			m_sectors[index].m_planes[planeIndex].m_portalNextSector = SData::GetEntryById(worldData.m_Sector, worldData.m_Sector[index].m_Plane[planeIndex].m_PortalNextSector);
+			// copy the portal window
 			Copy(m_sectors[index].m_planes[planeIndex].m_portalWindow, worldData.m_Sector[index].m_Plane[planeIndex].m_PortalWindow);
 
 			// make sure the Uaxis is normalized
@@ -200,6 +220,9 @@ bool CWorld::Load(const char *worldFileName)
 
 			// set the material index
 			m_sectors[index].m_planes[planeIndex].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Sector[index].m_Plane[planeIndex].m_Material);
+
+			// set the portal index
+			m_sectors[index].m_planes[planeIndex].m_portalIndex = SData::GetEntryById(worldData.m_Portal, worldData.m_Sector[index].m_Plane[planeIndex].m_Portal);
 		}
 	}
 
@@ -228,5 +251,6 @@ bool CWorld::Load(const char *worldFileName)
 	worldShared.m_numPlanes = m_planes.Count();
 	worldShared.m_numSectors = m_sectors.Count();
 	worldShared.m_numMaterials = m_materials.Count();
+	worldShared.m_numPortals = m_portals.Count();
 	return true;
 }

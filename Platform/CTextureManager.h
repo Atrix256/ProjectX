@@ -20,6 +20,7 @@ public:
 
 	CTextureManager()
 	{
+		m_textureSize = 512;
 		m_numTextures = 0;
 		m_texture3d = NULL;
 		m_clTexture3d = NULL;
@@ -29,6 +30,8 @@ public:
 	{
 		Release();
 	}
+
+	void Init ();
 
 	void Release ()
 	{
@@ -81,5 +84,5 @@ private:
 	ID3D10Texture3D *m_texture3d;
 	cl_mem			m_clTexture3d;
 
-	static const int c_textureSize = 512;  // the width and height of textures used by opencl
+	unsigned int	m_textureSize;
 };

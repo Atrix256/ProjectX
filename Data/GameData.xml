@@ -1,0 +1,5 @@
+<GameData>
+  <StandingHeight Value="3.0"/>
+  <CrouchingHeight Value="1.5"/>
+  <CrouchSpeed Value="10.0f"/>
+</GameData>

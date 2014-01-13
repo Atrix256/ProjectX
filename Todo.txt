@@ -9,17 +9,18 @@ TO "SHIP" TO TEAM
 
 
 NEXT
+* interlaced mode, via graphics setting and #define to kernel code
+* maybe portals should specify rotation and translation instead of giving raw access to x,y,z,w axes?  maybe not, this is more powerful!
+* make graphics settings load more forgiving of load failure (currently sets resolution to 0,0)
+ * same with game data
+* if graphics settings file doesn't exist, save it out so there is one!
 * adding uv test to planes slowed everything down, even when no planes in scene. why?!
-* rename plane to quad
-
-* we might want to keep portal info on sectors too? if it's convinient? don't know...
-* make it so portal info is part of material data, along w/ a percentage to apply to rendering it?  but only special axis aligned portals can be walked through.
- * how would that look on a sphere?
- * portals are just another way of transforming rays, like reflection and refraction
-! portals probably do need to be axis aligned.  otherwise, what happens if you walk a slope down into a portal of an AAB hallway.  should you slide down the hill because it remembers you entered it at an angle? if so, what if there was something else that entered that same sector flat?  which is the right frame of reference - or is it up to the observer to keep track?  maybe you can look into portals of any kind but only walk through special axis aligned portals
-* make portals not be a property of sector walls, make it be a property of planes
-
-
+* make objects belong to portals and render accordingly
+* make portal ray transforms work.  transform ray as (collision point, dir)
+* make it so you have to walk through portals to change sectors (in game code)
+* convert other maps to use this new format w/ sectors etc (or just verify that they still work)
+* make graphics settings xml file (make it generate it if it doesn't exist)
+* make game data xml file (like for jump strength, crouch height, etc) (make it generate if it doesnt exist)
 * static and dynamic geometry in sectors
  -Test all sector geoms, then sector.  then do portal if should, else reflection, refraction, or none etc
  -In dynamic geom lists, keep a sorted list of objects by sector number.
@@ -33,8 +34,8 @@ NEXT
  -Also, should be able to generically make portals by hand.
  -Also, maybe all materials can be portals??? But only planes & quads can be walked through?
 
-* try ditching fixed game rate? might feel better...
 * jump doesnt always work, when in "fixed game time" mode, since that just checks space bar status, but might have missed one. (problem in recording)
+ * should fix, its broken in non fixed game time too, but just not as bad
 * make sector walls be able to cast shadows
 * portals: test dynamic objects, and if none hit, then test sector geometry.  if the ray enters a new sector, do again.  repeat until something hit, or max ray depth (or max sector traversals?) hit?
 * should we have "regular portals" and "teleport portals"? i kinda just wanna have teleport portals but more complex to implement, at least right away
@@ -51,8 +52,14 @@ NEXT
 * collision detection: walk on boxes, under objects, can't walk through walls?
 * make a more "FPS-ish" type map instead of a raytracing showroom map
  
+--MAP & GAME CONCEPTS
+* at the lowest elevation point in the game, have a crack or hole in the ground or something where you can see the place supported by turtles, all the way down into infinity (maybe do some raymarching against the turtle shape or something)
+* at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* figure out the right height for interlaced mode.  16 works well for me, but what about others?
+* try making it so portals don't bypass the whole rendering process.  make it so they have an "amount" and contribute to the color, the same way reflection / refraction does.
+* rename plane primitive to quad
 * can try alpha (if even 1 bit).  if you sample a texture that has alpha, add to the color of the ray, multiply future ray colors by transparency amount, and keep ray going along current direction.  can not mix with reflection and refraction
 * we can do procedural objects (just need bounding box or radius or something) and procedural textures too
 * try making it so some things can be distance LODed, like bullet decals that are too far from the player or something.
@@ -133,6 +140,7 @@ NEXT
 --GAMEPLAY
 * maybe "named dynamic objects" list to more quickly find named objects?
 * friction (and slipping), varying gravity, jump pads
+* revisit fixed game rate code (currently commented out)
 
 --ARTIFICIAL INTELLIGENCE
 * keep it simple
@@ -152,6 +160,7 @@ NEXT
  -long distance - ?? not sure if needed, but if we have a lot of sectors, A* across sectors may be too much
 
 --GFX SETTINGS
+* put m_viewWidthHeightDistance etc into graphics settings
 * let maps turn off gfx settings.  AKA if a map doesn't have any refraction, no need to test for it so turn off the setting.
 * maybe sometime if a texture is lower resolution that our texture setting (like if it's 256x256 and our texture size is 512x512) we can put multiple onto one sheet somehow?  texture coordinates would need to be fixed up somehow
 * window size as a graphics option
@@ -292,8 +301,12 @@ NEXT
 =====DONE=====
 
 --1/12/14
+* added quad support
 * made planes be able to define dimensions -> a min/max u,v to be considered as a hit.  IE quads are supported now
 * do compile time const asserts that the size of structs in shared object and shared array are multiples of 16
+* portals are now a generic thing that any shape can use, not just sector walls, but sector walls have kept their "portal window" field because it's more efficient than having a seperate plane when a portal is on a sector wall anyways
+* basic interlaced mode implementation
+* added gfxsettings.xml and gamedata.xml
 
 --1/11/14
 * made sectors into AABBs defined by just width, height, depth.  kept per plane material etc.  portals are still a sector wall feature for now but will change soon.

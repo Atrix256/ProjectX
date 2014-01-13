@@ -35,6 +35,7 @@ DirectX and OpenCL code lives here
 #include "Game/CWorld.h"
 #include "STexture2D.h"
 #include "CTextureManager.h"
+#include "DataSchemas/DataSchemasXML.h"
 
 class CDirectX
 {
@@ -52,6 +53,8 @@ public:
 
 	HWND GetHWND () const { return m_hWnd; }
 
+	void LoadGraphicsSettings ();
+
 	void SetWorld (const char *world) {m_worldFileName = world;}
 
 	void TakeScreenshot (const char *fileName);
@@ -65,6 +68,8 @@ public:
 	static CTextureManager &TextureManager() { return Get().m_textureManager; };
 
 	static const CWorld& GetWorld () { return Get().m_world; }
+
+	static const SData_GfxSettings& Settings () { return Get().m_graphicsSettings; }
 
 private:
 	friend class CTextureManager;
@@ -114,6 +119,8 @@ private:
 	cl_kernel			m_ckKernel_tex2d;
 	size_t				m_szGlobalWorkSize[2];
 	size_t				m_szLocalWorkSize[2];
+
+	SData_GfxSettings	m_graphicsSettings;
 
 	CWorld				m_world;
 	std::string			m_worldFileName;

@@ -25,5 +25,6 @@ struct SWorld
 
 	cl_int m_numSectors;
 	cl_int m_numMaterials;
-	cl_int m_pad[2];
+	cl_int m_numPortals;
+	cl_int m_pad;
 };

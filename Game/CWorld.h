@@ -26,6 +26,7 @@ public:
 		m_planes.Release();
 		m_sectors.Release();
 		m_materials.Release();
+		m_portals.Release();
 	}
 
 	bool Load(const char *worldFileName);
@@ -45,4 +46,5 @@ private:
 	CSharedArray<SPlane>		m_planes;
 	CSharedArray<SSector>		m_sectors;
 	CSharedArray<SMaterial>		m_materials;
+	CSharedArray<SPortal>		m_portals;
 };

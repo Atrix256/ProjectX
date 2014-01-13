@@ -9,9 +9,7 @@ Holds info about the player and also handles player input
 #include "CPlayer.h"
 #include "CInput.h"
 #include "CCamera.h"
-
-static const float c_playerHeightCrouched = 1.5f;
-static const float c_playerHeightStanding = 3.0f;
+#include "CGame.h"
 
 //--------------------------------------------------------------------------------------------------
 CPlayer::CPlayer()
@@ -19,7 +17,7 @@ CPlayer::CPlayer()
 	m_crouched = false;
 	m_onGround = false;
 
-	m_playerHeight = c_playerHeightStanding;
+	m_playerHeight = 0.0f;
 
 	m_position[0] = 0.0f;
 	m_position[1] = 0.0f;
@@ -28,6 +26,12 @@ CPlayer::CPlayer()
 	m_velocity[0] = 0.0f;
 	m_velocity[1] = 0.0f;
 	m_velocity[2] = 0.0f;
+}
+
+//--------------------------------------------------------------------------------------------------
+void CPlayer::Init ()
+{
+	m_playerHeight = CGame::GameData().m_StandingHeight;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -73,18 +77,18 @@ void CPlayer::Update (float elapsed)
 	if (CInput::InputToggleOn(CInput::e_inputToggleCrouch) != m_crouched)
 		m_crouched = !m_crouched;
 
-
-	if (m_crouched && m_playerHeight > c_playerHeightCrouched)
+	const SData_GameData& gameData = CGame::GameData();
+	if (m_crouched && m_playerHeight > gameData.m_CrouchingHeight)
 	{
-		m_playerHeight -= elapsed * 10.0f;
-		if (m_playerHeight < c_playerHeightCrouched)
-			m_playerHeight = c_playerHeightCrouched;
+		m_playerHeight -= elapsed * gameData.m_CrouchSpeed;
+		if (m_playerHeight < gameData.m_CrouchingHeight)
+			m_playerHeight = gameData.m_CrouchingHeight;
 	}
-	else if (!m_crouched && m_playerHeight < c_playerHeightStanding)
+	else if (!m_crouched && m_playerHeight < gameData.m_StandingHeight)
 	{
-		m_playerHeight += elapsed * 10.0f;
-		if (m_playerHeight > c_playerHeightStanding)
-			m_playerHeight = c_playerHeightStanding;
+		m_playerHeight += elapsed * gameData.m_CrouchSpeed;
+		if (m_playerHeight > gameData.m_StandingHeight)
+			m_playerHeight = gameData.m_StandingHeight;
 	}
 
 	float3 playerHeight = {0.0f, m_playerHeight, 0.0f};

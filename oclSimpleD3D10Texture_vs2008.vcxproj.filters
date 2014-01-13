@@ -25,6 +25,9 @@
     <Filter Include="DataSchemas">
       <UniqueIdentifier>{a47ab293-b2d6-45c8-8395-8480b5fe99d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DataSchemas\Schemas">
+      <UniqueIdentifier>{ef61275e-54e5-4db2-9abb-8a90b2358bc8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\tinyxml\tinyxml2.h">
@@ -93,6 +96,15 @@
     <ClInclude Include="KernelCode\Shared\SharedTypes.h">
       <Filter>Kernel Code\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="DataSchemas\Schemas\DataSchemas_World.h">
+      <Filter>DataSchemas\Schemas</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSchemas\Schemas\DataSchemas_GfxSettings.h">
+      <Filter>DataSchemas\Schemas</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSchemas\Schemas\DataSchemas_GameData.h">
+      <Filter>DataSchemas\Schemas</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\tinyxml\tinyxml2.cpp">
@@ -147,6 +159,12 @@
       <Filter>Data</Filter>
     </Xml>
     <Xml Include="Data\FPSLevel.xml">
+      <Filter>Data</Filter>
+    </Xml>
+    <Xml Include="Data\GfxSettings.xml">
+      <Filter>Data</Filter>
+    </Xml>
+    <Xml Include="Data\GameData.xml">
       <Filter>Data</Filter>
     </Xml>
   </ItemGroup>

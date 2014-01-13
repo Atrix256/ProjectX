@@ -10,6 +10,12 @@ Holds loaded textures and allows for passing them to the kernel code
 #include "CTextureManager.h"
 
 //-----------------------------------------------------------------------------
+void CTextureManager::Init ()
+{
+	m_textureSize = CDirectX::Settings().m_TextureSize;
+}
+
+//-----------------------------------------------------------------------------
 unsigned int CTextureManager::GetOrLoad (const char *fileName)
 {
 	for (unsigned int index = 0; index < m_numTextures; ++index)
@@ -43,8 +49,8 @@ void CTextureManager::FinalizeTextures ()
 		CDirectX::Get().m_cxGPUContext,
 		CL_MEM_READ_ONLY,
 		&imageFormat,
-		c_textureSize,
-		c_textureSize,
+		m_textureSize,
+		m_textureSize,
 		m_numTextures > 1 ? m_numTextures : 2, // depth - need at least 2 textures
 		0, // row pitch
 		0, // slice pitch
@@ -70,14 +76,14 @@ void CTextureManager::MoveTextureToCL (int index)
 	Assert_(!FAILED(hr));
 	
 	// make the image data so we can pass it to opencl
-	float *imageData = new float[c_textureSize * c_textureSize * 4];
+	float *imageData = new float[m_textureSize * m_textureSize * 4];
 	float *destPixel = imageData;
-	for (unsigned int indexY = 0; indexY < c_textureSize; ++indexY)
+	for (unsigned int indexY = 0; indexY < m_textureSize; ++indexY)
 	{
-		float percentY = (float)indexY / (float)c_textureSize;
-		for (unsigned int indexX = 0; indexX < c_textureSize; ++indexX)
+		float percentY = (float)indexY / (float)m_textureSize;
+		for (unsigned int indexX = 0; indexX < m_textureSize; ++indexX)
 		{
-			float percentX = (float)indexX / (float)c_textureSize;
+			float percentX = (float)indexX / (float)m_textureSize;
 			SampleMappedPixelBilinear(mapped2dTexture, destPixel, percentX, percentY, desc.Width, desc.Height);
 			destPixel += 4;
 		}
@@ -89,7 +95,7 @@ void CTextureManager::MoveTextureToCL (int index)
 
 	// send the image data to opencl
 	const size_t origin[3] = {0, 0, index};
-	const size_t region[3] = {c_textureSize, c_textureSize, 1};
+	const size_t region[3] = {m_textureSize, m_textureSize, 1};
 
 	int ciErrNum = clEnqueueWriteImage(
 		CDirectX::Get().m_cqCommandQueue,

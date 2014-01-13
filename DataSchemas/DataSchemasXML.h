@@ -82,6 +82,16 @@ namespace DataSchemasXML {
 	}
 
 	template <>
+	inline bool LoadFromString<unsigned int> (unsigned int &data, const char *stringData)
+	{
+		if (sscanf(stringData, "%u", &data) == 1)
+			return true;
+
+		XMLError(__FUNCTION__" failure");
+		return false;
+	}
+
+	template <>
 	inline bool LoadFromString<bool> (bool &data, const char *stringData)
 	{
 		if (!stricmp(stringData,"true"))

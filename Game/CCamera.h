@@ -36,6 +36,8 @@ public:
 		cameraShared.m_left[1] =  0.0f;
 		cameraShared.m_left[2] =  0.0f;
 
+		cameraShared.m_oddEven = 0;
+
 		// width
 		cameraShared.m_viewWidthHeightDistance[0] = 6.0f;
 

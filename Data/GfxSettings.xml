@@ -2,5 +2,7 @@
   <DefaultMap Value="./data/default.xml"/>
   <Resolution Value="1000,1000"/>
   <TextureSize Value="512"/>
-  <InterlaceMode Value="false"/>
+  <InterlaceMode Value="true"/>
+  <NormalMapping Value="true"/>
+  <Shadows Value="true"/>
 </GfxSettings>

@@ -160,6 +160,8 @@ NEXT
  -long distance - ?? not sure if needed, but if we have a lot of sectors, A* across sectors may be too much
 
 --GFX SETTINGS
+* max ray bounces setting
+* graphics settings to allow reflection and refraction or not. With it off, reflection does nothing, and refraction doesn't change path of ray (so it's just transparent)
 * put m_viewWidthHeightDistance etc into graphics settings
 * let maps turn off gfx settings.  AKA if a map doesn't have any refraction, no need to test for it so turn off the setting.
 * maybe sometime if a texture is lower resolution that our texture setting (like if it's 256x256 and our texture size is 512x512) we can put multiple onto one sheet somehow?  texture coordinates would need to be fixed up somehow

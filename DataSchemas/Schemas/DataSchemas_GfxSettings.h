@@ -11,4 +11,6 @@ SchemaBegin(GfxSettings)
 	Field(std::string, DefaultMap, "./data/default.xml")
 	Field(unsigned int, TextureSize, 512)
 	Field(bool, InterlaceMode, false)
+	Field(bool, NormalMapping, true)
+	Field(bool, Shadows, true)
 SchemaEnd

@@ -435,7 +435,7 @@ inline float3 refract(float3 V, float3 N, float refrIndex)
 	return (refrIndex * V) + (refrIndex * cosI - sqrt( cosT2 )) * N;
 }
 
-bool PointCanSeePoint(
+inline bool PointCanSeePoint(
 	const float3 startPos,
 	const float3 targetPos,
 	const TObjectId ignorePrimitiveId,
@@ -447,6 +447,7 @@ bool PointCanSeePoint(
 	__constant struct SPlane *planes
 )
 {
+	#if SETTINGS_SHADOWS == 1
 	// see if we can hit the target point from the starting point
 	struct SCollisionInfo collisionInfo = 
 	{
@@ -483,8 +484,9 @@ bool PointCanSeePoint(
 		 && RayIntersectPlane(&planes[planeIndex], &collisionInfo, startPos, rayDir, ignorePrimitiveId))
 			return false;
 	}
+	#endif
 
-	// if no hit, set pixel to ambient light and bail out
+	// if no hit, bail out
 	return true;
 }
 
@@ -640,6 +642,7 @@ void TraceRay (
 			collisionInfo.m_surfaceNormal *= -1.0f;
 
 		// handle normal mapping if there is any
+		#if SETTINGS_NORMALMAP == 1
 		if (material->m_normalTextureIndex >= 0)
 		{
 			float4 textureCoords = {collisionInfo.m_textureCoordinates.x, collisionInfo.m_textureCoordinates.y, material->m_normalTextureIndex, 0};
@@ -654,6 +657,7 @@ void TraceRay (
 
 			collisionInfo.m_surfaceNormal = normalize(adjustedNormal);
 		}
+		#endif
 
 		// get the diffuse color of the object we hit
 		float3 diffuseColorBase = material->m_diffuseColor;
@@ -740,8 +744,10 @@ __kernel void clrt (
 	const int2 coord = (int2)(get_global_id(0), get_global_id(1));
 
 	#if SETTINGS_INTERLACED == 1
-	if ((coord.y / 16) % 2 == dataRoot->m_camera.m_oddEven)
+	if ((coord.y > dims.y / 2) == (dataRoot->m_camera.m_frameCount % 2))
 		return;
+	//if ((coord.y / 16) % 2 == dataRoot->m_camera.m_frameCount % 2)
+	//	return;
 	#endif
 
     // in the case where, due to quantization into grids, we have

@@ -595,10 +595,12 @@ HRESULT CDirectX::CreateKernelProgram(
 	// make our build options
 	std::string buildOptions;
 	buildOptions = "-cl-fast-relaxed-math -I ./KernelCode/ -D OPENCL=1";
-	if (m_graphicsSettings.m_InterlaceMode)
-		buildOptions.append(" -D SETTINGS_INTERLACED=1");
-	else
-		buildOptions.append(" -D SETTINGS_INTERLACED=0");
+	buildOptions.append(" -D SETTINGS_INTERLACED=");
+	buildOptions.append(m_graphicsSettings.m_InterlaceMode ? "1" : "0");
+	buildOptions.append(" -D SETTINGS_NORMALMAP=");
+	buildOptions.append(m_graphicsSettings.m_NormalMapping ? "1" : "0");
+	buildOptions.append(" -D SETTINGS_SHADOWS=");
+	buildOptions.append(m_graphicsSettings.m_Shadows ? "1" : "0");
 
     // build the program
 	ciErrNum = clBuildProgram(cpProgram, 0, NULL, buildOptions.c_str(), NULL, NULL);
@@ -720,7 +722,7 @@ void CDirectX::RunKernels(float elapsed)
     {
 		// toggle the odd / even field
 		SCamera& camera = SSharedDataRoot::Camera();
-		camera.m_oddEven = camera.m_oddEven ? 0 : 1;
+		camera.m_frameCount++;
 
 		// set global and local work item dimensions
 		m_szLocalWorkSize[0] = 16;

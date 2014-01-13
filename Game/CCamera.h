@@ -141,6 +141,8 @@ public:
 
 	void OnMove ();
 
+	float CurrentGroundHeight () const;
+
 private:
 	// spherical coordinates of the camera (just angular coordinates to describe a direction)
 	float m_cameraAngleX;

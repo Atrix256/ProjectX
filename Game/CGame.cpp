@@ -15,6 +15,8 @@ const float CGame::c_gameLogicInterval = 1.0f / 60.0f;
 //--------------------------------------------------------------------------------------------------
 void CGame::Update(float elapsed)
 {
+	// fixed logic interval makes the game feel choppy
+	/*
 	m_timeBucket += elapsed;
 
 	while (m_timeBucket > c_gameLogicInterval)
@@ -22,6 +24,9 @@ void CGame::Update(float elapsed)
 		m_player.Update(c_gameLogicInterval);
 		m_timeBucket -= c_gameLogicInterval;
 	}
+	*/
+
+	m_player.Update(elapsed);
 }
 
 //--------------------------------------------------------------------------------------------------

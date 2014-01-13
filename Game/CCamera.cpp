@@ -22,25 +22,26 @@ void CCamera::OnMove ()
 	const SSector* sectors = world.GetSectors(numSectors);
 	for (unsigned int index = 0; index < numSectors; ++index)
 	{
-		bool inPlanes = true;
-		for (unsigned int planeIndex = 0; planeIndex < SSECTOR_NUMPLANES; ++planeIndex)
-		{
-			float side = camera.m_pos[0] * sectors[index].m_planes[planeIndex].m_equation.s[0]
-					   + camera.m_pos[1] * sectors[index].m_planes[planeIndex].m_equation.s[1]
-					   + camera.m_pos[2] * sectors[index].m_planes[planeIndex].m_equation.s[2]
-					   + sectors[index].m_planes[planeIndex].m_equation.s[3];
-
-			if (side < 0.0f)
-			{
-				inPlanes = false;
-				break;
-			}
-		}
-
-		if (inPlanes)
+		if (camera.m_pos[0] >= -sectors[index].m_halfDims[0] &&
+			camera.m_pos[0] <=  sectors[index].m_halfDims[0] &&
+			camera.m_pos[1] >= -sectors[index].m_halfDims[1] &&
+			camera.m_pos[1] <=  sectors[index].m_halfDims[1] &&
+			camera.m_pos[2] >= -sectors[index].m_halfDims[2] &&
+			camera.m_pos[2] <=  sectors[index].m_halfDims[2])
 		{
 			camera.m_sector = index;
 			break;
 		}
 	}	
+}
+
+float CCamera::CurrentGroundHeight () const {
+	const SCamera &camera = SSharedDataRoot::CameraConst();
+	const CWorld &world = CDirectX::GetWorld();
+	unsigned int numSectors = 0;
+	const SSector* sectors = world.GetSectors(numSectors);
+	if (camera.m_sector < numSectors)
+		return -sectors[camera.m_sector].m_halfDims[1];
+
+	return 0.0f;
 }

@@ -10,13 +10,16 @@ Holds info about the player and also handles player input
 #include "CInput.h"
 #include "CCamera.h"
 
+static const float c_playerHeightCrouched = 1.5f;
+static const float c_playerHeightStanding = 3.0f;
+
 //--------------------------------------------------------------------------------------------------
 CPlayer::CPlayer()
 {
 	m_crouched = false;
 	m_onGround = false;
 
-	m_playerHeight = 2.0;
+	m_playerHeight = c_playerHeightStanding;
 
 	m_position[0] = 0.0f;
 	m_position[1] = 0.0f;
@@ -52,13 +55,16 @@ void CPlayer::Update (float elapsed)
 
 	m_position += m_velocity;
 
-	if (m_position[1] > 0.0f)
+	float currentGroundHeight = CCamera::Get().CurrentGroundHeight();
+
+	if (m_position[1] > currentGroundHeight)
 	{
 		m_onGround = false;
 		m_velocity[1] -= 0.3f * elapsed;
 	}
 	else
 	{
+		m_position[1] = currentGroundHeight;
 		m_onGround = true;
 		m_velocity[1] = 0.0f;
 	}
@@ -67,17 +73,18 @@ void CPlayer::Update (float elapsed)
 	if (CInput::InputToggleOn(CInput::e_inputToggleCrouch) != m_crouched)
 		m_crouched = !m_crouched;
 
-	if (m_crouched && m_playerHeight > 1.0f)
+
+	if (m_crouched && m_playerHeight > c_playerHeightCrouched)
 	{
 		m_playerHeight -= elapsed * 10.0f;
-		if (m_playerHeight < 1.0f)
-			m_playerHeight = 1.0f;
+		if (m_playerHeight < c_playerHeightCrouched)
+			m_playerHeight = c_playerHeightCrouched;
 	}
-	else if (!m_crouched && m_playerHeight < 2.0f)
+	else if (!m_crouched && m_playerHeight < c_playerHeightStanding)
 	{
 		m_playerHeight += elapsed * 10.0f;
-		if (m_playerHeight > 2.0f)
-			m_playerHeight = 2.0f;
+		if (m_playerHeight > c_playerHeightStanding)
+			m_playerHeight = c_playerHeightStanding;
 	}
 
 	float3 playerHeight = {0.0f, m_playerHeight, 0.0f};

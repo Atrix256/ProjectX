@@ -9,11 +9,37 @@ TO "SHIP" TO TEAM
 
 
 NEXT
+* adding uv test to planes slowed everything down, even when no planes in scene. why?!
+* rename plane to quad
+
+* we might want to keep portal info on sectors too? if it's convinient? don't know...
+* make it so portal info is part of material data, along w/ a percentage to apply to rendering it?  but only special axis aligned portals can be walked through.
+ * how would that look on a sphere?
+ * portals are just another way of transforming rays, like reflection and refraction
+! portals probably do need to be axis aligned.  otherwise, what happens if you walk a slope down into a portal of an AAB hallway.  should you slide down the hill because it remembers you entered it at an angle? if so, what if there was something else that entered that same sector flat?  which is the right frame of reference - or is it up to the observer to keep track?  maybe you can look into portals of any kind but only walk through special axis aligned portals
+* make portals not be a property of sector walls, make it be a property of planes
+
+
+* static and dynamic geometry in sectors
+ -Test all sector geoms, then sector.  then do portal if should, else reflection, refraction, or none etc
+ -In dynamic geom lists, keep a sorted list of objects by sector number.
+ -Duplicate object when in multiple.
+ -Similar for light sources? List per sector, possibly dupes when in multiple
+
+* map bulding and traversal
+ -Have "connect" data nodes that make bidirectional connections between sectors.
+ -All is needed is the plane index and point on each plane to connect to (in UV coordinate?) And it will handle the rest.  It will make the quad on each side for the 2 connections.
+ -Maybe also want a one way hook up data node.
+ -Also, should be able to generically make portals by hand.
+ -Also, maybe all materials can be portals??? But only planes & quads can be walked through?
+
+* try ditching fixed game rate? might feel better...
+* jump doesnt always work, when in "fixed game time" mode, since that just checks space bar status, but might have missed one. (problem in recording)
 * make sector walls be able to cast shadows
-* make it so sector walls can have rays go to other sectors. AKA portals
 * portals: test dynamic objects, and if none hit, then test sector geometry.  if the ray enters a new sector, do again.  repeat until something hit, or max ray depth (or max sector traversals?) hit?
 * should we have "regular portals" and "teleport portals"? i kinda just wanna have teleport portals but more complex to implement, at least right away
 * need to put lighting and stuff into the sectors
+* command line param to start recording from the start
 * need to specify starting sector and offset in that sector as part of map data, instead of an absolute coordinate
 * traverse portals when moving, instead of the temp thing going on right now where cpu tells gpu which portal the camera is in
 * find a better way to enforce / handle sectors needing 6 planes, than doing an assert (error / skip?)
@@ -27,6 +53,12 @@ NEXT
  
 
 --RENDERING
+* can try alpha (if even 1 bit).  if you sample a texture that has alpha, add to the color of the ray, multiply future ray colors by transparency amount, and keep ray going along current direction.  can not mix with reflection and refraction
+* we can do procedural objects (just need bounding box or radius or something) and procedural textures too
+* try making it so some things can be distance LODed, like bullet decals that are too far from the player or something.
+* check out schlick's alternative to phong pow()
+* could make material ID's be uint16 instead of uint32 if we want?
+* decals as quads.  you shoot a wall, it sees where, makes a quad with a bullet impact image
 * try generating kernel code that is tailored to geometry - since it has to be compiled at run time anyhow.
  * like have everything hard coded in there for static geometry, and only pass in dynamic geometry?
  * that would make it so different sectors could have different numbers of planes defining them
@@ -100,7 +132,24 @@ NEXT
 
 --GAMEPLAY
 * maybe "named dynamic objects" list to more quickly find named objects?
+* friction (and slipping), varying gravity, jump pads
 
+--ARTIFICIAL INTELLIGENCE
+* keep it simple
+ * melee and ranged attack (each is optional)
+ * different animations
+  * walk animation
+  * melee attack
+  * ranged attack
+  * death animation
+  * take damage animation
+ * walking speed
+ * preference for melee vs ranged attack
+ * walk or fly
+* navigating 
+ -short distance - navmesh in each sector?
+ -medium distance - cost on each sector to go from each sector's portal to each other sector's portal.
+ -long distance - ?? not sure if needed, but if we have a lot of sectors, A* across sectors may be too much
 
 --GFX SETTINGS
 * let maps turn off gfx settings.  AKA if a map doesn't have any refraction, no need to test for it so turn off the setting.
@@ -241,6 +290,13 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--1/12/14
+* made planes be able to define dimensions -> a min/max u,v to be considered as a hit.  IE quads are supported now
+* do compile time const asserts that the size of structs in shared object and shared array are multiples of 16
+
+--1/11/14
+* made sectors into AABBs defined by just width, height, depth.  kept per plane material etc.  portals are still a sector wall feature for now but will change soon.
 
 --1/5/14
 * started formalizing an ID system for the data catalog.

@@ -237,8 +237,24 @@ bool RayIntersectPlane (__constant const struct SPlane *plane, struct SCollision
 	if (collisionTime < 0)
 		return false;
 
-	//enforce max distance
+	// enforce max distance
 	if(collisionTime > info->m_intersectionTime)
+		return false;
+
+	// test our unscaled UV coordinates by the dims to make sure we hit the quad
+	float3 intersectionPoint = rayPos + rayDir * collisionTime;
+
+	float3 surfaceU = plane->m_UAxis;
+	float3 surfaceV = normalize(cross(plane->m_UAxis, plane->m_equation.xyz));
+
+	float2 textureCoordinates;
+	textureCoordinates.x = dot(intersectionPoint, surfaceU);
+	textureCoordinates.y = dot(intersectionPoint, surfaceV);
+
+	if (textureCoordinates.x < plane->m_dims.x
+	 || textureCoordinates.y < plane->m_dims.y
+	 || textureCoordinates.x > plane->m_dims.z
+	 || textureCoordinates.y > plane->m_dims.w)
 		return false;
 
 	// set all the info params since we are garaunteed a hit at this point
@@ -248,20 +264,18 @@ bool RayIntersectPlane (__constant const struct SPlane *plane, struct SCollision
 	info->m_fromInside = denom > 0;
 
 	//compute the point of intersection
-	info->m_intersectionPoint = rayPos + rayDir * collisionTime;
+	info->m_intersectionPoint = intersectionPoint;
 	info->m_intersectionTime = collisionTime;
 
 	// calculate the normal
 	info->m_surfaceNormal = plane->m_equation.xyz;
 
 	// calculate U and V
-	info->m_surfaceU = plane->m_UAxis;
-	info->m_surfaceV = normalize(cross(info->m_surfaceU, info->m_surfaceNormal));
+	info->m_surfaceU = surfaceU;
+	info->m_surfaceV = surfaceV;
 
-	// texture coordinates
-	info->m_textureCoordinates.x = dot(info->m_intersectionPoint, info->m_surfaceU);
-	info->m_textureCoordinates.y = dot(info->m_intersectionPoint, info->m_surfaceV);
-	info->m_textureCoordinates *= plane->m_textureScale;
+	// scaled texture coordinates
+	info->m_textureCoordinates = textureCoordinates * plane->m_textureScale;
 
 	// we found a hit!
 	info->m_objectHit = plane->m_objectId;
@@ -279,33 +293,90 @@ enum ESectorHitResult RayIntersectSector (__constant const struct SSector *secto
 {
 	float closestHitTime = info->m_intersectionTime;
 	int closestHitPlaneIndex = SSECTOR_NUMPLANES;
-	for (int planeIndex = 0; planeIndex < SSECTOR_NUMPLANES; ++planeIndex)
+	float3 closestHitSurfaceNormal;
+
+	// test X axis slab if the ray isn't paralel with the x axis
+	if (rayDir.x != 0.0f)
 	{
-		if (ignorePrimitiveId == sector->m_planes[planeIndex].m_objectId)
-			continue;
+		float denom = 1.0f / rayDir.x;
 
-		// if ray is paralel with plane or hits from the wrong side, bail out (back face culling and divide by zero protection)
-		float denom = dot(sector->m_planes[planeIndex].m_equation.xyz, rayDir);
-		if (denom >= 0)
-			continue;
+		float num1 = -rayPos.x + sector->m_halfDims.x;
+		float num2 = -rayPos.x - sector->m_halfDims.x;
 
-		float num = -(dot(sector->m_planes[planeIndex].m_equation.xyz, rayPos) + sector->m_planes[planeIndex].m_equation.w);
+		float time1 = num1 * denom;
+		float time2 = num2 * denom;
 
-		//t = - (n·org +D) / (n·dir)
-		float collisionTime = num / denom;
+		if (time1 >= time2)
+		{
+			if (time1 > 0.0f && time1 < closestHitTime)
+			{
+				closestHitSurfaceNormal = (float3)(-1.0f, 0.0f, 0.0f);
+				closestHitPlaneIndex = 0;
+				closestHitTime = time1;
+			}
+		}
+		else if (time2 > 0.0f && time2 < closestHitTime)
+		{
+			closestHitSurfaceNormal = (float3)(1.0f, 0.0f, 0.0f);
+			closestHitPlaneIndex = 1;
+			closestHitTime = time2;
+		}
+	}
 
-		if (collisionTime < 0)
-			continue;
+	// test Y axis slab if the ray isn't paralel with the y axis
+	if (rayDir.y != 0.0f)
+	{
+		float denom = 1.0f / rayDir.y;
 
-		//enforce max distance, and make sure we take the closest hit
-		if(collisionTime > closestHitTime)
-			continue;
+		float num1 = -rayPos.y + sector->m_halfDims.y;
+		float num2 = -rayPos.y - sector->m_halfDims.y;
 
-		// remember that this was the closest plane hit and remmeber the collision time
-		// but put off the rest of the calculations til after the loop when we know
-		// which plane is the closest hit
-		closestHitPlaneIndex = planeIndex;
-		closestHitTime = collisionTime;
+		float time1 = num1 * denom;
+		float time2 = num2 * denom;
+
+		if (time1 >= time2)
+		{
+			if (time1 > 0.0f && time1 < closestHitTime)
+			{
+				closestHitSurfaceNormal = (float3)(0.0f, -1.0f, 0.0f);
+				closestHitPlaneIndex = 2;
+				closestHitTime = time1;
+			}
+		}
+		else if (time2 > 0.0f && time2 < closestHitTime)
+		{
+			closestHitSurfaceNormal = (float3)(0.0f, 1.0f, 0.0f);
+			closestHitPlaneIndex = 3;
+			closestHitTime = time2;
+		}
+	}
+
+	// test Z axis slab if the ray isn't paralel with the z axis
+	if (rayDir.z != 0.0f)
+	{
+		float denom = 1.0f / rayDir.z;
+
+		float num1 = -rayPos.z + sector->m_halfDims.z;
+		float num2 = -rayPos.z - sector->m_halfDims.z;
+
+		float time1 = num1 * denom;
+		float time2 = num2 * denom;
+
+		if (time1 >= time2)
+		{
+			if (time1 > 0.0f && time1 < closestHitTime)
+			{
+				closestHitSurfaceNormal = (float3)(0.0f, 0.0f, -1.0f);
+				closestHitPlaneIndex = 4;
+				closestHitTime = time1;
+			}
+		}
+		else if (time2 > 0.0f && time2 < closestHitTime)
+		{
+			closestHitSurfaceNormal = (float3)(0.0f, 0.0f, 1.0f);
+			closestHitPlaneIndex = 5;
+			closestHitTime = time2;
+		}
 	}
 
 	// if no planes hit, bail out
@@ -314,7 +385,7 @@ enum ESectorHitResult RayIntersectSector (__constant const struct SSector *secto
 
 	// Calculate the common values we need to either traverse a sector, or to report a sector wall hit.
 	float3 intersectionPoint = rayPos + rayDir * closestHitTime;
-	float3 surfaceNormal = sector->m_planes[closestHitPlaneIndex].m_equation.xyz;
+	float3 surfaceNormal = closestHitSurfaceNormal;
 	float3 surfaceU = sector->m_planes[closestHitPlaneIndex].m_UAxis;
 	float3 surfaceV = normalize(cross(surfaceU, surfaceNormal));
 	float2 textureCoordinates;
@@ -511,8 +582,10 @@ void TraceRay (
 
 		// test the rays against the sectors of the world
 		// TODO: would need to do this in a loop, testing the dynamic objects in each sector
+		int count = 0;
 		while (currentSector < dataRoot->m_world.m_numSectors
-			&& RayIntersectSector(&sectors[currentSector], &currentSector, &collisionInfo, rayPos, rayDir, lastHitPrimitiveId) == e_sectorTraverse);
+			&& RayIntersectSector(&sectors[currentSector], &currentSector, &collisionInfo, rayPos, rayDir, lastHitPrimitiveId) == e_sectorTraverse
+			&& ++count < 3);
 
 		// if no hit, set pixel to ambient light and bail out
 		if (collisionInfo.m_objectHit == c_invalidObjectId)

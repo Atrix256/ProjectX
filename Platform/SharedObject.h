@@ -21,6 +21,7 @@ class CSharedObject
 public:
 	CSharedObject()
 	{
+		static_assert(sizeof(T) % 16 == 0, "CSharedObject type sizes must be multiples of 16");
 		m_clData = NULL;
 		m_clDataStale = true;
 	}

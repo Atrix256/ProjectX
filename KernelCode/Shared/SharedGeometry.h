@@ -59,24 +59,24 @@ struct SAABox
 
 struct SPlane
 {
-	cl_float4 m_equation;
-	float3 m_UAxis;
-	cl_float2 m_textureScale;
-	cl_float2 m_pack3;
-	cl_uint m_materialIndex;
-	TObjectId m_objectId;
-	cl_uchar m_castsShadows;
-	cl_uchar m_pack1b;
-	cl_uchar m_pack1c;
-	cl_uchar m_pack1d;
-	cl_uint m_pack2;
+	cl_float4 m_equation;     
+	float3 m_UAxis;           
+	cl_float4 m_dims;         
+	cl_float2 m_textureScale; 
+	cl_float2 m_pack3;        
+	cl_uint m_materialIndex;  
+	TObjectId m_objectId;     
+	cl_uchar m_castsShadows;  
+	cl_uchar m_pack1b;        
+	cl_uchar m_pack1c;        
+	cl_uchar m_pack1d;        
+	cl_uint m_pack2;          
 };
 
 #define SSECTOR_NUMPLANES 6
 
 struct SSectorPlane
 {
-	cl_float4 m_equation;
 	float3 m_UAxis;
 	cl_float2 m_textureScale;
 	cl_uint m_materialIndex;
@@ -91,6 +91,7 @@ struct SSectorPlane
 struct SSector
 {
 	struct SSectorPlane m_planes[SSECTOR_NUMPLANES];
+	float3 m_halfDims;
 	cl_uint m_castsShadows;
 	cl_uint m_pack1a;
 	cl_uint m_pack1b;

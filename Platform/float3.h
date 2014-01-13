@@ -79,6 +79,14 @@ public:
 		return ret;
 	}
 
+	inline float3 operator/= (const float v)
+	{
+		(*this)[0] /= v;
+		(*this)[1] /= v;
+		(*this)[2] /= v;
+		return *this;
+	}
+
 	inline float3 operator* (const float v) const
 	{
 		float3 ret;

@@ -76,6 +76,7 @@ SchemaEnd
 SchemaBegin(Plane)
 	Field_Schema(Vec3, Normal, "0,0,0")
 	Field_Schema(Vec3, UAxis, "0,0,0")
+	Field_Schema(Vec4, Dimensions, "-10000,-10000,10000,10000")
 	Field(float, D, 0.0f)
 	Field(std::string, Material, "")
 	Field_Schema(Vec2, TextureScale, "1,1")
@@ -83,9 +84,7 @@ SchemaBegin(Plane)
 SchemaEnd
 
 SchemaBegin(SectorPlane)
-	Field_Schema(Vec3, Normal, "0,0,0")
 	Field_Schema(Vec3, UAxis, "0,0,0")
-	Field(float, D, 0.0f)
 	Field(std::string, Material, "")
 	Field_Schema(Vec2, TextureScale, "1,1")
 	Field(std::string, PortalNextSector, "")
@@ -94,6 +93,7 @@ SchemaEnd
 
 SchemaBegin(Sector)
 	Field(std::string, id, "")
+	Field_Schema(Vec3, Dimensions, "1,1,1")
 	Field_Schema_Array(SectorPlane, Plane)
 	Field(bool, CastShadows, true)
 SchemaEnd

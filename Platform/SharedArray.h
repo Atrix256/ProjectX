@@ -19,6 +19,7 @@ class CSharedArray
 public:
 	CSharedArray()
 	{
+		static_assert(sizeof(T) % 16 == 0, "CSharedArray type sizes must be multiples of 16");
 		m_clData = NULL;
 		m_data = NULL;
 		m_dataSize = 0;

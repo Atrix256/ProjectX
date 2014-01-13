@@ -160,6 +160,10 @@ bool CWorld::Load(const char *worldFileName)
 		Copy(m_planes[index].m_UAxis, worldData.m_Plane[index].m_UAxis);
 		m_planes[index].m_castsShadows = worldData.m_Plane[index].m_CastShadows;
 		Copy(m_planes[index].m_textureScale, worldData.m_Plane[index].m_TextureScale);
+		m_planes[index].m_dims.s[0] = worldData.m_Plane[index].m_Dimensions.m_x;
+		m_planes[index].m_dims.s[1] = worldData.m_Plane[index].m_Dimensions.m_y;
+		m_planes[index].m_dims.s[2] = worldData.m_Plane[index].m_Dimensions.m_z;
+		m_planes[index].m_dims.s[3] = worldData.m_Plane[index].m_Dimensions.m_w;
 
 		// make sure the normal is normalized in the equation and normalize the U axis
 		Normalize(m_planes[index].m_equation);
@@ -175,13 +179,15 @@ bool CWorld::Load(const char *worldFileName)
 	{
 		Assert_(worldData.m_Sector[index].m_Plane.size() == 6);
 
+		Copy(m_sectors[index].m_halfDims, worldData.m_Sector[index].m_Dimensions);
+		m_sectors[index].m_halfDims /= 2.0f;
+
 		m_sectors[index].m_castsShadows = worldData.m_Sector[index].m_CastShadows;
 
 		for (unsigned int planeIndex = 0; planeIndex < SSECTOR_NUMPLANES; ++planeIndex)
 		{
 			m_sectors[index].m_planes[planeIndex].m_objectId = nextObjectId++;
 
-			Copy(m_sectors[index].m_planes[planeIndex].m_equation, worldData.m_Sector[index].m_Plane[planeIndex].m_Normal, worldData.m_Sector[index].m_Plane[planeIndex].m_D);
 			Copy(m_sectors[index].m_planes[planeIndex].m_UAxis, worldData.m_Sector[index].m_Plane[planeIndex].m_UAxis);
 			Copy(m_sectors[index].m_planes[planeIndex].m_textureScale, worldData.m_Sector[index].m_Plane[planeIndex].m_TextureScale);
 
@@ -189,8 +195,7 @@ bool CWorld::Load(const char *worldFileName)
 			m_sectors[index].m_planes[planeIndex].m_portalNextSector = SData::GetEntryById(worldData.m_Sector, worldData.m_Sector[index].m_Plane[planeIndex].m_PortalNextSector);
 			Copy(m_sectors[index].m_planes[planeIndex].m_portalWindow, worldData.m_Sector[index].m_Plane[planeIndex].m_PortalWindow);
 
-			// make sure the normal is normalized in the equation, and that the Uaxis is normalized
-			Normalize(m_sectors[index].m_planes[planeIndex].m_equation);
+			// make sure the Uaxis is normalized
 			Normalize(m_sectors[index].m_planes[planeIndex].m_UAxis);
 
 			// set the material index

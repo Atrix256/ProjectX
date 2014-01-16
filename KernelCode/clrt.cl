@@ -2,7 +2,7 @@
 
 clrt.cl
 
-The kernel code 
+The kernel code
 
 ==================================================================================================*/
 
@@ -439,11 +439,9 @@ inline bool PointCanSeePoint(
 	const float3 startPos,
 	const float3 targetPos,
 	const TObjectId ignorePrimitiveId,
-	int numSpheres,
+	__constant const struct SSector *sector,
 	__constant struct SSphere *spheres,
-	int numBoxes,
 	__constant struct SAABox *boxes,
-	int numPlanes,
 	__constant struct SPlane *planes
 )
 {
@@ -467,21 +465,24 @@ inline bool PointCanSeePoint(
 	collisionInfo.m_intersectionTime = length(rayDir);
 	rayDir = normalize(rayDir);
 
-	for (int sphereIndex = 0; sphereIndex < numSpheres; ++sphereIndex) {
-		if (spheres[sphereIndex].m_castsShadows
-		 && RayIntersectSphere(&spheres[sphereIndex], &collisionInfo, startPos, rayDir, ignorePrimitiveId))
+	for (int index = sector->m_staticSphereStartIndex; index < sector->m_staticSphereStopIndex; ++index)
+	{
+		if (spheres[index].m_castsShadows
+		 && RayIntersectSphere(&spheres[index], &collisionInfo, startPos, rayDir, ignorePrimitiveId))
 			return false;
 	}
 
-	for (int boxIndex = 0; boxIndex < numBoxes; ++boxIndex) {
-		if (boxes[boxIndex].m_castsShadows
-		 && RayIntersectAABox(&boxes[boxIndex], &collisionInfo, startPos, rayDir, ignorePrimitiveId))
+	for (int index = sector->m_staticBoxStartIndex; index < sector->m_staticBoxStopIndex; ++index)
+	{
+		if (boxes[index].m_castsShadows
+		 && RayIntersectAABox(&boxes[index], &collisionInfo, startPos, rayDir, ignorePrimitiveId))
 			return false;
 	}
 
-	for (int planeIndex = 0; planeIndex < numPlanes; ++planeIndex) {
-		if (planes[planeIndex].m_castsShadows
-		 && RayIntersectPlane(&planes[planeIndex], &collisionInfo, startPos, rayDir, ignorePrimitiveId))
+	for (int index = sector->m_staticPlaneStartIndex; index < sector->m_staticPlaneStopIndex; ++index)
+	{
+		if (planes[index].m_castsShadows
+		 && RayIntersectPlane(&planes[index], &collisionInfo, startPos, rayDir, ignorePrimitiveId))
 			return false;
 	}
 	#endif
@@ -493,15 +494,13 @@ inline bool PointCanSeePoint(
 void ApplyPointLight (
 	float3 *pixelColor,
 	const struct SCollisionInfo *collisionInfo,
+	__constant const struct SSector *sector,
 	__constant const struct SMaterial *material,
 	__constant const struct SPointLight *light,
 	const float reflectionAmount,
 	const float3 rayDir,
-	int numSpheres,
 	__constant struct SSphere *spheres,
-	int numBoxes,
 	__constant struct SAABox *boxes,
-	int numPlanes,
 	__constant struct SPlane *planes,
 	float3 diffuseColor
 )
@@ -510,11 +509,9 @@ void ApplyPointLight (
 		collisionInfo->m_intersectionPoint,
 		light->m_position,
 		collisionInfo->m_objectHit,
-		numSpheres,
+		sector,
 		spheres,
-		numBoxes,
 		boxes,
-		numPlanes,
 		planes)
 	)
 		return;
@@ -532,6 +529,7 @@ void ApplyPointLight (
 		*pixelColor += material->m_specularColorAndPower.xyz * pow(dp, material->m_specularColorAndPower.w) * light->m_color * reflectionAmount;
 }
 
+//
 void TraceRay (
 	__constant struct SSharedDataRoot *dataRoot,
 	__read_only image3d_t tex3dIn,
@@ -547,7 +545,6 @@ void TraceRay (
 	__constant struct SPortal *portals
 )
 {
-	float3 ambientLight = dataRoot->m_world.m_ambientLight;
 	TObjectId lastHitPrimitiveId = c_invalidObjectId;
 
 	float colorMultiplier = 1.0f;
@@ -556,7 +553,7 @@ void TraceRay (
 
 	unsigned int currentSector = dataRoot->m_camera.m_sector;
 
-	for(int index = 0; index < c_maxRayBounces; ++index)
+	for(int index = 0; index < c_maxRayBounces && currentSector != -1; ++index)
 	{
 		struct SCollisionInfo collisionInfo = 
 		{
@@ -572,18 +569,20 @@ void TraceRay (
 			0,
 		};
 
-		for (int sphereIndex = 0; sphereIndex < dataRoot->m_world.m_numSpheres; ++sphereIndex)
-			RayIntersectSphere(&spheres[sphereIndex], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
+		__constant const struct SSector *sector = &sectors[currentSector];
 
-		for (int boxIndex = 0; boxIndex < dataRoot->m_world.m_numBoxes; ++boxIndex)
-			RayIntersectAABox(&boxes[boxIndex], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
+		const float3 ambientLight = sector->m_ambientLight;
 
-		for (int planeIndex = 0; planeIndex < dataRoot->m_world.m_numPlanes; ++planeIndex)
-			RayIntersectPlane(&planes[planeIndex], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
+		for (int index = sector->m_staticSphereStartIndex; index < sector->m_staticSphereStopIndex; ++index)
+			RayIntersectSphere(&spheres[index], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
 
-		// test the rays against the current world sector if it's valid
-		if (currentSector < dataRoot->m_world.m_numSectors)
-			RayIntersectSector(&sectors[currentSector], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
+		for (int index = sector->m_staticBoxStartIndex; index < sector->m_staticBoxStopIndex; ++index)
+			RayIntersectAABox(&boxes[index], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
+
+		for (int index = sector->m_staticPlaneStartIndex; index < sector->m_staticPlaneStopIndex; ++index)
+			RayIntersectPlane(&planes[index], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
+
+		RayIntersectSector(sector, &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
 
 		// if no hit, set pixel to ambient light and bail out
 		if (collisionInfo.m_objectHit == c_invalidObjectId)
@@ -679,19 +678,17 @@ void TraceRay (
 		float3 diffuseColor = diffuseColorBase * ambientLight + emissiveColor;
 
 		// apply diffuse / specular from a point light
-		for (int lightIndex = 0; lightIndex < dataRoot->m_world.m_numLights; ++lightIndex)
+		for (int index = sector->m_staticLightStartIndex; index < sector->m_staticLightStopIndex; ++index)
 			ApplyPointLight(
 				&diffuseColor,
 				&collisionInfo,
+				sector,
 				material,
-				&lights[lightIndex],
+				&lights[index],
 				colorMultiplier,
 				rayDir,
-				dataRoot->m_world.m_numSpheres,
 				spheres,
-				dataRoot->m_world.m_numBoxes,
 				boxes,
-				dataRoot->m_world.m_numPlanes,
 				planes,
 				diffuseColorBase
 			);

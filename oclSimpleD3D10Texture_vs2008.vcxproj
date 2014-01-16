@@ -227,7 +227,6 @@
     <ClInclude Include="KernelCode\Shared\SharedGeometry.h" />
     <ClInclude Include="KernelCode\Shared\SharedTypes.h" />
     <ClInclude Include="KernelCode\Shared\SSharedDataRoot.h" />
-    <ClInclude Include="KernelCode\Shared\SWorld.h" />
     <ClInclude Include="Platform\Assert.h" />
     <ClInclude Include="Platform\CDirectx.h" />
     <ClInclude Include="Platform\CTextureManager.h" />
@@ -260,8 +259,12 @@
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="Data\FPSLevel.xml" />
-    <Xml Include="Data\GameData.xml" />
-    <Xml Include="Data\GfxSettings.xml" />
+    <Xml Include="Data\GameData.xml">
+      <SubType>Designer</SubType>
+    </Xml>
+    <Xml Include="Data\GfxSettings.xml">
+      <SubType>Designer</SubType>
+    </Xml>
     <Xml Include="Data\showroom.xml" />
     <Xml Include="Data\simple.xml" />
   </ItemGroup>

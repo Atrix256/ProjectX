@@ -24,13 +24,3 @@ const SCamera &SSharedDataRoot::CameraConst()
 {
 	return s_data.GetObjectConst().m_camera;
 }
-
-SWorld &SSharedDataRoot::World()
-{
-	return s_data.GetObject().m_world;
-}
-
-const SWorld &SSharedDataRoot::WorldConst()
-{
-	return s_data.GetObjectConst().m_world;
-}

@@ -79,7 +79,165 @@ void Normalize(cl_float4 &vec)
 }
 
 //-----------------------------------------------------------------------------
-bool CWorld::Load(const char *worldFileName)
+void CWorld::LoadSectorPlanes (
+	SSector &sector,
+	struct SData_Sector &sectorSource,
+	std::vector<struct SData_Material> &materials,
+	std::vector<struct SData_Portal> &portals
+) {
+	// load the planes geometry entries
+	sector.m_staticPlaneStartIndex = m_planes.Count();
+	m_planes.Resize(m_planes.Count() + sectorSource.m_Plane.size());
+	for (unsigned int planeIndex = 0, planeCount = sectorSource.m_Plane.size(); planeIndex < planeCount; ++planeIndex)
+	{
+		SPlane &plane = m_planes[sector.m_staticPlaneStartIndex + planeIndex];
+		SData_Plane &planeSource = sectorSource.m_Plane[planeIndex];
+		plane.m_objectId = m_nextObjectId++;
+		Copy(plane.m_equation, planeSource.m_Normal, planeSource.m_D);
+		Copy(plane.m_UAxis, planeSource.m_UAxis);
+		plane.m_castsShadows = planeSource.m_CastShadows;
+		Copy(plane.m_textureScale, planeSource.m_TextureScale);
+		plane.m_dims.s[0] = planeSource.m_Dimensions.m_x;
+		plane.m_dims.s[1] = planeSource.m_Dimensions.m_y;
+		plane.m_dims.s[2] = planeSource.m_Dimensions.m_z;
+		plane.m_dims.s[3] = planeSource.m_Dimensions.m_w;
+
+		// make sure the normal is normalized in the equation and normalize the U axis
+		Normalize(plane.m_equation);
+		Normalize(plane.m_UAxis);
+
+		// set the material index
+		plane.m_materialIndex = SData::GetEntryById(materials, planeSource.m_Material);
+
+		// set the portal index
+		plane.m_portalIndex = SData::GetEntryById(portals, planeSource.m_Portal);
+	}
+	sector.m_staticPlaneStopIndex = m_planes.Count();
+}
+
+//-----------------------------------------------------------------------------
+void CWorld::LoadSectorBoxes (
+	SSector &sector,
+	struct SData_Sector &sectorSource,
+	std::vector<struct SData_Material> &materials,
+	std::vector<struct SData_Portal> &portals
+) {
+	// load the box geometry entries
+	sector.m_staticBoxStartIndex = m_boxes.Count();
+	m_boxes.Resize(m_boxes.Count() + sectorSource.m_Box.size());
+	for (unsigned int index = 0, count = sectorSource.m_Box.size(); index < count; ++index)
+	{
+		SAABox &box = m_boxes[sector.m_staticBoxStartIndex + index];
+		SData_Box &boxSource = sectorSource.m_Box[index];
+		box.m_objectId = m_nextObjectId++;
+		Copy(box.m_position, boxSource.m_Position);
+		Copy(box.m_scale, boxSource.m_Scale);
+		box.m_castsShadows = boxSource.m_CastShadows;
+		Copy(box.m_textureScale, boxSource.m_TextureScale);
+
+		// set the material index
+		box.m_materialIndex = SData::GetEntryById(materials, boxSource.m_Material);
+
+		// set the portal index
+		box.m_portalIndex = SData::GetEntryById(portals, boxSource.m_Portal);
+	}
+	sector.m_staticBoxStopIndex = m_boxes.Count();
+}
+
+//-----------------------------------------------------------------------------
+void CWorld::LoadSectorSpheres (
+	SSector &sector,
+	struct SData_Sector &sectorSource,
+	std::vector<struct SData_Material> &materials,
+	std::vector<struct SData_Portal> &portals
+) {
+	// load the sphere geometry entries
+	sector.m_staticSphereStartIndex = m_spheres.Count();
+	m_spheres.Resize(m_spheres.Count() + sectorSource.m_Sphere.size());
+	for (unsigned int index = 0, count = sectorSource.m_Sphere.size(); index < count; ++index)
+	{
+		SSphere &sphere = m_spheres[sector.m_staticSphereStartIndex + index];
+		SData_Sphere &sphereSource = sectorSource.m_Sphere[index];
+		sphere.m_objectId = m_nextObjectId++;
+		Copy(sphere.m_positionAndRadius, sphereSource.m_Position, sphereSource.m_Radius);
+		sphere.m_castsShadows = sphereSource.m_CastShadows;
+		Copy(sphere.m_textureScale, sphereSource.m_TextureScale);
+
+		// set the material index
+		sphere.m_materialIndex = SData::GetEntryById(materials, sphereSource.m_Material);
+
+		// set the portal index
+		sphere.m_portalIndex = SData::GetEntryById(portals, sphereSource.m_Portal);
+	}
+	sector.m_staticSphereStopIndex = m_spheres.Count();
+}
+
+//-----------------------------------------------------------------------------
+void CWorld::LoadSectorPointLights (
+	SSector &sector,
+	struct SData_Sector &sectorSource,
+	std::vector<struct SData_Material> &materials,
+	std::vector<struct SData_Portal> &portals
+) {
+	// load the point light entries
+	sector.m_staticLightStartIndex = m_pointLights.Count();	
+	m_pointLights.Resize(m_pointLights.Count() + sectorSource.m_PointLight.size());
+	for (unsigned int index = 0, count = sectorSource.m_PointLight.size(); index < count; ++index)
+	{
+		SPointLight &light = m_pointLights[sector.m_staticLightStartIndex + index];
+		SData_PointLight &lightSource = sectorSource.m_PointLight[index];
+		Copy(light.m_color, lightSource.m_Color);
+		Copy(light.m_position, lightSource.m_Position);
+	}
+	sector.m_staticLightStopIndex = m_pointLights.Count();
+}
+
+//-----------------------------------------------------------------------------
+void CWorld::LoadSector (
+	SSector &sector,
+	struct SData_Sector &sectorSource,
+	std::vector<struct SData_Material> &materials,
+	std::vector<struct SData_Portal> &portals
+) {
+	Assert_(sectorSource.m_SectorPlane.size() == 6);
+
+	// load / set the sector data
+	Copy(sector.m_ambientLight, sectorSource.m_AmbientLight);
+	Copy(sector.m_halfDims, sectorSource.m_Dimensions);
+	sector.m_halfDims /= 2.0f;
+	sector.m_castsShadows = sectorSource.m_CastShadows;
+
+	// load the sector planes data
+	for (unsigned int planeIndex = 0; planeIndex < SSECTOR_NUMPLANES; ++planeIndex)
+	{
+		SSectorPlane &plane = sector.m_planes[planeIndex];
+		SData_SectorPlane &planeSource = sectorSource.m_SectorPlane[planeIndex];
+		plane.m_objectId = m_nextObjectId++;
+
+		Copy(plane.m_UAxis, planeSource.m_UAxis);
+		Copy(plane.m_textureScale, planeSource.m_TextureScale);
+
+		// copy the portal window
+		Copy(plane.m_portalWindow, planeSource.m_PortalWindow);
+
+		// make sure the Uaxis is normalized
+		Normalize(plane.m_UAxis);
+
+		// set the material index
+		plane.m_materialIndex = SData::GetEntryById(materials, planeSource.m_Material);
+
+		// set the portal index
+		plane.m_portalIndex = SData::GetEntryById(portals, planeSource.m_Portal);
+	}
+
+	LoadSectorPointLights(sector, sectorSource, materials, portals);
+	LoadSectorPlanes(sector, sectorSource, materials, portals);
+	LoadSectorBoxes(sector, sectorSource, materials, portals);
+	LoadSectorSpheres(sector, sectorSource, materials, portals);
+}
+
+//-----------------------------------------------------------------------------
+bool CWorld::Load (const char *worldFileName)
 {
 	SData_World worldData;
 	if (!DataSchemasXML::Load(worldData, worldFileName, "World"))
@@ -89,14 +247,6 @@ bool CWorld::Load(const char *worldFileName)
 	SSharedDataRoot::Camera().m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_StartSector);
 	CGame::SetPlayerPos(worldData.m_StartPoint.m_x, worldData.m_StartPoint.m_y, worldData.m_StartPoint.m_z);
 	CGame::SetPlayerFacing(worldData.m_StartFacing * 3.1415f / 180.0f);
-
-	// point lights
-	m_pointLights.Resize(worldData.m_PointLight.size());
-	for (unsigned int index = 0, count = worldData.m_PointLight.size(); index < count; ++index)
-	{
-		Copy(m_pointLights[index].m_color, worldData.m_PointLight[index].m_Color);
-		Copy(m_pointLights[index].m_position, worldData.m_PointLight[index].m_Position);
-	}
 
 	// portals
 	m_portals.Resize(worldData.m_Portal.size());
@@ -134,99 +284,12 @@ bool CWorld::Load(const char *worldFileName)
 
 	}
 
-	unsigned int nextObjectId = 1;
-
-	// boxes
-	m_boxes.Resize(worldData.m_Box.size());
-	for (unsigned int index = 0, count = worldData.m_Box.size(); index < count; ++index)
-	{
-		m_boxes[index].m_objectId = nextObjectId++;
-		Copy(m_boxes[index].m_position, worldData.m_Box[index].m_Position);
-		Copy(m_boxes[index].m_scale, worldData.m_Box[index].m_Scale);
-		m_boxes[index].m_castsShadows = worldData.m_Box[index].m_CastShadows;
-		Copy(m_boxes[index].m_textureScale, worldData.m_Box[index].m_TextureScale);
-
-		// set the material index
-		m_boxes[index].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Box[index].m_Material);
-
-		// set the portal index
-		m_boxes[index].m_portalIndex = SData::GetEntryById(worldData.m_Portal, worldData.m_Box[index].m_Portal);
-	}
-
-	// spheres
-	m_spheres.Resize(worldData.m_Sphere.size());
-	for (unsigned int index = 0, count = worldData.m_Sphere.size(); index < count; ++index)
-	{
-		m_spheres[index].m_objectId = nextObjectId++;
-		Copy(m_spheres[index].m_positionAndRadius, worldData.m_Sphere[index].m_Position, worldData.m_Sphere[index].m_Radius);
-		m_spheres[index].m_castsShadows = worldData.m_Sphere[index].m_CastShadows;
-		Copy(m_spheres[index].m_textureScale, worldData.m_Sphere[index].m_TextureScale);
-
-		// set the material index
-		m_spheres[index].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Sphere[index].m_Material);
-
-		// set the portal index
-		m_spheres[index].m_portalIndex = SData::GetEntryById(worldData.m_Portal, worldData.m_Sphere[index].m_Portal);
-	}
-
-	// planes
-	m_planes.Resize(worldData.m_Plane.size());
-	for (unsigned int index = 0, count = worldData.m_Plane.size(); index < count; ++index)
-	{
-		m_planes[index].m_objectId = nextObjectId++;
-		Copy(m_planes[index].m_equation, worldData.m_Plane[index].m_Normal, worldData.m_Plane[index].m_D);
-		Copy(m_planes[index].m_UAxis, worldData.m_Plane[index].m_UAxis);
-		m_planes[index].m_castsShadows = worldData.m_Plane[index].m_CastShadows;
-		Copy(m_planes[index].m_textureScale, worldData.m_Plane[index].m_TextureScale);
-		m_planes[index].m_dims.s[0] = worldData.m_Plane[index].m_Dimensions.m_x;
-		m_planes[index].m_dims.s[1] = worldData.m_Plane[index].m_Dimensions.m_y;
-		m_planes[index].m_dims.s[2] = worldData.m_Plane[index].m_Dimensions.m_z;
-		m_planes[index].m_dims.s[3] = worldData.m_Plane[index].m_Dimensions.m_w;
-
-		// make sure the normal is normalized in the equation and normalize the U axis
-		Normalize(m_planes[index].m_equation);
-		Normalize(m_planes[index].m_UAxis);
-
-		// set the material index
-		m_planes[index].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Plane[index].m_Material);
-
-		// set the portal index
-		m_planes[index].m_portalIndex = SData::GetEntryById(worldData.m_Portal, worldData.m_Plane[index].m_Portal);
-	}
-
 	// sectors
 	m_sectors.Resize(worldData.m_Sector.size());
-	for (unsigned int index = 0, count = worldData.m_Sector.size(); index < count; ++index)
-	{
-		Assert_(worldData.m_Sector[index].m_Plane.size() == 6);
+	for (unsigned int sectorIndex = 0, sectorCount = worldData.m_Sector.size(); sectorIndex < sectorCount; ++sectorIndex)
+		LoadSector(m_sectors[sectorIndex], worldData.m_Sector[sectorIndex], worldData.m_Material, worldData.m_Portal);
 
-		Copy(m_sectors[index].m_halfDims, worldData.m_Sector[index].m_Dimensions);
-		m_sectors[index].m_halfDims /= 2.0f;
-
-		m_sectors[index].m_castsShadows = worldData.m_Sector[index].m_CastShadows;
-
-		for (unsigned int planeIndex = 0; planeIndex < SSECTOR_NUMPLANES; ++planeIndex)
-		{
-			m_sectors[index].m_planes[planeIndex].m_objectId = nextObjectId++;
-
-			Copy(m_sectors[index].m_planes[planeIndex].m_UAxis, worldData.m_Sector[index].m_Plane[planeIndex].m_UAxis);
-			Copy(m_sectors[index].m_planes[planeIndex].m_textureScale, worldData.m_Sector[index].m_Plane[planeIndex].m_TextureScale);
-
-			// copy the portal window
-			Copy(m_sectors[index].m_planes[planeIndex].m_portalWindow, worldData.m_Sector[index].m_Plane[planeIndex].m_PortalWindow);
-
-			// make sure the Uaxis is normalized
-			Normalize(m_sectors[index].m_planes[planeIndex].m_UAxis);
-
-			// set the material index
-			m_sectors[index].m_planes[planeIndex].m_materialIndex = SData::GetEntryById(worldData.m_Material, worldData.m_Sector[index].m_Plane[planeIndex].m_Material);
-
-			// set the portal index
-			m_sectors[index].m_planes[planeIndex].m_portalIndex = SData::GetEntryById(worldData.m_Portal, worldData.m_Sector[index].m_Plane[planeIndex].m_Portal);
-		}
-	}
-
-	// calculate our texture indices
+	// calculate the texture indices of our textures
 	for (unsigned int index = 0, count = worldData.m_Material.size(); index < count; ++index)
 	{
 		m_materials[index].m_diffuseTextureIndex = (m_materials[index].m_diffuseTextureIndex - 1.0f) / (float)CDirectX::TextureManager().NumTextures();
@@ -242,15 +305,5 @@ bool CWorld::Load(const char *worldFileName)
 	// combine all the textures now that they are all loaded
 	CDirectX::TextureManager().FinalizeTextures();
 
-	// set our shared data values
-	SWorld &worldShared = SSharedDataRoot::World();
-	Copy(worldShared.m_ambientLight, worldData.m_AmbientLight);
-	worldShared.m_numLights = m_pointLights.Count();
-	worldShared.m_numSpheres = m_spheres.Count();
-	worldShared.m_numBoxes = m_boxes.Count();
-	worldShared.m_numPlanes = m_planes.Count();
-	worldShared.m_numSectors = m_sectors.Count();
-	worldShared.m_numMaterials = m_materials.Count();
-	worldShared.m_numPortals = m_portals.Count();
 	return true;
 }

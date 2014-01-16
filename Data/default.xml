@@ -3,55 +3,62 @@
   <StartPoint Value="0,0,0"/>
   <StartFacing Value="0"/>
   
-  <AmbientLight Value="0.1, 0.1, 0.1"/>
-
-  <PointLight Position="4, 2, 0" Color="1,1,0.9"/>
-  
   <Material id="TexturedWall" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="1.0, 1.0, 1.0" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
   <Material id="Cieling" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="0.2, 0.2, 0.2" NormalTexture="Art/simplenormal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
   <Material id="Floor" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="1.0, 1.0, 1.0" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
 
-  <Portal id="Room1ToLedge" Sector="Ledge" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="0,0,0,1"/>
+  <Portal id="Room1ToLedge" Sector="Ledge" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="45,0,0,1"/>
+  <Sector id="Room1" Dimensions="40,10,20" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+    <PointLight Position="4, 2, 0" Color="1,1,0.9"/>
+    
+    <Plane Normal="-1,0.3,0.2" UAxis="0,0,1" Dimensions="-3,-1,-1,1" D="-3" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
+    <Plane Normal="-1,0.7,0.1" UAxis="0,0,1" Dimensions="1,-1,3,1" D="-5" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
+    <Plane Normal="-1,-0.1,-0.7" UAxis="0,0,1" Dimensions="-1,2,1,4" D="-2.5" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
+
+    <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="-3,-4.5,3,4.5" Portal="Room1ToLedge"/>
+
+    <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+
+    <SectorPlane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25"/>
+  </Sector>
+
   <Portal id="LedgeToRoom1" Sector="Room1"/>
   <Portal id="LedgeToLargeRoom" Sector="LargeRoom"/>
+  <Sector id="Ledge" Dimensions="50,9,6" CastShadows="false" AmbientLight="0.0, 0.0, 1.0">
 
-  <Plane Normal="-1,0,0" UAxis="0,0,1" Dimensions="-3,-4.5,3,4.5" D="-19.9" CastShadows="0" Portal="LedgeToRoom1"/>
+    <PointLight Position="15, 0, 0" Color="1,1,0"/>
 
-  <Plane Normal="-1,0.3,0.2" UAxis="0,0,1" Dimensions="-3,-1,-1,1" D="-3" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
-  <Plane Normal="-1,0.7,0.1" UAxis="0,0,1" Dimensions="1,-1,3,1" D="-5" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
-  <Plane Normal="-1,-0.1,-0.7" UAxis="0,0,1" Dimensions="-1,2,1,4" D="-2.5" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
+    <PointLight Position="-15, 0, 0" Color="1,0,1"/>
 
-  <Sector id="Room1" Dimensions="40,10,20" CastShadows="false">
-    <Plane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25"/>
-    <Plane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="-3,-4.5,3,4.5" Portal="Room1ToLedge"/>
+    <Plane Normal="-1,0.3,0.2" UAxis="0,0,1" Dimensions="-3,-1,-1,1" D="5" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
+    <Plane Normal="-1,0.3,0.2" UAxis="0,0,1" Dimensions="0,-1,2,1" D="4" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
+    
+    <!--Plane Normal="-1,0,0" UAxis="0,0,1" Dimensions="-3,-4.5,3,4.5" D="-19.9" CastShadows="0" Portal="LedgeToRoom1"/-->
 
-    <Plane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
-    <Plane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+    <Plane Normal="-1,0,0" UAxis="0,0,1" Dimensions="-1,-1,1,1" D="25" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
 
-    <Plane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25"/>
-    <Plane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/><!--TODO: FIX when portals are translated correctly Portal="LedgeToRoom1"/-->
+    <SectorPlane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/><!--Portal="LedgeToLargeRoom"/-->
+
+    <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/><!--Portal="LedgeToLargeRoom"/-->
+    <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+
+    <SectorPlane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25"/><!-- Portal="LedgeToLargeRoom"/-->
+    <SectorPlane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25"/><!-- Portal="LedgeToLargeRoom"/-->
   </Sector>
-  
-  <Sector id="Ledge" Dimensions="60,9,6" CastShadows="false">
-    <Plane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/><!--TODO: FIX when portals are translated correctly Portal="LedgeToRoom1"/-->
-    <Plane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25" Portal="LedgeToLargeRoom"/>
 
-    <Plane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25" Portal="LedgeToLargeRoom"/>
-    <Plane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+  <!--Sector id="LargeRoom" Dimensions="75,15,75" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+    <SectorPlane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
 
-    <Plane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25" Portal="LedgeToLargeRoom"/>
-    <Plane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25" Portal="LedgeToLargeRoom"/>
-  </Sector>  
+    <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
 
-  <Sector id="LargeRoom" Dimensions="75,15,75" CastShadows="false">
-    <Plane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
-    <Plane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
-
-    <Plane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
-    <Plane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
-
-    <Plane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
-    <Plane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
-  </Sector>
+    <SectorPlane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,1,0" Material="Cieling" TextureScale="0.25,0.25"/>
+  </Sector-->
 
 </World>

@@ -90,9 +90,14 @@ SchemaBegin(SectorPlane)
 SchemaEnd
 
 SchemaBegin(Sector)
+	Field_Schema(Vec3, AmbientLight, "0,0,0")
+	Field_Schema_Array(PointLight, PointLight)
+	Field_Schema_Array(Plane, Plane)
+	Field_Schema_Array(Box, Box)
+	Field_Schema_Array(Sphere, Sphere)
 	Field(std::string, id, "")
 	Field_Schema(Vec3, Dimensions, "1,1,1")
-	Field_Schema_Array(SectorPlane, Plane)
+	Field_Schema_Array(SectorPlane, SectorPlane)
 	Field(bool, CastShadows, true)
 SchemaEnd
 
@@ -100,12 +105,7 @@ SchemaBegin(World)
 	Field(std::string, StartSector, "")
 	Field_Schema(Vec3, StartPoint, "0,0,0")
 	Field(float, StartFacing, 0.0f)
-	Field_Schema(Vec3, AmbientLight, "0,0,0")
-	Field_Schema_Array(PointLight, PointLight)
 	Field_Schema_Array(Material, Material)
 	Field_Schema_Array(Portal, Portal)
-	Field_Schema_Array(Box, Box)
-	Field_Schema_Array(Sphere, Sphere)
-	Field_Schema_Array(Plane, Plane)
 	Field_Schema_Array(Sector, Sector)
 SchemaEnd

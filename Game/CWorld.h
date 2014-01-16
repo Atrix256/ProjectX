@@ -11,11 +11,12 @@ This class holds all information about the world
 #include "Platform/SharedArray.h"
 #include "KernelCode/Shared/SharedGeometry.h"
 #include "KernelCode/Shared/SSharedDataRoot.h"
+#include <vector>
 
 class CWorld
 {
 public:
-	CWorld() { }
+	CWorld() { m_nextObjectId = 1; }
 	~CWorld() { Release(); }
 
 	void Release ()
@@ -40,6 +41,41 @@ public:
 private:
 	friend class CDirectX;
 
+	void LoadSector (
+		SSector &sector,
+		struct SData_Sector &sectorSource,
+		std::vector<struct SData_Material> &materials,
+		std::vector<struct SData_Portal> &portals
+	);
+
+	void LoadSectorPlanes (
+		SSector &sector,
+		struct SData_Sector &sectorSource,
+		std::vector<struct SData_Material> &materials,
+		std::vector<struct SData_Portal> &portals
+	);
+
+	void LoadSectorBoxes (
+		SSector &sector,
+		struct SData_Sector &sectorSource,
+		std::vector<struct SData_Material> &materials,
+		std::vector<struct SData_Portal> &portals
+	);
+
+	void LoadSectorSpheres (
+		SSector &sector,
+		struct SData_Sector &sectorSource,
+		std::vector<struct SData_Material> &materials,
+		std::vector<struct SData_Portal> &portals
+	);
+
+	void LoadSectorPointLights (
+		SSector &sector,
+		struct SData_Sector &sectorSource,
+		std::vector<struct SData_Material> &materials,
+		std::vector<struct SData_Portal> &portals
+	);
+
 	CSharedArray<SPointLight>	m_pointLights;
 	CSharedArray<SSphere>		m_spheres;
 	CSharedArray<SAABox>		m_boxes;
@@ -47,4 +83,6 @@ private:
 	CSharedArray<SSector>		m_sectors;
 	CSharedArray<SMaterial>		m_materials;
 	CSharedArray<SPortal>		m_portals;
+
+	unsigned int m_nextObjectId;
 };

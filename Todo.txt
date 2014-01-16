@@ -7,25 +7,21 @@ TO "SHIP" TO TEAM
 * give people access to the git repository and instructions on how to use it
 * get people to try the exe
 
-
 NEXT
-* interlaced mode, via graphics setting and #define to kernel code
+* later: walk through any portal? not just sector walls
+* movement: walking keeps you in the sector.  temp: unless the wall has a portal, then puts you into that sector.  later: only if you walk through portal window?
+* make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
 * maybe portals should specify rotation and translation instead of giving raw access to x,y,z,w axes?  maybe not, this is more powerful!
 * make graphics settings load more forgiving of load failure (currently sets resolution to 0,0)
  * same with game data
 * if graphics settings file doesn't exist, save it out so there is one!
-* adding uv test to planes slowed everything down, even when no planes in scene. why?!
-* make objects belong to portals and render accordingly
+* adding uv test to planes (quads) slowed everything down, even when no planes in scene. why?!
 * make portal ray transforms work.  transform ray as (collision point, dir)
 * make it so you have to walk through portals to change sectors (in game code)
 * convert other maps to use this new format w/ sectors etc (or just verify that they still work)
-* make graphics settings xml file (make it generate it if it doesn't exist)
-* make game data xml file (like for jump strength, crouch height, etc) (make it generate if it doesnt exist)
-* static and dynamic geometry in sectors
- -Test all sector geoms, then sector.  then do portal if should, else reflection, refraction, or none etc
- -In dynamic geom lists, keep a sorted list of objects by sector number.
- -Duplicate object when in multiple.
- -Similar for light sources? List per sector, possibly dupes when in multiple
+* make graphics settings xml file generate if it doesn't exist
+ * same for game data xml file
+
 
 * map bulding and traversal
  -Have "connect" data nodes that make bidirectional connections between sectors.
@@ -57,6 +53,7 @@ NEXT
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* dynamic object indices, similar to static objects.  When an object is in multiple rooms, duplicate it?
 * figure out the right height for interlaced mode.  16 works well for me, but what about others?
 * try making it so portals don't bypass the whole rendering process.  make it so they have an "amount" and contribute to the color, the same way reflection / refraction does.
 * rename plane primitive to quad
@@ -193,6 +190,8 @@ NEXT
 * make the game spit out documentation for the schema files (put hint text into schema and field definitions)
  * maybe done via generic xslt script or something, so other things can tie into it too?
 
+--KERNEL CODE
+* instead of kernel code checking for indices being in range, going to make it the responsibility of the CPU to not pass bad data. more dangerous but less kernel code & memory usage etc
 
 --CODE
 * texture manager likely doesn't need STexture2d struct since it doesn't use a lot of the fields
@@ -301,6 +300,17 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--1/15/14
+* put all geometry into sector definitions.
+ * move other geometry types in
+ * also point lights
+ * ambient light
+* might not need "numplanes" etc, if the indices to use are part of sector data
+
+--1/14/14
+* put planes into sectors.  will move the rest of geometry types, and give shadow treatment later
+* interlaced mode, via graphics setting and #define to kernel code
 
 --1/12/14
 * added quad support

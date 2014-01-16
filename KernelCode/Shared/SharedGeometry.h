@@ -102,11 +102,25 @@ struct SSectorPlane
 struct SSector
 {
 	struct SSectorPlane m_planes[SSECTOR_NUMPLANES];
+	
 	float3 m_halfDims;
+
+	float3 m_ambientLight;
+	
 	cl_uint m_castsShadows;
-	cl_uint m_pack1a;
-	cl_uint m_pack1b;
-	cl_uint m_pack1c;
+	cl_uint m_staticPlaneStartIndex;
+	cl_uint m_staticPlaneStopIndex;
+	cl_uint m_pack1;
+
+	cl_uint m_staticBoxStartIndex;
+	cl_uint m_staticBoxStopIndex;
+	cl_uint m_staticSphereStartIndex;
+	cl_uint m_staticSphereStopIndex;
+
+	cl_uint m_staticLightStartIndex;
+	cl_uint m_staticLightStopIndex;
+	cl_uint m_pack2;
+	cl_uint m_pack3;
 };
 
 struct SPointLight

@@ -8,19 +8,21 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
-* later: walk through any portal? not just sector walls
-* movement: walking keeps you in the sector.  temp: unless the wall has a portal, then puts you into that sector.  later: only if you walk through portal window?
+* rename sharedmath.h and take it out of the shared folder, since it isnt, and can't be shared
+* hold shift to sprint.  walk / sprint speed in game data
+* make portal ray transforms work.  transform ray as (collision point, dir)
+* transform facing when walking through a portal
+* later: walk through any portal, not just sector walls
+* later: only traverse portal if you walk through portal window
 * make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
-* maybe portals should specify rotation and translation instead of giving raw access to x,y,z,w axes?  maybe not, this is more powerful!
-* make graphics settings load more forgiving of load failure (currently sets resolution to 0,0)
+* make graphics settings load more forgiving of load failure (currently sets resolution to 0,0). doesnt use xml defaults, but it probly should!
  * same with game data
 * if graphics settings file doesn't exist, save it out so there is one!
 * adding uv test to planes (quads) slowed everything down, even when no planes in scene. why?!
-* make portal ray transforms work.  transform ray as (collision point, dir)
-* make it so you have to walk through portals to change sectors (in game code)
-* convert other maps to use this new format w/ sectors etc (or just verify that they still work)
+* convert other maps to use this new format w/ sectors etc (or just verify that they still work, or delete them)
 * make graphics settings xml file generate if it doesn't exist
  * same for game data xml file
+* make floor / cieling portals work (gravity won't let you fall through yet)
 
 
 * map bulding and traversal
@@ -53,6 +55,8 @@ NEXT
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* can we get a max intensity from the kernel code and put it through a compressor for brighten / darkening?
+* maybe portals should specify rotation and translation instead of giving raw access to x,y,z,w axes?  maybe not, this is more powerful!
 * dynamic object indices, similar to static objects.  When an object is in multiple rooms, duplicate it?
 * figure out the right height for interlaced mode.  16 works well for me, but what about others?
 * try making it so portals don't bypass the whole rendering process.  make it so they have an "amount" and contribute to the color, the same way reflection / refraction does.
@@ -300,6 +304,10 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--1/20/14
+* made it so you walk through portals to change sectors.  doesnt check against portal windows though
+* made a more complex, looping / non realistic infinite map
 
 --1/15/14
 * put all geometry into sector definitions.

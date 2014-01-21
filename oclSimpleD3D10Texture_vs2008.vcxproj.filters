@@ -102,6 +102,12 @@
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_GameData.h">
       <Filter>DataSchemas\Schemas</Filter>
     </ClInclude>
+    <ClInclude Include="KernelCode\Shared\SharedMath.h">
+      <Filter>Kernel Code\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\MatrixMath.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\tinyxml\tinyxml2.cpp">

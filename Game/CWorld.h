@@ -38,6 +38,12 @@ public:
 		return m_sectors.DataConst();
 	}
 
+	const SPortal* GetPortals(unsigned int& numPortals) const
+	{
+		numPortals = m_portals.Count();
+		return m_portals.DataConst();
+	}
+
 private:
 	friend class CDirectX;
 

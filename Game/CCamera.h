@@ -56,10 +56,16 @@ public:
 	// singleton access
 	static CCamera& Get () { return s_camera; }
 
+	void GetPosition(float3 &pos)
+	{
+		pos = SSharedDataRoot::Camera().m_pos;
+	}
+
 	void SetPosition(const float3 &pos)
 	{
 		SSharedDataRoot::Camera().m_pos = pos;
-		OnMove();
+		float3 delta = {0,0,0};
+		AttemptMove(delta);
 	}
 
 	float3 Forward () const
@@ -83,8 +89,7 @@ public:
 	void MoveForward (float amount)
 	{
 		SCamera &cameraShared = SSharedDataRoot::Camera();
-		cameraShared.m_pos += cameraShared.m_fwd * amount;
-		OnMove();
+		AttemptMove(cameraShared.m_fwd * amount);
 	}
 
 	void MoveForward2D (float amount)
@@ -93,15 +98,13 @@ public:
 		float3 fwd2D = cameraShared.m_fwd;
 		fwd2D[1] = 0.0f;
 		fwd2D = normalize(fwd2D);
-		cameraShared.m_pos += fwd2D * amount;
-		OnMove();
+		AttemptMove(fwd2D * amount);
 	}
 
 	void MoveLeft (float amount)
 	{
 		SCamera &cameraShared = SSharedDataRoot::Camera();
-		cameraShared.m_pos += cameraShared.m_left * amount;
-		OnMove();
+		AttemptMove(cameraShared.m_left * amount);
 	}
 
 	void YawRight (float amount)
@@ -141,7 +144,7 @@ public:
 		cameraShared.m_up = normalize(cross(cameraShared.m_left, cameraShared.m_fwd));
 	}
 
-	void OnMove ();
+	void AttemptMove (const float3 &delta);
 
 	float CurrentGroundHeight () const;
 

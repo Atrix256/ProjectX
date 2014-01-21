@@ -93,6 +93,11 @@ void CPlayer::Update (float elapsed)
 
 	float3 playerHeight = {0.0f, m_playerHeight, 0.0f};
 	CCamera::Get().SetPosition(m_position + playerHeight);
+
+	// right now movement is not fleshed out very well, so the camera does sector traversal and
+	// collision detection.  So, get the position in case the camera changed it.
+	CCamera::Get().GetPosition(m_position);
+	m_position -= playerHeight;
 }
 
 //--------------------------------------------------------------------------------------------------

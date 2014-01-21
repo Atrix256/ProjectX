@@ -8,6 +8,7 @@ The kernel code
 
 #include "Shared/SSharedDataRoot.h"
 #include "Shared/SharedGeometry.h"
+#include "Shared/SharedMath.h"
 
 #define c_maxRayBounces 6
 
@@ -596,37 +597,23 @@ void TraceRay (
 		{
 			// transform the collision point into sector space
 			float3 transformedPoint;
-			transformedPoint.x = collisionInfo.m_intersectionPoint.x * portals[collisionInfo.m_portalIndex].m_xaxis.x
-				               + collisionInfo.m_intersectionPoint.y * portals[collisionInfo.m_portalIndex].m_yaxis.x
-							   + collisionInfo.m_intersectionPoint.z * portals[collisionInfo.m_portalIndex].m_zaxis.x
-							   +                                1.0f * portals[collisionInfo.m_portalIndex].m_waxis.x;
+			TransformPointByMatrix(
+				&transformedPoint,
+				&collisionInfo.m_intersectionPoint,
+				&portals[collisionInfo.m_portalIndex].m_xaxis,
+				&portals[collisionInfo.m_portalIndex].m_yaxis,
+				&portals[collisionInfo.m_portalIndex].m_zaxis,
+				&portals[collisionInfo.m_portalIndex].m_waxis);
 
-			transformedPoint.y = collisionInfo.m_intersectionPoint.x * portals[collisionInfo.m_portalIndex].m_xaxis.y
-				               + collisionInfo.m_intersectionPoint.y * portals[collisionInfo.m_portalIndex].m_yaxis.y
-							   + collisionInfo.m_intersectionPoint.z * portals[collisionInfo.m_portalIndex].m_zaxis.y
-							   +                                1.0f * portals[collisionInfo.m_portalIndex].m_waxis.y;
-
-			transformedPoint.z = collisionInfo.m_intersectionPoint.x * portals[collisionInfo.m_portalIndex].m_xaxis.z
-				               + collisionInfo.m_intersectionPoint.y * portals[collisionInfo.m_portalIndex].m_yaxis.z
-							   + collisionInfo.m_intersectionPoint.z * portals[collisionInfo.m_portalIndex].m_zaxis.z
-							   +                                1.0f * portals[collisionInfo.m_portalIndex].m_waxis.z;
 
 			// transform the ray direction into sector space
 			float3 transformedDir;
-			transformedDir.x = rayDir.x * portals[collisionInfo.m_portalIndex].m_xaxis.x
-				             + rayDir.y * portals[collisionInfo.m_portalIndex].m_yaxis.x
-							 + rayDir.z * portals[collisionInfo.m_portalIndex].m_zaxis.x;
-						   //+     0.0f * portals[collisionInfo.m_portalIndex].m_waxis.x;
-
-			transformedDir.y = rayDir.x * portals[collisionInfo.m_portalIndex].m_xaxis.y
-				             + rayDir.y * portals[collisionInfo.m_portalIndex].m_yaxis.y
-							 + rayDir.z * portals[collisionInfo.m_portalIndex].m_zaxis.y;
-						   //+     0.0f * portals[collisionInfo.m_portalIndex].m_waxis.y;
-
-			transformedDir.z = rayDir.x * portals[collisionInfo.m_portalIndex].m_xaxis.z
-				             + rayDir.y * portals[collisionInfo.m_portalIndex].m_yaxis.z
-							 + rayDir.z * portals[collisionInfo.m_portalIndex].m_zaxis.z;
-						   //+     0.0f * portals[collisionInfo.m_portalIndex].m_waxis.z;
+			TransformVectorByMatrix(
+				&transformedDir,
+				&rayDir,
+				&portals[collisionInfo.m_portalIndex].m_xaxis,
+				&portals[collisionInfo.m_portalIndex].m_yaxis,
+				&portals[collisionInfo.m_portalIndex].m_zaxis);
 
 			rayPos = transformedPoint;
 			rayDir = normalize(transformedDir);

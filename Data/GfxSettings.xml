@@ -1,5 +1,5 @@
 <GfxSettings>
-  <DefaultMap Value="./data/default.xml"/>
+  <DefaultMap Value="./data/maps/default.xml"/>
   <Resolution Value="1000,1000"/>
   <TextureSize Value="512"/>
   <InterlaceMode Value="true"/>

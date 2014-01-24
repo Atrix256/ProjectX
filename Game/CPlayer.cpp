@@ -54,8 +54,12 @@ void CPlayer::Update (float elapsed)
 
 	m_position += moveDelta;
 
-	if (m_onGround && CInput::InputToggleActivated(CInput::e_inputToggleJump))
-		m_velocity[1] = 0.1f;
+	if (CInput::InputToggleOn(CInput::e_inputToggleJump))
+	{
+		CInput::SetInputToggle(CInput::e_inputToggleJump, false, false);
+		if (m_onGround)
+			m_velocity[1] = 0.1f;
+	}
 
 	m_position += m_velocity;
 
@@ -111,7 +115,7 @@ void CPlayer::SetPosition(float X, float Y, float Z)
 }
 
 //--------------------------------------------------------------------------------------------------
-void CPlayer::SetFacing(float angle)
+void CPlayer::SetFacing(float X, float Y, float Z)
 {
-	CCamera::Get().SetYaw(angle);
+	CCamera::Get().SetFacing(X, Y, Z);
 }

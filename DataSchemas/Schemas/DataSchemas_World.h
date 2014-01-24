@@ -27,6 +27,8 @@ SchemaEnd
 SchemaBegin(PointLight)
 	Field_Schema(Vec3, Position, "0,0,0")
 	Field_Schema(Vec3, Color, "1,1,1")
+	Field_Schema(Vec3, ConeDirection, "1,0,0")
+	Field(float, ConeAngle, 180.0f)
 SchemaEnd
 
 SchemaBegin(Material)
@@ -103,8 +105,8 @@ SchemaEnd
 
 SchemaBegin(World)
 	Field(std::string, StartSector, "")
-	Field_Schema(Vec3, StartPoint, "0,0,0")
-	Field(float, StartFacing, 0.0f)
+	Field_Schema(Vec3, StartPoint,  "0,0,0")
+	Field_Schema(Vec3, StartFacing, "1,0,0")
 	Field_Schema_Array(Material, Material)
 	Field_Schema_Array(Portal, Portal)
 	Field_Schema_Array(Sector, Sector)

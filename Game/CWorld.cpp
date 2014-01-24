@@ -79,6 +79,24 @@ void Normalize(cl_float4 &vec)
 }
 
 //-----------------------------------------------------------------------------
+void Normalize4D(cl_float4 &vec)
+{
+	float mag = sqrtf(
+		vec.s[0] * vec.s[0] + 
+		vec.s[1] * vec.s[1] + 
+		vec.s[2] * vec.s[2] + 
+		vec.s[3] * vec.s[3]);
+
+	if (mag != 0)
+	{
+		vec.s[0] /= mag;
+		vec.s[1] /= mag;
+		vec.s[2] /= mag;
+		vec.s[3] /= mag;
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CWorld::LoadSectorPlanes (
 	SSector &sector,
 	struct SData_Sector &sectorSource,
@@ -246,7 +264,7 @@ bool CWorld::Load (const char *worldFileName)
 	// Starting Sector, Position and facing
 	SSharedDataRoot::Camera().m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_StartSector);
 	CGame::SetPlayerPos(worldData.m_StartPoint.m_x, worldData.m_StartPoint.m_y, worldData.m_StartPoint.m_z);
-	CGame::SetPlayerFacing(worldData.m_StartFacing * 3.1415f / 180.0f);
+	CGame::SetPlayerFacing(worldData.m_StartFacing.m_x, worldData.m_StartFacing.m_y, worldData.m_StartFacing.m_z);
 
 	// portals
 	m_portals.Resize(worldData.m_Portal.size());

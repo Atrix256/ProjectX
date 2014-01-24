@@ -18,7 +18,7 @@ public:
 
 	static void Update (float elapsed);
 	static void SetPlayerPos (float X, float Y, float Z);
-	static void SetPlayerFacing (float angle);
+	static void SetPlayerFacing (float X, float Y, float Z);
 
 	static void LoadGameData ();
 

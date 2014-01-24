@@ -131,6 +131,14 @@ public:
 		UpdateCameraFacing();
 	}
 
+	void SetFacing(float X, float Y, float Z)
+	{
+		float mag = sqrt(X*X +Y*Y + Z*Z);
+		m_cameraAngleX = atan2(Z, X);
+		m_cameraAngleY = asin(Y/mag);
+		UpdateCameraFacing();
+	}
+
 	void UpdateCameraFacing ()
 	{
 		SCamera &cameraShared = SSharedDataRoot::Camera();
@@ -147,6 +155,8 @@ public:
 	void AttemptMove (const float3 &delta);
 
 	float CurrentGroundHeight () const;
+
+	void TransformFacing (const cl_float4& xAxis, const cl_float4& yAxis, const cl_float4& zAxis);
 
 private:
 	// spherical coordinates of the camera (just angular coordinates to describe a direction)

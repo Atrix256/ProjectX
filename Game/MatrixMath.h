@@ -56,3 +56,14 @@ inline void TransformVectorByMatrix (
 				+ inPoint[2] * zAxis.s[2];
 				//+		0.0f * wAxis.s[2];
 }
+
+inline void TransformVectorByMatrix (
+	float3 &point,
+	const cl_float4 &xAxis,
+	const cl_float4 &yAxis,
+	const cl_float4 &zAxis)
+{
+	float3 transformedPoint;
+	TransformVectorByMatrix(transformedPoint, point, xAxis, yAxis, zAxis);
+	point = transformedPoint;
+}

@@ -1,7 +1,7 @@
 <World>
   <StartSector Value="Room1"/>
   <StartPoint Value="0,0,0"/>
-  <StartFacing Value="0"/>
+  <StartFacing Value="1,0,0"/>
   
   <Material id="TexturedWall" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="1.0, 1.0, 1.0" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
   <Material id="Cieling" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="0.2, 0.2, 0.2" NormalTexture="Art/simplenormal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
@@ -22,6 +22,7 @@
   ================================================================-->
   <Portal id="Room1ToHallway" Sector="Hallway" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="25,0,0,1"/>
   <Portal id="Room1ToBigRoom" Sector="BigRoom" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="0,1,20,1"/>
+  <Portal id="OtherRoom1ToBigRoom" Sector="BigRoom" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="-30,-2,0,1"/>
   <Sector id="Room1" Dimensions="40,10,20" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
     <PointLight Position="4, 2, 0" Color="1,1,1"/>
     <Sphere Position="4,2,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
@@ -38,7 +39,7 @@
     <Plane Normal="-1,0.7,0.1" UAxis="0,0,1" Dimensions="1,-1,3,1" D="-5" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
     <Plane Normal="-1,-0.1,-0.7" UAxis="0,0,1" Dimensions="-1,2,1,4" D="-2.5" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
 
-    <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="-2,-5,2,3" Portal="OtherRoom1ToBigRoom"/>
     <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="-5,-4,5,4" Portal="Room1ToHallway"/>
 
     <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
@@ -79,6 +80,7 @@
   ================================================================-->
   <Portal id="BigRoomToHallway" Sector="Hallway" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="-15,2,0,1"/>
   <Portal id="BigRoomToRoom1" Sector="Room1" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="0,-1,-20,1"/>
+  <Portal id="OtherBigRoomToRoom1" Sector="Room1" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="30,2,0,1"/>
   <Sector id="BigRoom" Dimensions="20,10,20" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
     <PointLight Position="6, 2, 0" Color="1,1,1"/>
     <Sphere Position="6,2,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
@@ -92,7 +94,7 @@
     <Box Position="-3,0,-2" Scale="1.5,10,1.5" Material="Glass" TextureScale="0.25,0.25" CastShadows="true"/>
 
     <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="-5,-2,5,6" Portal="BigRoomToHallway"/>
-    <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="-2,-5,2,3" Portal="OtherBigRoomToRoom1"/>
 
     <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>

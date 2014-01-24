@@ -16,15 +16,10 @@ class CInput
 public:
 	enum EInputToggles
 	{
-		e_inputToggleWalkForward,
-		e_inputToggleWalkLeft,
-		e_inputToggleWalkRight,
-		e_inputToggleWalkBack,
+		#define INPUT_TOGGLE(name, resetOnKeyUp) e_inputToggle##name,
+		#include "InputToggleList.h"
 
-		e_inputToggleJump,
-		e_inputToggleCrouch,
-
-		e_inputToggleCount,
+		e_inputToggleCount
 	};
 
 	CInput()
@@ -36,8 +31,17 @@ public:
 		}
 	}
 
-	static void SetInputToggle(EInputToggles inputToggle, bool enable)
+	static void SetInputToggle(EInputToggles inputToggle, bool enable, bool fromInput = true)
 	{
+		if (fromInput && !enable)
+		{
+			switch(inputToggle)
+			{
+				#define INPUT_TOGGLE(name, resetOnKeyUp) case e_inputToggle##name: if(!resetOnKeyUp) return;break;
+				#include "InputToggleList.h"
+			}
+		}
+
 		Assert_(inputToggle >= 0 && inputToggle < e_inputToggleCount);
 		m_toggleState[inputToggle] = enable;
 

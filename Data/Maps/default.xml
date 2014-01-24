@@ -1,0 +1,38 @@
+<World>
+  <StartSector Value="Room1"/>
+  <StartPoint Value="0,0,0"/>
+  <StartFacing Value="0,0,-1"/>
+  
+  <Material id="Cieling" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="0.2, 0.2, 0.2" NormalTexture="Art/simplenormal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="Floor" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="1.0, 1.0, 1.0" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+
+  <Material id="WhiteLight" EmissiveColor="1,1,1" DiffuseColor="0,0,0" SpecularColor="0,0,0"/>
+
+  <!--===============================================================
+  ROOM1
+  ================================================================-->
+  <Portal id="RightTurn"        Sector="Room1" XAxis="0,0,1,0"  YAxis="0,1,0,0" ZAxis="-1,0,0,0" WAxis="-30,0,-10,1"/>
+  <Portal id="BackOfRightTurn"  Sector="Room1" XAxis="0,0,-1,0" YAxis="0,1,0,0" ZAxis="1,0,0,0" WAxis="10,0,-30,1"/>
+  <Sector id="Room1" Dimensions="40,10,20" CastShadows="false" AmbientLight="0.3, 0.3, 0.3">
+
+    <!--The light-->
+    <PointLight Position="0, 0, 0" Color="1,1,1"/>
+    <Sphere Position="0,0,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+
+    <!--This is the light that is seen beyond the right turn in the other room-->
+    <PointLight Position="10, 0, -30" Color="1,1,1"/>
+
+    <!--This is the light that is seen beyond the back of the right turn in the other room-->
+    <PointLight Position="-30, 0, -10" Color="1,1,1"/>
+
+    <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25" Portal="BackOfRightTurn"/>
+
+    <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+
+    <SectorPlane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="0,-5,20,5" Portal="RightTurn"/>
+  </Sector>
+  
+</World>

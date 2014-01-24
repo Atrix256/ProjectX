@@ -223,10 +223,11 @@
     <ClInclude Include="Game\CWorld.h" />
     <ClInclude Include="Game\CGame.h" />
     <ClInclude Include="Game\CPlayer.h" />
+    <ClInclude Include="Game\InputToggleList.h" />
     <ClInclude Include="Game\MatrixMath.h" />
+    <ClInclude Include="KernelCode\KernelMath.h" />
     <ClInclude Include="KernelCode\Shared\SCamera.h" />
     <ClInclude Include="KernelCode\Shared\SharedGeometry.h" />
-    <ClInclude Include="KernelCode\Shared\SharedMath.h" />
     <ClInclude Include="KernelCode\Shared\SharedTypes.h" />
     <ClInclude Include="KernelCode\Shared\SSharedDataRoot.h" />
     <ClInclude Include="Platform\Assert.h" />
@@ -256,19 +257,14 @@
     <Text Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="Data\basictexturing.xml" />
-    <Xml Include="Data\default.xml">
-      <SubType>Designer</SubType>
-    </Xml>
-    <Xml Include="Data\FPSLevel.xml" />
     <Xml Include="Data\GameData.xml">
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="Data\GfxSettings.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="Data\showroom.xml" />
-    <Xml Include="Data\simple.xml" />
+    <Xml Include="Data\Maps\default.xml" />
+    <Xml Include="Data\Maps\testarea.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="KernelCode\clrt.cl" />

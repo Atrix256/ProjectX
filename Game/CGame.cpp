@@ -37,9 +37,9 @@ void CGame::SetPlayerPos (float X, float Y, float Z)
 }
 
 //--------------------------------------------------------------------------------------------------
-void CGame::SetPlayerFacing (float angle)
+void CGame::SetPlayerFacing (float X, float Y, float Z)
 {
-	m_player.SetFacing(angle);
+	m_player.SetFacing(X, Y, Z);
 }
 
 //--------------------------------------------------------------------------------------------------

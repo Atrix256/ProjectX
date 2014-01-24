@@ -8,23 +8,15 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
-* rename sharedmath.h and take it out of the shared folder, since it isnt, and can't be shared
-* hold shift to sprint.  walk / sprint speed in game data
-* make portal ray transforms work.  transform ray as (collision point, dir)
-* transform facing when walking through a portal
-* later: walk through any portal, not just sector walls
-* later: only traverse portal if you walk through portal window
+* spotlights
+ * Point light feature.
+ * Direction vector and "width".
+ * Do this test before shadow rays in point can see light!
+ * if done with dot product, can use that DP for lighting calculations i think?
+ * angular attenuation parameters?
+* autoconnections -> more automated connecting of sectors.  it sets the portal information and transformations up for you.
 * make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
-* make graphics settings load more forgiving of load failure (currently sets resolution to 0,0). doesnt use xml defaults, but it probly should!
- * same with game data
-* if graphics settings file doesn't exist, save it out so there is one!
-* adding uv test to planes (quads) slowed everything down, even when no planes in scene. why?!
-* convert other maps to use this new format w/ sectors etc (or just verify that they still work, or delete them)
-* make graphics settings xml file generate if it doesn't exist
- * same for game data xml file
 * make floor / cieling portals work (gravity won't let you fall through yet)
-
-
 * map bulding and traversal
  -Have "connect" data nodes that make bidirectional connections between sectors.
  -All is needed is the plane index and point on each plane to connect to (in UV coordinate?) And it will handle the rest.  It will make the quad on each side for the 2 connections.
@@ -32,29 +24,31 @@ NEXT
  -Also, should be able to generically make portals by hand.
  -Also, maybe all materials can be portals??? But only planes & quads can be walked through?
 
-* jump doesnt always work, when in "fixed game time" mode, since that just checks space bar status, but might have missed one. (problem in recording)
- * should fix, its broken in non fixed game time too, but just not as bad
 * make sector walls be able to cast shadows
-* portals: test dynamic objects, and if none hit, then test sector geometry.  if the ray enters a new sector, do again.  repeat until something hit, or max ray depth (or max sector traversals?) hit?
-* should we have "regular portals" and "teleport portals"? i kinda just wanna have teleport portals but more complex to implement, at least right away
-* need to put lighting and stuff into the sectors
-* command line param to start recording from the start
-* need to specify starting sector and offset in that sector as part of map data, instead of an absolute coordinate
-* traverse portals when moving, instead of the temp thing going on right now where cpu tells gpu which portal the camera is in
 * find a better way to enforce / handle sectors needing 6 planes, than doing an assert (error / skip?)
  * maybe also let the schema define a min and max size for the array so data parsing can catch it?
-* we use an ignore primitive id to make sure we don't hit the same object again on reflection.  that will give wrong results with certain usages of portals.
- * like, an object will not be able to reflect itself!
- * maybe clear ignore prim id when going through a portal?
 * somehow make portals contain dynamic geometry, or do some other dynamic geometry solution
 * collision detection: walk on boxes, under objects, can't walk through walls?
-* make a more "FPS-ish" type map instead of a raytracing showroom map
+* later: walk through any portal, not just sector walls
+* later: only traverse portal if you walk through portal window
+
+
+
+
+
+
  
 --MAP & GAME CONCEPTS
 * at the lowest elevation point in the game, have a crack or hole in the ground or something where you can see the place supported by turtles, all the way down into infinity (maybe do some raymarching against the turtle shape or something)
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* adding uv test to planes (to make quads) slowed everything down, even when no planes in scene. why?! (can test by removing feature and seeing if things speed up at all)
+* teleport portals vs viewing portals
+* command line param to start recording from the start (or a gfx option or something)
+* if sector portals can only have a Y axis of 0,1,0,0 then maybe we can make a specialized matrix multiplication routine, and can also forgo even having a y axis?
+* "interlaced mode": instead of rendering top / bottom half, try rendering middle half and then edges.  no seem in the middle, but 2 seems nearer to the edges
+* "interlaced mode": try to blur the seems
 * can we get a max intensity from the kernel code and put it through a compressor for brighten / darkening?
 * maybe portals should specify rotation and translation instead of giving raw access to x,y,z,w axes?  maybe not, this is more powerful!
 * dynamic object indices, similar to static objects.  When an object is in multiple rooms, duplicate it?
@@ -142,6 +136,11 @@ NEXT
 * maybe "named dynamic objects" list to more quickly find named objects?
 * friction (and slipping), varying gravity, jump pads
 * revisit fixed game rate code (currently commented out)
+* jumping has diff heights at diff frame rates (same with physics stuff in future!)
+* jump doesnt always work, when in "fixed game time" mode, since that just checks space bar status, but might have missed one. (problem in recording)
+ * should fix, its broken in non fixed game time too, but just not as bad
+ * its now kinda bad too. you can hold down space and keep jumping
+* hold shift to sprint.  walk / sprint speed in game data
 
 --ARTIFICIAL INTELLIGENCE
 * keep it simple
@@ -161,6 +160,10 @@ NEXT
  -long distance - ?? not sure if needed, but if we have a lot of sectors, A* across sectors may be too much
 
 --GFX SETTINGS
+* make graphics settings load more forgiving of load failure (currently sets resolution to 0,0). doesnt use xml defaults, but it probly should!
+ * same with game data
+* make graphics settings xml file generate if it doesn't exist
+ * same for game data xml file
 * max ray bounces setting
 * graphics settings to allow reflection and refraction or not. With it off, reflection does nothing, and refraction doesn't change path of ray (so it's just transparent)
 * put m_viewWidthHeightDistance etc into graphics settings
@@ -304,6 +307,15 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--1/23/14
+* camera is transformed by portal when traversing sectors now
+* make StartFacing a float3
+* make lighting seemless in default.xml
+
+--1/22/14
+* seperate maps from settings and game data
+* rename sharedmath.h and take it out of the shared folder, since it isnt, and can't be shared
 
 --1/20/14
 * made it so you walk through portals to change sectors.  doesnt check against portal windows though

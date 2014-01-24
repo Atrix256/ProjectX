@@ -8,7 +8,7 @@ Math routines shared by both kernel and host code (actually host code doesnt lik
 
 #pragma once
 
-#include "SharedTypes.h"
+#include "Shared/SharedTypes.h"
 
 inline void TransformPointByMatrix (
 	float3 *outPoint,
@@ -55,4 +55,16 @@ inline void TransformVectorByMatrix (
 				+ inPoint->y * yAxis->z
 				+ inPoint->z * zAxis->z;
 				//+		0.0f * wAxis->z;
+}
+
+inline float3 reflect(float3 V, float3 N)
+{
+	return V - 2.0f * dot( V, N ) * N;
+}
+
+inline float3 refract(float3 V, float3 N, float refrIndex)
+{
+	float cosI = -dot( N, V );
+	float cosT2 = 1.0f - refrIndex * refrIndex * (1.0f - cosI * cosI);
+	return (refrIndex * V) + (refrIndex * cosI - sqrt( cosT2 )) * N;
 }

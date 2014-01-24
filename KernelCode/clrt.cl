@@ -494,9 +494,23 @@ void ApplyPointLight (
 	float3 diffuseColor
 )
 {
+	float3 hitToLight = normalize(light->m_positionAndAttenuationAngle.xyz - collisionInfo->m_intersectionPoint);
+
+	// do cone test for spot lights
+	float coneAngle = dot(hitToLight, light->m_coneDirAndAngle.xyz);
+	if (coneAngle > light->m_coneDirAndAngle.w)
+		return;
+
+	// calculate attenuation factor for spot lights
+	float attenuation = 1.0f;
+	if (coneAngle > light->m_positionAndAttenuationAngle.w)
+	{
+		attenuation = 1.0f - ((coneAngle - light->m_positionAndAttenuationAngle.w) / (light->m_coneDirAndAngle.w - light->m_positionAndAttenuationAngle.w));
+	}
+
 	if (!PointCanSeePoint(
 		collisionInfo->m_intersectionPoint,
-		light->m_position,
+		light->m_positionAndAttenuationAngle.xyz,
 		collisionInfo->m_objectHit,
 		sector,
 		spheres,
@@ -506,16 +520,15 @@ void ApplyPointLight (
 		return;
 
 	// diffuse
-	float3 hitToLight = normalize(light->m_position - collisionInfo->m_intersectionPoint);
 	float dp = dot(collisionInfo->m_surfaceNormal, hitToLight);
 	if(dp > 0.0)
-		*pixelColor += diffuseColor * dp * light->m_color * reflectionAmount;
+		*pixelColor += diffuseColor * dp * light->m_color * reflectionAmount * attenuation;
 				
 	// specular
 	float3 reflection = reflect(hitToLight, collisionInfo->m_surfaceNormal);
 	dp = dot(rayDir, reflection);
 	if (dp > 0.0)
-		*pixelColor += material->m_specularColorAndPower.xyz * pow(dp, material->m_specularColorAndPower.w) * light->m_color * reflectionAmount;
+		*pixelColor += material->m_specularColorAndPower.xyz * pow(dp, material->m_specularColorAndPower.w) * light->m_color * reflectionAmount * attenuation;
 }
 
 //

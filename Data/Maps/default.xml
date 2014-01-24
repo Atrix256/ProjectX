@@ -15,15 +15,19 @@
   <Portal id="BackOfRightTurn"  Sector="Room1" XAxis="0,0,-1,0" YAxis="0,1,0,0" ZAxis="1,0,0,0" WAxis="10,0,-30,1"/>
   <Sector id="Room1" Dimensions="40,10,20" CastShadows="false" AmbientLight="0.3, 0.3, 0.3">
 
+    <PointLight Position="2, 9, 0" Color="1,0,0" ConeDirection="0,-1,0" ConeAngle="35" ConeAttenuationAngle="5"/>
+    <PointLight Position="-3, 9, 0" Color="0,1,0" ConeDirection="0,-1,0" ConeAngle="35" ConeAttenuationAngle="5"/>
+    <PointLight Position="-0.5, 9, 4.3" Color="0,0,1" ConeDirection="0,-1,0" ConeAngle="35" ConeAttenuationAngle="5"/>
+
     <!--The light-->
-    <PointLight Position="0, 0, 0" Color="1,1,1"/>
-    <Sphere Position="0,0,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <!--PointLight Position="0, 0, 0" Color="1,1,1"/>
+    <Sphere Position="0,0,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/-->
 
     <!--This is the light that is seen beyond the right turn in the other room-->
-    <PointLight Position="10, 0, -30" Color="1,1,1"/>
+    <!--PointLight Position="10, 0, -30" Color="1,1,1"/-->
 
     <!--This is the light that is seen beyond the back of the right turn in the other room-->
-    <PointLight Position="-30, 0, -10" Color="1,1,1"/>
+    <!--PointLight Position="-30, 0, -10" Color="1,1,1"/-->
 
     <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25" Portal="BackOfRightTurn"/>

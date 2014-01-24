@@ -205,7 +205,9 @@ void CWorld::LoadSectorPointLights (
 		SPointLight &light = m_pointLights[sector.m_staticLightStartIndex + index];
 		SData_PointLight &lightSource = sectorSource.m_PointLight[index];
 		Copy(light.m_color, lightSource.m_Color);
-		Copy(light.m_position, lightSource.m_Position);
+		Copy(light.m_positionAndAttenuationAngle, lightSource.m_Position, -cos((lightSource.m_ConeAngle - lightSource.m_ConeAttenuationAngle) * 3.14f / 180.0f));
+		Copy(light.m_coneDirAndAngle, lightSource.m_ConeDirection, -cos(lightSource.m_ConeAngle * 3.14f / 180.0f));
+		Normalize(light.m_coneDirAndAngle);
 	}
 	sector.m_staticLightStopIndex = m_pointLights.Count();
 }

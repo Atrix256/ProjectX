@@ -29,6 +29,7 @@ SchemaBegin(PointLight)
 	Field_Schema(Vec3, Color, "1,1,1")
 	Field_Schema(Vec3, ConeDirection, "1,0,0")
 	Field(float, ConeAngle, 180.0f)
+	Field(float, ConeAttenuationAngle, 180.0f)
 SchemaEnd
 
 SchemaBegin(Material)

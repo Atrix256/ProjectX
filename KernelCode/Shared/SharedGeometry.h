@@ -125,6 +125,7 @@ struct SSector
 
 struct SPointLight
 {
-	float3 m_position;
+	cl_float4 m_positionAndAttenuationAngle;
 	float3 m_color;
+	cl_float4 m_coneDirAndAngle;
 };

@@ -8,12 +8,10 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
-* spotlights
- * Point light feature.
- * Direction vector and "width".
- * Do this test before shadow rays in point can see light!
- * if done with dot product, can use that DP for lighting calculations i think?
- * angular attenuation parameters?
+* is there a better way to precompute the values / do the cone test for spot lights?
+* assert that attenuation angle is <= cone angle (or log an error)
+* make a spotlight map?
+* check out how much spotlights affect perf -> esp try point lights that have no angle, and see what fps is with and without cone tests
 * autoconnections -> more automated connecting of sectors.  it sets the portal information and transformations up for you.
 * make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
 * make floor / cieling portals work (gravity won't let you fall through yet)

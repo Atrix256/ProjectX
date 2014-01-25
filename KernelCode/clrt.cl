@@ -2,7 +2,7 @@
 
 clrt.cl
 
-The kernel code
+The kernel code 
 
 ==================================================================================================*/
 
@@ -494,23 +494,15 @@ void ApplyPointLight (
 	float3 diffuseColor
 )
 {
-	float3 hitToLight = normalize(light->m_positionAndAttenuationAngle.xyz - collisionInfo->m_intersectionPoint);
+	float3 hitToLight = normalize(light->m_position - collisionInfo->m_intersectionPoint);
 
-	// do cone test for spot lights
-	float coneAngle = dot(hitToLight, light->m_coneDirAndAngle.xyz);
-	if (coneAngle > light->m_coneDirAndAngle.w)
+	float coneAngle = dot(light->m_spotLightReverseDir, hitToLight);
+	if (coneAngle <= light->m_spotLightcosPhiOver2)
 		return;
-
-	// calculate attenuation factor for spot lights
-	float attenuation = 1.0f;
-	if (coneAngle > light->m_positionAndAttenuationAngle.w)
-	{
-		attenuation = 1.0f - ((coneAngle - light->m_positionAndAttenuationAngle.w) / (light->m_coneDirAndAngle.w - light->m_positionAndAttenuationAngle.w));
-	}
 
 	if (!PointCanSeePoint(
 		collisionInfo->m_intersectionPoint,
-		light->m_positionAndAttenuationAngle.xyz,
+		light->m_position,
 		collisionInfo->m_objectHit,
 		sector,
 		spheres,
@@ -518,6 +510,26 @@ void ApplyPointLight (
 		planes)
 	)
 		return;
+
+	// light attenuation for high quality lights
+	float attenuation = 1.0f;
+	#if SETTINGS_HIQLIGHTS == 1
+		// spot light attenuation
+		if (light->m_spotLightFalloffFactor != 0 && coneAngle < light->m_spotLightcosThetaOver2)
+			attenuation *= pow((coneAngle - light->m_spotLightcosPhiOver2) / (light->m_spotLightcosThetaOver2 - light->m_spotLightcosPhiOver2), light->m_spotLightFalloffFactor);
+
+		// distance attenuation
+		if (light->m_attenuationConstDistDistsq.x != 1.0f ||
+			light->m_attenuationConstDistDistsq.y != 0.0f ||
+			light->m_attenuationConstDistDistsq.z != 0.0f)
+		{
+			float distanceToLight = length(light->m_position - collisionInfo->m_intersectionPoint);
+			attenuation /= (
+				light->m_attenuationConstDistDistsq.x +
+				distanceToLight * light->m_attenuationConstDistDistsq.y + 
+				distanceToLight * distanceToLight * light->m_attenuationConstDistDistsq.z);
+		}
+	#endif
 
 	// diffuse
 	float dp = dot(collisionInfo->m_surfaceNormal, hitToLight);

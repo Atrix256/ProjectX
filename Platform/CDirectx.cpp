@@ -601,6 +601,9 @@ HRESULT CDirectX::CreateKernelProgram(
 	buildOptions.append(m_graphicsSettings.m_NormalMapping ? "1" : "0");
 	buildOptions.append(" -D SETTINGS_SHADOWS=");
 	buildOptions.append(m_graphicsSettings.m_Shadows ? "1" : "0");
+	buildOptions.append(" -D SETTINGS_HIQLIGHTS=");
+	buildOptions.append(m_graphicsSettings.m_HighQualityLights ? "1" : "0");
+
 
     // build the program
 	ciErrNum = clBuildProgram(cpProgram, 0, NULL, buildOptions.c_str(), NULL, NULL);

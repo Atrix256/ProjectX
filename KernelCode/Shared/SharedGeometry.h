@@ -125,7 +125,16 @@ struct SSector
 
 struct SPointLight
 {
-	cl_float4 m_positionAndAttenuationAngle;
+	// point light params
+	float3 m_position;
 	float3 m_color;
-	cl_float4 m_coneDirAndAngle;
+	float3 m_attenuationConstDistDistsq;
+	
+	// spot light params
+	float3 m_spotLightReverseDir;
+
+	float m_spotLightcosThetaOver2;
+	float m_spotLightcosPhiOver2;
+	float m_spotLightFalloffFactor;
+	float m_pad;
 };

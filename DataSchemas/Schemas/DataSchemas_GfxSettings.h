@@ -13,4 +13,5 @@ SchemaBegin(GfxSettings)
 	Field(bool, InterlaceMode, false)
 	Field(bool, NormalMapping, true)
 	Field(bool, Shadows, true)
+	Field(bool, HighQualityLights, true)
 SchemaEnd

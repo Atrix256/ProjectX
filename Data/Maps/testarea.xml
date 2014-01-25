@@ -12,8 +12,8 @@
   <Material id="WhiteLight" EmissiveColor="1,1,1" DiffuseColor="0,0,0" SpecularColor="0,0,0"/>
 
   <Material id="Glass" DiffuseColor="0,0,0" SpecularColor="1,0.5,0.8" SpecularPower="40" RefractionIndex="0.5" RefractionAmount="1"/>
-  <Material id="FrostedGlass" DiffuseColor="0,0,0" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.4,0.4,0.4" SpecularPower="40" RefractionIndex="0.5" RefractionAmount="1"/>
-  <Material id="BumpyGlass" DiffuseColor="0,0,0" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.4,0.4,0.4" SpecularPower="40" RefractionIndex="0.9" RefractionAmount="1"/>
+  <Material id="FrostedGlass" DiffuseColor="0,0,0" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.4,0.4,0.4" SpecularPower="40" RefractionIndex="0.85" RefractionAmount="1"/>
+  <Material id="BumpyGlass" DiffuseColor="0,0,0" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.4,0.4,0.4" SpecularPower="40" RefractionIndex="0.95" RefractionAmount="1"/>
   <Material id="Mirror" DiffuseColor="0,0,0" SpecularColor="0.3,0.3,0.3" SpecularPower="400" ReflectionAmount="1.0"/>
   <Material id="BumpyMirror" DiffuseColor="0,0,0" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.3,0.3,0.3" SpecularPower="400" ReflectionAmount="1.0"/>
 
@@ -24,7 +24,7 @@
   <Portal id="Room1ToBigRoom" Sector="BigRoom" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="0,1,20,1"/>
   <Portal id="OtherRoom1ToBigRoom" Sector="BigRoom" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="-30,-2,0,1"/>
   <Sector id="Room1" Dimensions="40,10,20" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
-    <PointLight Position="4, 2, 0" Color="1,1,1"/>
+    <PointLight Position="4, 2, 0" Color="1,1,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.02"/>
     <Sphere Position="4,2,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
 
     <Sphere Position="-8,-3,3" Radius="2" Material="Glass" TextureScale="0.5,0.5" CastShadows="true"/>
@@ -56,10 +56,10 @@
   <Portal id="HallwayToBigRoom" Sector="BigRoom" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="15,-2,0,1"/>
   <Sector id="Hallway" Dimensions="10,8,10" CastShadows="false" AmbientLight="0.2, 0.2, 1">
 
-    <PointLight Position="2, 0, 0" Color="1,0.2,0.2"/>
+    <PointLight Position="2, 0, 0" Color="1,0.2,0.2" AttenuationConstant="0.5" AttenuationDistanceSquared="0.02"/>
     <Sphere Position="2,0,0" Radius="0.1" Material="RedLight" CastShadows="false"/>
 
-    <PointLight Position="-2, 0, 0" Color="0.2,1,0.2"/>
+    <PointLight Position="-2, 0, 0" Color="0.2,1,0.2" AttenuationConstant="0.5" AttenuationDistanceSquared="0.02"/>
     <Sphere Position="-2,0,0" Radius="0.1" Material="GreenLight" CastShadows="false"/>
 
     <Plane Normal="-1,0.3,0.2" UAxis="0,0,1" Dimensions="-5,-1,-3,1" D="0" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
@@ -82,12 +82,11 @@
   <Portal id="BigRoomToRoom1" Sector="Room1" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="0,-1,-20,1"/>
   <Portal id="OtherBigRoomToRoom1" Sector="Room1" XAxis="1,0,0,0" YAxis="0,1,0,0" ZAxis="0,0,1,0" WAxis="30,2,0,1"/>
   <Sector id="BigRoom" Dimensions="20,10,20" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
-    <PointLight Position="6, 2, 0" Color="1,1,1"/>
-    <Sphere Position="6,2,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="9,4,-5" Color="1,1,1" AttenuationConstant="0.5" ConeDirection="-9,-4,5" ConeAngle="90" ConeAttenuationAngle="20" ConeFalloffFactor="1"/>
+    <Sphere Position="9,4,-5" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
 
-    <PointLight Position="-6, -2, 4" Color="1,1,1"/>
-    <Sphere Position="-6,-2,4" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
-
+    <!--PointLight Position="-6, 3, 4" Color="1,1,0" AttenuationConstant="0.5" ConeDirection="6,-3,-4" ConeAngle="90" ConeAttenuationAngle="10" ConeFalloffFactor="1"/>
+    <Sphere Position="-6,3,4" Radius="0.1" Material="WhiteLight" CastShadows="false"/-->
 
     <Box Position="0,0,0" Scale="1.5,10,1.5" Material="BumpyGlass" TextureScale="0.25,0.25" CastShadows="true"/>
     <Box Position="3,0,2" Scale="1.5,10,1.5" Material="FrostedGlass" TextureScale="0.25,0.25" CastShadows="true"/>
@@ -102,6 +101,5 @@
     <SectorPlane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="-5,-4,5,5" Portal="BigRoomToRoom1"/>
     <SectorPlane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25"/>
   </Sector>
-
 
 </World>

@@ -68,3 +68,23 @@ inline float3 refract(float3 V, float3 N, float refrIndex)
 	float cosT2 = 1.0f - refrIndex * refrIndex * (1.0f - cosI * cosI);
 	return (refrIndex * V) + (refrIndex * cosI - sqrt( cosT2 )) * N;
 }
+
+inline float3 GetSectorPlaneNormal(unsigned int planeIndex)
+{
+	switch (planeIndex)
+	{
+		// positive x
+		case 0: return (float3)(-1.0f, 0.0f, 0.0f);
+		//  negative x
+		case 1: return (float3)(1.0f, 0.0f, 0.0f);
+		// positive y
+		case 2: return (float3)(0.0f,-1.0f, 0.0f);
+		// negative y
+		case 3: return (float3)(0.0f,1.0f, 0.0f);
+		// positive z
+		case 4: return (float3)(0.0f,0.0f,-1.0f);
+		// negative z
+		case 5: return (float3)(0.0f,0.0f, 1.0f);
+	}
+	return (float3)(0.0f, 0.0f, 0.0f);
+}

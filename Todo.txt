@@ -8,12 +8,24 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
-* autoconnections -> more automated connecting of sectors.  it sets the portal information and transformations up for you.
+* red blue 3d mode time!
+* make the default.xml like it used to be (where it's a room w/ a pillar in the middle)
+* convert testarea.xml too!
+* V coordinate (of uv) is flipped for some sector walls.  likely fixed w/ a set U axis independant of texture uaxis.
+ * can we make this the default if uaxis not specified in data too?
+* find a way to make GetSectorPlaneNormal (and similar functions) only implemented in 1 place, instead of once in kernel and once in host
+* make the offsets be easier to understand for "connect to portal" stuff.  like put it in world space or something
+* "connect to portal" stuff needs portal window calculations done!
+ * should be easy enough.  with no offset, you can get the window of each wall and just need to take the coordinates closer to zero for minx,maxx,miny,maxy.
+ * with an offset, adjust the center of the windows accordingly and do the same thing!
+* should portal windows be based on fixed / consistent U/Vaxis instead of the texture uvaxis?  this keeps things consistent (we can assume things in the code for portals) and makes it so portal windows are axis aligned
+* make some kind of global connect to xml thing to make 2 way connections between sector planes.  maybe also specify whether the connection is 2 way or just 1 way?
 * make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
 * make floor / cieling portals work (gravity won't let you fall through yet)
 * better physics for player (and eventually other moving entities)
  * collision detection: walk on boxes, under objects, can't walk through walls?
 
+* make the game generate documentation of data schemas -> for map files, gfx settings and game data
 * map bulding and traversal
  -Have "connect" data nodes that make bidirectional connections between sectors.
  -All is needed is the plane index and point on each plane to connect to (in UV coordinate?) And it will handle the rest.  It will make the quad on each side for the 2 connections.
@@ -27,7 +39,7 @@ NEXT
 * somehow make portals contain dynamic geometry, or do some other dynamic geometry solution
 * later: walk through any portal, not just sector walls
 * later: only traverse portal if you walk through portal window.
-
+* log error if "connectToSector" is given but it can't be found (same for other connect to stuff)
 
 
 
@@ -39,6 +51,19 @@ NEXT
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* "deinterlacing" for the tear region?
+* don't issue the undone work from C++ side when in interlace mode.  might be faster
+* light cones in fog
+* when you connect to another sector, have an option for copying / transforming lighting?
+* formalize vector and matrix classes w/ math operators? or at least formalize API and make it easier to make code that is the same between kernel and host code
+* particulates in the air somehow, affected by lighting but casting no shadows?
+ * we could easily do something like have a function that we plug the x,y screen pos of the ray into to get a distance, and use that as a max distance (the distance that it hits the dust particle).
+ * we could control density by controling the min / max distance possible of the particles
+ * we could even animate it by adding some constant over time in X,Y,Z.
+ * it's a problem if the camera moves though.
+ * also a problem for secondary rays
+* can we do volumetric fog as a material?
+* directional light sources can be implemented as quads.  follow the direction backwards as a ray trace and see if you hit the plane (quad) or not.  could even do attenuation near the edges if wanted probably
 * adding uv test to planes (to make quads) slowed everything down, even when no planes in scene. why?! (can test by removing feature and seeing if things speed up at all)
 * teleport portals vs viewing portals
 * command line param to start recording from the start (or a gfx option or something)
@@ -86,6 +111,7 @@ NEXT
 * some cool raytracing features: http://srodal.blogspot.com
 * beers law for absorption of color over distance while light travels through it
 * distance fog & volumetric fog
+ * better fog: http://www.iquilezles.org/www/articles/fog/fog.htm
 * skybox or skysphere? (eventually could do raymarching for terrain but ::shrug::)
 * try animated bump mapping textures.  like for water droplets running down glass, or tentacly bio bumped stuff
 * texture to control transparency and specularness etc.  try the things out.
@@ -237,6 +263,7 @@ NEXT
 
 
 --OPENCL INVESTIGATION
+* could pass a random number, or hash of all relevant files, to the CL compiler as a #define, so it would recompile when needed
 * is there a limit to what can be sent to the kernel as arguments? max size or max count?
 * there is some way to get the capabilities of the system, we should probably use that to verify the things we are doing are ok
 * if you change compile defines, will it recompile the script? it better!
@@ -306,6 +333,13 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--1/27/14
+* worked on getting sector plane "connect to" working
+
+--1/26/14
+* working on making ConnectToSector stuff work in sector plane definitions
+ * pretty close to working... for the "square" room, one link was working, but the other wasn't
 
 --1/25/14
 * distance attenuation for lights

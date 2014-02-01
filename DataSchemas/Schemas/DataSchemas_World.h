@@ -94,6 +94,9 @@ SchemaBegin(SectorPlane)
 	Field_Schema(Vec2, TextureScale, "1,1")
 	Field(std::string, Portal, "")
 	Field_Schema(Vec4, PortalWindow, "-10000,-10000,10000,10000")
+	Field(std::string, ConnectToSector, "")
+	Field(unsigned int, ConnectToSectorPlane, -1)
+	Field_Schema(Vec3, ConnectToSectorOffset, "0,0,0")
 SchemaEnd
 
 SchemaBegin(Sector)

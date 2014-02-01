@@ -13,13 +13,13 @@ This expands the schemas defined in DataSchemas.h into structs
 namespace SData
 {
 	template <typename T> 
-	inline unsigned int GetEntryById(std::vector<T>& data, std::string &id, decltype(T::m_id) *p = NULL)
+	inline unsigned int GetEntryById(const std::vector<T>& data, const std::string &id, decltype(T::m_id) *p = NULL)
 	{
 		return GetEntryById(data, id.c_str());
 	}
 
 	template <typename T> 
-	inline unsigned int GetEntryById(std::vector<T>& data, const char *id, decltype(T::m_id) *p = NULL)
+	inline unsigned int GetEntryById(const std::vector<T>& data, const char *id, decltype(T::m_id) *p = NULL)
 	{
 		if (id && id[0])
 		{

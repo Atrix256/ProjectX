@@ -82,6 +82,37 @@ private:
 		std::vector<struct SData_Portal> &portals
 	);
 
+	void HandleSectorConnectTos (
+		unsigned int sectorIndex,
+		const std::vector<struct SData_Sector> &sectorsSource
+	);
+
+	void ConnectSectors (
+		unsigned int sectorIndex,
+		unsigned int planeIndex,
+		unsigned int destSectorIndex,
+		unsigned int destPlaneIndex,
+		const float3 &offset
+	);
+
+	void GetSectorPlaneTransformationMatrix (
+		const SSector &sector,
+		unsigned int planeIndex,
+		cl_float4 &xAxis,
+		cl_float4 &yAxis,
+		cl_float4 &zAxis,
+		cl_float4 &wAxis
+	);
+
+	void GetSectorPlaneInverseTransformationMatrix (
+		const SSector &sector,
+		unsigned int planeIndex,
+		cl_float4 &xAxis,
+		cl_float4 &yAxis,
+		cl_float4 &zAxis,
+		cl_float4 &wAxis
+	);
+
 	CSharedArray<SPointLight>	m_pointLights;
 	CSharedArray<SSphere>		m_spheres;
 	CSharedArray<SAABox>		m_boxes;

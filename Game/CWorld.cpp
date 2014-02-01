@@ -10,6 +10,7 @@ This class holds all information about the world
 
 #include "CWorld.h"
 #include "CGame.h"
+#include "MatrixMath.h"
 
 #include "DataSchemas/DataSchemasXML.h"
 
@@ -227,6 +228,297 @@ void CWorld::LoadSectorPointLights (
 }
 
 //-----------------------------------------------------------------------------
+void CWorld::HandleSectorConnectTos (
+	unsigned int sectorIndex,
+	const std::vector<struct SData_Sector> &sectorsSource
+)
+{
+	const SData_Sector &sectorSource = sectorsSource[sectorIndex];
+	for (unsigned int planeIndex = 0; planeIndex < SSECTOR_NUMPLANES; ++planeIndex)
+	{
+		const SData_SectorPlane &sectorPlaneSource = sectorSource.m_SectorPlane[planeIndex];
+
+		// if no connect to sector specified, or none found, bail
+		unsigned int connectToSectorIndex = SData::GetEntryById(sectorsSource, sectorPlaneSource.m_ConnectToSector);
+		if (connectToSectorIndex >= m_sectors.Count())
+			continue;
+
+		// if invalid connect to sector plane specified, bail
+		if (sectorPlaneSource.m_ConnectToSectorPlane >= SSECTOR_NUMPLANES)
+			continue;
+
+		// now we have a sector to connect to and the plane to connect it to, so let's make it happen
+		float3 offset;
+		Copy(offset, sectorPlaneSource.m_ConnectToSectorOffset);
+		ConnectSectors(
+			sectorIndex,
+			planeIndex,
+			connectToSectorIndex,
+			sectorPlaneSource.m_ConnectToSectorPlane,
+			offset);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CWorld::ConnectSectors (
+	unsigned int sectorIndex,
+	unsigned int planeIndex,
+	unsigned int destSectorIndex,
+	unsigned int destPlaneIndex,
+	const float3 &offset
+)
+{
+	SSector &sector = m_sectors[sectorIndex];
+	cl_float4 srcSectorXaxis;
+	cl_float4 srcSectorYaxis;
+	cl_float4 srcSectorZaxis;
+	cl_float4 srcSectorWaxis;
+
+	GetSectorPlaneInverseTransformationMatrix(
+		sector,
+		planeIndex,
+		srcSectorXaxis,
+		srcSectorYaxis,
+		srcSectorZaxis,
+		srcSectorWaxis
+	);
+
+	SSector &destSector = m_sectors[destSectorIndex];
+	cl_float4 destSectorXaxis;
+	cl_float4 destSectorYaxis;
+	cl_float4 destSectorZaxis;
+	cl_float4 destSectorWaxis;
+
+	GetSectorPlaneTransformationMatrix(
+		destSector,
+		destPlaneIndex,
+		destSectorXaxis,
+		destSectorYaxis,
+		destSectorZaxis,
+		destSectorWaxis
+	);
+
+	// to convert points & vectors from the specified sector & sector wall to the other specified sector & sector wall
+	// first you untransform by the first (source) wall, to bring it back to being "untransformed", and then you
+	// transform it by the destination walls transform to bring it into that wall's space.
+	cl_float4 portalXaxis;
+	cl_float4 portalYaxis;
+	cl_float4 portalZaxis;
+	cl_float4 portalWaxis;
+	TransformMatrixByMatrix(
+		portalXaxis, portalYaxis, portalZaxis, portalWaxis,
+		srcSectorXaxis, srcSectorYaxis, srcSectorZaxis, srcSectorWaxis,
+		destSectorXaxis, destSectorYaxis, destSectorZaxis, destSectorWaxis
+	);
+
+	//X and Z axis work, but Y axis connections are fubar.  dunno why...  it should be identity matrix, and it is, except the Z is flipped and theres no offset!
+
+	// apply the specified offset as a translation - add it to the W axis!
+	portalWaxis.s[0] += offset[0];
+	portalWaxis.s[1] += offset[1];
+	portalWaxis.s[2] += offset[2];
+
+	// make a new portal with this information
+	SPortal &newPortal = m_portals.AddOne();
+	newPortal.m_sector = destSectorIndex;
+	newPortal.m_xaxis = portalXaxis;
+	newPortal.m_yaxis = portalYaxis;
+	newPortal.m_zaxis = portalZaxis;
+	newPortal.m_waxis = portalWaxis;
+
+	// TEMP: set the portal window
+	// TODO: do this correctly
+	//sector.m_planes[planeIndex].m_portalWindow.s[0] = -2.0f;
+	//sector.m_planes[planeIndex].m_portalWindow.s[1] = -5.0f;
+	//sector.m_planes[planeIndex].m_portalWindow.s[2] =  2.0f;
+	//sector.m_planes[planeIndex].m_portalWindow.s[3] =  3.0f;
+
+	// make the sector plane use this new portal
+	sector.m_planes[planeIndex].m_portalIndex = m_portals.Count() - 1;
+}
+
+//-----------------------------------------------------------------------------
+void CWorld::GetSectorPlaneTransformationMatrix (
+	const SSector &sector,
+	unsigned int planeIndex,
+	cl_float4 &xAxis,
+	cl_float4 &yAxis,
+	cl_float4 &zAxis,
+	cl_float4 &wAxis
+)
+{
+	const cl_float4 globalAxisX = {1.0f, 0.0f, 0.0f, 0.0f};
+	const cl_float4 globalAxisY = {0.0f, 1.0f, 0.0f, 0.0f};
+	const cl_float4 globalAxisZ = {0.0f, 0.0f, 1.0f, 0.0f};
+
+	const cl_float4 globalAxisNegX = {-1.0f, 0.0f, 0.0f, 0.0f};
+	const cl_float4 globalAxisNegY = {0.0f, -1.0f, 0.0f, 0.0f};
+	const cl_float4 globalAxisNegZ = {0.0f, 0.0f, -1.0f, 0.0f};
+
+	const cl_float4 zero = {0.0f, 0.0f, 0.0f, 0.0f};
+	xAxis = zero;
+	yAxis = zero;
+	zAxis = zero;
+	wAxis = zero;
+	wAxis.s[3] = 1.0f;
+
+	switch(planeIndex)
+	{
+		case 0: // positive x
+		{
+			xAxis = globalAxisNegZ;
+			yAxis = globalAxisY;
+			zAxis = globalAxisNegX;
+			wAxis.s[0] = sector.m_halfDims[0];
+			break;
+		}
+		case 1: // negative x
+		{
+			xAxis = globalAxisZ;
+			yAxis = globalAxisY;
+			zAxis = globalAxisX;
+			wAxis.s[0] = -sector.m_halfDims[0];
+			break;
+		}
+		case 2: // positive y
+		{
+			xAxis = globalAxisX;
+			yAxis = globalAxisNegZ;
+			zAxis = globalAxisNegY;
+			wAxis.s[1] = sector.m_halfDims[1];
+			break;
+		}
+		case 3: // negative y
+		{
+			xAxis = globalAxisNegX;
+			yAxis = globalAxisZ;
+			zAxis = globalAxisY;
+			wAxis.s[1] = -sector.m_halfDims[1];
+			break;
+		}
+		case 4: // positive z
+		{
+			xAxis = globalAxisX;
+			yAxis = globalAxisY;
+			zAxis = globalAxisNegZ;
+			wAxis.s[2] = sector.m_halfDims[2];
+			break;
+		}
+		case 5: // negative z
+		{
+			xAxis = globalAxisNegX;
+			yAxis = globalAxisY;
+			zAxis = globalAxisZ;
+			wAxis.s[2] = -sector.m_halfDims[2];
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CWorld::GetSectorPlaneInverseTransformationMatrix (
+	const SSector &sector,
+	unsigned int planeIndex,
+	cl_float4 &xAxis,
+	cl_float4 &yAxis,
+	cl_float4 &zAxis,
+	cl_float4 &wAxis
+)
+{
+	GetSectorPlaneTransformationMatrix(sector, planeIndex, xAxis, yAxis, zAxis, wAxis);
+
+	// rotate around the y axis of the plane by 180 degrees because we are looking at a wall
+	// and getting the basis vectors for the normal to the wall pointing back at us, but
+	// what we want is that normal pointing out the back of the wall
+
+	// if this is an XZ plane, rotate 180 degrees around the y axis
+	if (planeIndex / 2 != 1)
+	{
+		cl_float4 rot180x = {-1.0f,  0.0f,  0.0f,  0.0f};
+		cl_float4 rot180y = { 0.0f,  1.0f,  0.0f,  0.0f};
+		cl_float4 rot180z = { 0.0f,  0.0f, -1.0f,  0.0f};
+		cl_float4 rot180w = { 0.0f,  0.0f,  0.0f,  1.0f};
+
+		TransformMatrixByMatrix(xAxis,yAxis,zAxis,wAxis,rot180x,rot180y,rot180z,rot180w);
+	}
+	// is if it's a Y plane, rotate 180 degrees around the z axis
+	else
+	{
+		cl_float4 rot180x = {-1.0f,  0.0f,  0.0f,  0.0f};
+		cl_float4 rot180y = { 0.0f, -1.0f,  0.0f,  0.0f};
+		cl_float4 rot180z = { 0.0f,  0.0f, -1.0f,  0.0f};
+		cl_float4 rot180w = { 0.0f,  0.0f,  0.0f,  1.0f};
+
+		TransformMatrixByMatrix(xAxis,yAxis,zAxis,wAxis,rot180x,rot180y,rot180z,rot180w);
+	}
+
+
+	// We know that the 3x3 of the transformation matrix is just a rotation
+	// matrix (made from basis vectors) and that the inverse of a rotation matrix
+	// is the transpose.
+	// We also know that the remainder of the 4x4 matrix is just a translation,
+	// so it's also invertable.
+	//
+	// To invert a rotation then translation, we would want to do the negative
+	// translation and then the negative rotation.  We can't do that with a naive
+	// matrix, so we have to make an inverse matrix by doing the below:
+	//
+	// inv(A) = [ inv(M)   -inv(M) * b ]
+    //          [   0            1     ]
+	//
+	// A - The matrix we want to invert
+	// M - the 3x3 rotation matrix
+	// b - the translation of the matrix
+	//
+	// Sources:
+	// http://negativeprobability.blogspot.com/2011/11/affine-transformations-and-their.html
+	// http://stackoverflow.com/questions/2624422/efficient-4x4-matrix-inverse-affine-transform
+
+	// invert the 3x3 rotation matrix
+	float3 invXAxis;
+	float3 invYAxis;
+	float3 invZAxis;
+
+	invXAxis[0] = xAxis.s[0];
+	invXAxis[1] = yAxis.s[0];
+	invXAxis[2] = zAxis.s[0];
+
+	invYAxis[0] = xAxis.s[1];
+	invYAxis[1] = yAxis.s[1];
+	invYAxis[2] = zAxis.s[1];
+
+	invZAxis[0] = xAxis.s[2];
+	invZAxis[1] = yAxis.s[2];
+	invZAxis[2] = zAxis.s[2];
+
+	// multiply our translation by the inverted 3x3 rotation matrix and put the transformed
+	// translation back into the w axis
+	float3 translation;
+	translation[0] = wAxis.s[0];
+	translation[1] = wAxis.s[1];
+	translation[2] = wAxis.s[2];
+
+	TransformPointOrVectorByMatrix(translation, invXAxis, invYAxis, invZAxis);
+
+	wAxis.s[0] = translation[0];
+	wAxis.s[1] = translation[1];
+	wAxis.s[2] = translation[2];
+
+	// put the inverted 3x3 rotation matrix back in
+	xAxis.s[0] = invXAxis[0];
+	xAxis.s[1] = invXAxis[1];
+	xAxis.s[2] = invXAxis[2];
+
+	yAxis.s[0] = invYAxis[0];
+	yAxis.s[1] = invYAxis[1];
+	yAxis.s[2] = invYAxis[2];
+
+	zAxis.s[0] = invZAxis[0];
+	zAxis.s[1] = invZAxis[1];
+	zAxis.s[2] = invZAxis[2];
+}
+
+//-----------------------------------------------------------------------------
 void CWorld::LoadSector (
 	SSector &sector,
 	struct SData_Sector &sectorSource,
@@ -338,6 +630,10 @@ bool CWorld::Load (const char *worldFileName)
 
 	// combine all the textures now that they are all loaded
 	CDirectX::TextureManager().FinalizeTextures();
+
+	// handle the sector ConnectToSector fields for automatic portal generation
+	for (unsigned int sectorIndex = 0, sectorCount = worldData.m_Sector.size(); sectorIndex < sectorCount; ++sectorIndex)
+		HandleSectorConnectTos(sectorIndex, worldData.m_Sector);
 
 	return true;
 }

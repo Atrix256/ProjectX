@@ -2,7 +2,7 @@
 
 clrt.cl
 
-The kernel code 
+The kernel code    
 
 ==================================================================================================*/
 
@@ -308,14 +308,14 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 		{
 			if (time1 > 0.0f && time1 < closestHitTime)
 			{
-				closestHitSurfaceNormal = (float3)(-1.0f, 0.0f, 0.0f);
+				closestHitSurfaceNormal = GetSectorPlaneNormal(0);
 				closestHitPlaneIndex = 0;
 				closestHitTime = time1;
 			}
 		}
 		else if (time2 > 0.0f && time2 < closestHitTime)
 		{
-			closestHitSurfaceNormal = (float3)(1.0f, 0.0f, 0.0f);
+			closestHitSurfaceNormal = GetSectorPlaneNormal(1);
 			closestHitPlaneIndex = 1;
 			closestHitTime = time2;
 		}
@@ -336,14 +336,14 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 		{
 			if (time1 > 0.0f && time1 < closestHitTime)
 			{
-				closestHitSurfaceNormal = (float3)(0.0f, -1.0f, 0.0f);
+				closestHitSurfaceNormal = GetSectorPlaneNormal(2);
 				closestHitPlaneIndex = 2;
 				closestHitTime = time1;
 			}
 		}
 		else if (time2 > 0.0f && time2 < closestHitTime)
 		{
-			closestHitSurfaceNormal = (float3)(0.0f, 1.0f, 0.0f);
+			closestHitSurfaceNormal = GetSectorPlaneNormal(3);
 			closestHitPlaneIndex = 3;
 			closestHitTime = time2;
 		}
@@ -364,14 +364,14 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 		{
 			if (time1 > 0.0f && time1 < closestHitTime)
 			{
-				closestHitSurfaceNormal = (float3)(0.0f, 0.0f, -1.0f);
+				closestHitSurfaceNormal = GetSectorPlaneNormal(4);
 				closestHitPlaneIndex = 4;
 				closestHitTime = time1;
 			}
 		}
 		else if (time2 > 0.0f && time2 < closestHitTime)
 		{
-			closestHitSurfaceNormal = (float3)(0.0f, 0.0f, 1.0f);
+			closestHitSurfaceNormal = GetSectorPlaneNormal(5);
 			closestHitPlaneIndex = 5;
 			closestHitTime = time2;
 		}

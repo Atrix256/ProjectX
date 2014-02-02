@@ -92,7 +92,8 @@ private:
 		unsigned int planeIndex,
 		unsigned int destSectorIndex,
 		unsigned int destPlaneIndex,
-		const float3 &offset
+		const float3 &offset,
+		const cl_float4 &portalWindow
 	);
 
 	void GetSectorPlaneTransformationMatrix (

@@ -249,13 +249,16 @@ void CWorld::HandleSectorConnectTos (
 
 		// now we have a sector to connect to and the plane to connect it to, so let's make it happen
 		float3 offset;
+		cl_float4 portalWindow;
+		Copy(portalWindow, sectorPlaneSource.m_PortalWindow);
 		Copy(offset, sectorPlaneSource.m_ConnectToSectorOffset);
 		ConnectSectors(
 			sectorIndex,
 			planeIndex,
 			connectToSectorIndex,
 			sectorPlaneSource.m_ConnectToSectorPlane,
-			offset);
+			offset,
+			portalWindow);
 	}
 }
 
@@ -265,7 +268,8 @@ void CWorld::ConnectSectors (
 	unsigned int planeIndex,
 	unsigned int destSectorIndex,
 	unsigned int destPlaneIndex,
-	const float3 &offset
+	const float3 &offset,
+	const cl_float4 &portalWindow
 )
 {
 	SSector &sector = m_sectors[sectorIndex];
@@ -327,21 +331,33 @@ void CWorld::ConnectSectors (
 	newPortal.m_waxis = portalWaxis;
 
 	// calculate our portal window by taking the most restrictive values between
-	// the translated src and destination dimensions
+	// the translated src and destination dimensions, and the portal window passed in
 	float srcMinX, srcMinY, srcMaxX, srcMaxY;
-	GetSectorPlaneDimenions(sector, planeIndex, srcMinX, srcMinY, srcMaxX, srcMaxY, offset);
+	float3 adjustedOffset = {0.0f, 0.0f, 0.0f};
+	GetSectorPlaneDimenions(sector, planeIndex, srcMinX, srcMinY, srcMaxX, srcMaxY, adjustedOffset);
 
 	float destMinX, destMinY, destMaxX, destMaxY;
-	float3 destOffset;
-	destOffset[0] = offset[0] * -1;
-	destOffset[1] = offset[1] * -1;
-	destOffset[2] = offset[2] * -1;
-	GetSectorPlaneDimenions(destSector, destPlaneIndex, destMinX, destMinY, destMaxX, destMaxY, destOffset);
+	adjustedOffset[0] = offset[0];
+	adjustedOffset[1] = offset[1] * -1;
+	adjustedOffset[2] = offset[2] * -1;
+	GetSectorPlaneDimenions(destSector, destPlaneIndex, destMinX, destMinY, destMaxX, destMaxY, adjustedOffset);
 
 	sector.m_planes[planeIndex].m_portalWindow.s[0] = (srcMinX >= destMinX) ? srcMinX : destMinX;
 	sector.m_planes[planeIndex].m_portalWindow.s[1] = (srcMinY >= destMinY) ? srcMinY : destMinY;
 	sector.m_planes[planeIndex].m_portalWindow.s[2] = (srcMaxX <= destMaxX) ? srcMaxX : destMaxX;
 	sector.m_planes[planeIndex].m_portalWindow.s[3] = (srcMaxY <= destMaxY) ? srcMaxY : destMaxY;
+
+	if (portalWindow.s[0] > sector.m_planes[planeIndex].m_portalWindow.s[0])
+		sector.m_planes[planeIndex].m_portalWindow.s[0] = portalWindow.s[0];
+
+	if (portalWindow.s[1] > sector.m_planes[planeIndex].m_portalWindow.s[1])
+		sector.m_planes[planeIndex].m_portalWindow.s[1] = portalWindow.s[1];
+
+	if (portalWindow.s[2] < sector.m_planes[planeIndex].m_portalWindow.s[2])
+		sector.m_planes[planeIndex].m_portalWindow.s[2] = portalWindow.s[2];
+
+	if (portalWindow.s[3] < sector.m_planes[planeIndex].m_portalWindow.s[3])
+		sector.m_planes[planeIndex].m_portalWindow.s[3] = portalWindow.s[3];
 
 	// make the sector plane use this new portal
 	sector.m_planes[planeIndex].m_portalIndex = m_portals.Count() - 1;

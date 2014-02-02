@@ -8,19 +8,14 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
-* portal window calculations!
 
-
+* make some kind of global connect to xml thing to make 2 way connections between sector planes.  maybe also specify whether the connection is 2 way or just 1 way?
 * V coordinate (of uv) is flipped for some sector walls.  likely fixed w/ a set U axis independant of texture uaxis.
  * can we make this the default if uaxis not specified in data too?
-
-* make the default.xml like it used to be (where it's a room w/ a pillar in the middle)
-* convert testarea.xml too!
 * red blue 3d mode time!
 * find a way to make GetSectorPlaneNormal (and similar functions) only implemented in 1 place, instead of once in kernel and once in host
 * make the offsets be easier to understand for "connect to portal" stuff.  like put it in world space or something
 * should portal windows be based on fixed / consistent U/Vaxis instead of the texture uvaxis?  this keeps things consistent (we can assume things in the code for portals) and makes it so portal windows are axis aligned
-* make some kind of global connect to xml thing to make 2 way connections between sector planes.  maybe also specify whether the connection is 2 way or just 1 way?
 * make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
 * make floor / cieling portals work (gravity won't let you fall through yet)
 * better physics for player (and eventually other moving entities)
@@ -52,6 +47,7 @@ NEXT
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* the calculation of portal window is likely wrong.  for some reason we have to invert the X axis offset...maybe because the "X walls" have u axis negated?
 * "deinterlacing" for the tear region?
 * don't issue the undone work from C++ side when in interlace mode.  might be faster
 * light cones in fog
@@ -334,6 +330,10 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--2/2/14
+* convert testarea.xml to use new connectto feature
+* made portalwindow work with connectto stuff, so you can auto connect and still have a custom window
 
 --2/1/14
 * the sector plane connect to stuff is seemingly working now

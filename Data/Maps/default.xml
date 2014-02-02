@@ -28,13 +28,13 @@
     <Box Position="8,-3,4" Scale="1,1,1" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
     <Box Position="-4.5,-1,7" Scale="1,1,1" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
 
-    <SectorPlane UAxis="0,0,-1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Room1" ConnectToSectorPlane="4" ConnectToSectorOffset="-10,0,0"/>
+    <SectorPlane UAxis="0,0,-1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Room1" ConnectToSectorPlane="4" ConnectToSectorOffset="-10, 1,0"/>
     <SectorPlane UAxis="0,0, 1" Material="Cieling" TextureScale="0.25,0.25"/>
 
-    <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25" ConnectToSectorz="Room1" ConnectToSectorPlane="3" ConnectToSectorOffset="0,0,0"/>
+    <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="-1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
 
-    <SectorPlane UAxis=" 1,0,0" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Room1" ConnectToSectorPlane="0" ConnectToSectorOffset="0,0,10"/>
+    <SectorPlane UAxis=" 1,0,0" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Room1" ConnectToSectorPlane="0" ConnectToSectorOffset="0,-1,10"/>
     <SectorPlane UAxis="-1,0,0" Material="Cieling" TextureScale="0.25,0.25"/>
   </Sector>
   

@@ -326,12 +326,22 @@ void CWorld::ConnectSectors (
 	newPortal.m_zaxis = portalZaxis;
 	newPortal.m_waxis = portalWaxis;
 
-	// TEMP: set the portal window
-	// TODO: do this correctly
-	//sector.m_planes[planeIndex].m_portalWindow.s[0] = -2.0f;
-	//sector.m_planes[planeIndex].m_portalWindow.s[1] = -5.0f;
-	//sector.m_planes[planeIndex].m_portalWindow.s[2] =  2.0f;
-	//sector.m_planes[planeIndex].m_portalWindow.s[3] =  3.0f;
+	// calculate our portal window by taking the most restrictive values between
+	// the translated src and destination dimensions
+	float srcMinX, srcMinY, srcMaxX, srcMaxY;
+	GetSectorPlaneDimenions(sector, planeIndex, srcMinX, srcMinY, srcMaxX, srcMaxY, offset);
+
+	float destMinX, destMinY, destMaxX, destMaxY;
+	float3 destOffset;
+	destOffset[0] = offset[0] * -1;
+	destOffset[1] = offset[1] * -1;
+	destOffset[2] = offset[2] * -1;
+	GetSectorPlaneDimenions(destSector, destPlaneIndex, destMinX, destMinY, destMaxX, destMaxY, destOffset);
+
+	sector.m_planes[planeIndex].m_portalWindow.s[0] = (srcMinX >= destMinX) ? srcMinX : destMinX;
+	sector.m_planes[planeIndex].m_portalWindow.s[1] = (srcMinY >= destMinY) ? srcMinY : destMinY;
+	sector.m_planes[planeIndex].m_portalWindow.s[2] = (srcMaxX <= destMaxX) ? srcMaxX : destMaxX;
+	sector.m_planes[planeIndex].m_portalWindow.s[3] = (srcMaxY <= destMaxY) ? srcMaxY : destMaxY;
 
 	// make the sector plane use this new portal
 	sector.m_planes[planeIndex].m_portalIndex = m_portals.Count() - 1;
@@ -516,6 +526,63 @@ void CWorld::GetSectorPlaneInverseTransformationMatrix (
 	zAxis.s[0] = invZAxis[0];
 	zAxis.s[1] = invZAxis[1];
 	zAxis.s[2] = invZAxis[2];
+}
+
+//-----------------------------------------------------------------------------
+void CWorld::GetSectorPlaneDimenions (
+	const SSector &sector,
+	unsigned int planeIndex,
+	float &minX,
+	float &minY,
+	float &maxX,
+	float &maxY,
+	const float3 &offset
+) {
+	switch (planeIndex / 2)
+	{
+		// +/- X Walls ->  Z,Y
+		case 0:
+		{
+			minX = -sector.m_halfDims[2];
+			minY = -sector.m_halfDims[1];
+			maxX = minX * -1;
+			maxY = minY * -1;
+
+			minX += offset[2];
+			maxX += offset[2];
+			minY += offset[1];
+			maxY += offset[1];
+			break;
+		}
+		// +/- Y Walls ->  X,Z
+		case 1:
+		{
+			minX = -sector.m_halfDims[0];
+			minY = -sector.m_halfDims[2];
+			maxX = minX * -1;
+			maxY = minY * -1;
+
+			minX += offset[0];
+			maxX += offset[0];
+			minY += offset[2];
+			maxY += offset[2];
+			break;
+		}
+		// +/- Z Walls ->  X,Y
+		case 2:
+		{
+			minX = -sector.m_halfDims[0];
+			minY = -sector.m_halfDims[1];
+			maxX = minX * -1;
+			maxY = minY * -1;
+
+			minX += offset[0];
+			maxX += offset[0];
+			minY += offset[1];
+			maxY += offset[1];
+			break;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

@@ -8,16 +8,17 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
-* red blue 3d mode time!
-* make the default.xml like it used to be (where it's a room w/ a pillar in the middle)
-* convert testarea.xml too!
+* portal window calculations!
+
+
 * V coordinate (of uv) is flipped for some sector walls.  likely fixed w/ a set U axis independant of texture uaxis.
  * can we make this the default if uaxis not specified in data too?
+
+* make the default.xml like it used to be (where it's a room w/ a pillar in the middle)
+* convert testarea.xml too!
+* red blue 3d mode time!
 * find a way to make GetSectorPlaneNormal (and similar functions) only implemented in 1 place, instead of once in kernel and once in host
 * make the offsets be easier to understand for "connect to portal" stuff.  like put it in world space or something
-* "connect to portal" stuff needs portal window calculations done!
- * should be easy enough.  with no offset, you can get the window of each wall and just need to take the coordinates closer to zero for minx,maxx,miny,maxy.
- * with an offset, adjust the center of the windows accordingly and do the same thing!
 * should portal windows be based on fixed / consistent U/Vaxis instead of the texture uvaxis?  this keeps things consistent (we can assume things in the code for portals) and makes it so portal windows are axis aligned
 * make some kind of global connect to xml thing to make 2 way connections between sector planes.  maybe also specify whether the connection is 2 way or just 1 way?
 * make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
@@ -333,6 +334,11 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--2/1/14
+* the sector plane connect to stuff is seemingly working now
+* also have portal window calculations working
+* i've been working on those guys for the last week or so :P
 
 --1/27/14
 * worked on getting sector plane "connect to" working

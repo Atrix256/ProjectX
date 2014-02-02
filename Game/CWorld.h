@@ -113,6 +113,16 @@ private:
 		cl_float4 &wAxis
 	);
 
+	void GetSectorPlaneDimenions (
+		const SSector &sector,
+		unsigned int planeIndex,
+		float &minX,
+		float &minY,
+		float &maxX,
+		float &maxY,
+		const float3 &offset
+	);
+
 	CSharedArray<SPointLight>	m_pointLights;
 	CSharedArray<SSphere>		m_spheres;
 	CSharedArray<SAABox>		m_boxes;

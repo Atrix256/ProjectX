@@ -11,33 +11,30 @@
   <!--===============================================================
   ROOM1
   ================================================================-->
-  <Sector id="Room1" Dimensions="40,10,20" CastShadows="false" AmbientLight="0.3, 0.3, 0.3">
+  <Sector id="Room1" Dimensions="40,10,20" CastShadows="false" AmbientLight="0.4, 0.4, 0.4">
 
+    <!-- Some test directional lights-->
     <Sphere Position="0,0,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="0, 0, 0" Color="1,0,0" ConeDirection="1,0,0" ConeAngle="90" ConeAttenuationAngle="30" ConeFalloffFactor="3" AttenuationConstant="0.25" AttenuationDistance="0" AttenuationDistanceSquared="0"/>
     <PointLight Position="0, 0, 0" Color="0,1,0" ConeDirection="0,1,0" ConeAngle="90" ConeAttenuationAngle="30" ConeFalloffFactor="3" AttenuationConstant="0.25" AttenuationDistance="0" AttenuationDistanceSquared="0"/>
     <PointLight Position="0, 0, 0" Color="0,0,1" ConeDirection="0,0,1" ConeAngle="90" ConeAttenuationAngle="30" ConeFalloffFactor="3" AttenuationConstant="0.25" AttenuationDistance="0" AttenuationDistanceSquared="0"/>
+    
+    <!--The light, with copies to simulate light through portals-->
+    <!--Sphere Position="0,0,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="  0, 0,  0" Color="1,1,1" AttenuationConstant="1" AttenuationDistance="0"/>
+    <PointLight Position="-10, 0, 30" Color="1,1,1" AttenuationConstant="1" AttenuationDistance="0"/>
+    <PointLight Position=" 30, 0, 10" Color="1,1,1" AttenuationConstant="1" AttenuationDistance="0"/-->
 
     <Box Position="8,-3,4" Scale="1,1,1" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
     <Box Position="-4.5,-1,7" Scale="1,1,1" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
-    
-    <!--The light-->
-    <!--PointLight Position="0, 0, 0" Color="1,1,1"/>
-    <Sphere Position="0,0,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/-->
 
-    <!--This is the light that is seen beyond the right turn in the other room-->
-    <!--PointLight Position="10, 0, -30" Color="1,1,1"/-->
+    <SectorPlane UAxis="0,0,-1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Room1" ConnectToSectorPlane="4" ConnectToSectorOffset="-10,0,0"/>
+    <SectorPlane UAxis="0,0, 1" Material="Cieling" TextureScale="0.25,0.25"/>
 
-    <!--This is the light that is seen beyond the back of the right turn in the other room-->
-    <!--PointLight Position="-30, 0, -10" Color="1,1,1"/-->
-    
-    <SectorPlane UAxis="0,0,1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Room1" ConnectToSectorPlane="4" ConnectToSectorOffset="-10,0,0"/>
-    <SectorPlane UAxis="0,0,-1" Material="Cieling" TextureScale="0.25,0.25"/>
-
-    <SectorPlane UAxis="1,0,0" Material="Floor" TextureScale="0.25,0.25" ConnectToSectorz="Room1" ConnectToSectorPlane="3" ConnectToSectorOffset="0,0,0"/>
+    <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25" ConnectToSectorz="Room1" ConnectToSectorPlane="3" ConnectToSectorOffset="0,0,0"/>
     <SectorPlane UAxis="-1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
 
-    <SectorPlane UAxis="1,0,0" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Room1" ConnectToSectorPlane="0" ConnectToSectorOffset="0,0,10"/>
+    <SectorPlane UAxis=" 1,0,0" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Room1" ConnectToSectorPlane="0" ConnectToSectorOffset="0,0,10"/>
     <SectorPlane UAxis="-1,0,0" Material="Cieling" TextureScale="0.25,0.25"/>
   </Sector>
   

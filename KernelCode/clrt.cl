@@ -762,5 +762,19 @@ __kernel void clrt (
 	// trace the ray
 	float3 color = (float3)(0);
 	TraceRay(dataRoot, tex3dIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, planes, sectors, materials, portals);
+	
+	#if SETTINGS_REDBLUE3D == 1
+		float grayLeft = color.x * 0.3f + color.y * 0.59f + color.z * 0.11f;
+		color = (float3)(0);
+
+		float3 rightEyePos = dataRoot->m_camera.m_pos - dataRoot->m_camera.m_left * 0.4f;
+		TraceRay(dataRoot, tex3dIn, rightEyePos, rayDir, &color, lights, spheres, boxes, planes, sectors, materials, portals);
+		float grayRight = color.x * 0.3f + color.y * 0.59f + color.z * 0.11f;
+
+		color.x = grayLeft;
+		color.y = 0.0f;
+		color.z = grayRight;
+	#endif
+
 	write_imagef(texOut, coord, (float4)(color, 1.0)); 
 }

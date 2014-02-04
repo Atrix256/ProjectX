@@ -1,9 +1,10 @@
 <GfxSettings>
-  <DefaultMap Value="./data/maps/default.xml"/>
+  <DefaultMap Value="./data/maps/testarea.xml"/>
   <Resolution Value="1000,1000"/>
   <TextureSize Value="512"/>
   <InterlaceMode Value="true"/>
   <NormalMapping Value="true"/>
   <Shadows Value="true"/>
   <HighQualityLights Value="true"/>
+  <RedBlue3D Value="false"/>
 </GfxSettings>

@@ -718,5 +718,30 @@ bool CWorld::Load (const char *worldFileName)
 	for (unsigned int sectorIndex = 0, sectorCount = worldData.m_Sector.size(); sectorIndex < sectorCount; ++sectorIndex)
 		HandleSectorConnectTos(sectorIndex, worldData.m_Sector);
 
+	// handle the connect tags that connect sectors together
+	for (unsigned int connectIndex = 0, connectCount = worldData.m_Connect.size(); connectIndex < connectCount; ++connectIndex)
+	{
+		const SData_Connect &connect = worldData.m_Connect[connectIndex];
+		
+		unsigned int srcSector = SData::GetEntryById(worldData.m_Sector, connect.m_SrcSector);
+		unsigned int destSector = SData::GetEntryById(worldData.m_Sector, connect.m_DestSector);
+		float3 offset;
+		Copy(offset, connect.m_Offset);
+		cl_float4 portalWindow;
+		Copy(portalWindow, connect.m_PortalWindow);
+
+		// make connection from source to dest
+		ConnectSectors(srcSector, connect.m_SrcSectorPlane, destSector, connect.m_DestSectorPlane, offset, portalWindow);
+
+		// make connection from dest to source if we are supposed to
+		if (connect.m_BothWays)
+		{
+			offset[0] *= -1.0f;
+			offset[1] *= -1.0f;
+			offset[2] *= -1.0f;
+			ConnectSectors(destSector, connect.m_DestSectorPlane, srcSector, connect.m_SrcSectorPlane, offset, portalWindow);
+		}
+	}
+
 	return true;
 }

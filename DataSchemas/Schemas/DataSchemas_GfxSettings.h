@@ -14,4 +14,5 @@ SchemaBegin(GfxSettings)
 	Field(bool, NormalMapping, true)
 	Field(bool, Shadows, true)
 	Field(bool, HighQualityLights, true)
+	Field(bool, RedBlue3D, false)
 SchemaEnd

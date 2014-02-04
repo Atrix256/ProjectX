@@ -8,11 +8,10 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
-
+* need to transform the offset in <connect> tags, not just invert it (but inversion needs to happen too i think)
 * make some kind of global connect to xml thing to make 2 way connections between sector planes.  maybe also specify whether the connection is 2 way or just 1 way?
 * V coordinate (of uv) is flipped for some sector walls.  likely fixed w/ a set U axis independant of texture uaxis.
  * can we make this the default if uaxis not specified in data too?
-* red blue 3d mode time!
 * find a way to make GetSectorPlaneNormal (and similar functions) only implemented in 1 place, instead of once in kernel and once in host
 * make the offsets be easier to understand for "connect to portal" stuff.  like put it in world space or something
 * should portal windows be based on fixed / consistent U/Vaxis instead of the texture uvaxis?  this keeps things consistent (we can assume things in the code for portals) and makes it so portal windows are axis aligned
@@ -178,13 +177,19 @@ NEXT
  -medium distance - cost on each sector to go from each sector's portal to each other sector's portal.
  -long distance - ?? not sure if needed, but if we have a lot of sectors, A* across sectors may be too much
 
---GFX SETTINGS
-* move default map from gfx settings to game data
+--GAME DATA
+* what to do about portal window setting for dest->src connection? need to do something... not doing the right thing currently
+* in connect tags, assert that the sectors can be found and that the plane indices are valid
 * assert that ConeAttenuationAngle <= ConeAngle in point lights (or log an error)
 * make graphics settings load more forgiving of load failure (currently sets resolution to 0,0). doesnt use xml defaults, but it probly should!
  * same with game data
 * make graphics settings xml file generate if it doesn't exist
  * same for game data xml file
+
+
+--GFX SETTINGS
+* need a setting for eye width in red/blue 3d mode
+* move default map from gfx settings to game data
 * max ray bounces setting
 * graphics settings to allow reflection and refraction or not. With it off, reflection does nothing, and refraction doesn't change path of ray (so it's just transparent)
 * put m_viewWidthHeightDistance etc into graphics settings
@@ -193,17 +198,13 @@ NEXT
 * window size as a graphics option
 * figure out a decent number to choose for max textures, or make it dynamic in the future or something?
 * graphics setting for whether to use mips for textures or not? currently no mipmaps used
-* graphics option for texture size if doing a 3d texture to hold all the textures, since they have to be the same size
 * graphics option for vsync.  if vsync is on, it will pass (1, 0) to  m_pSwapChain->Present
 * use +/- buttons to increase and decrease render quality (actually maybe just do low, med, high since it needs to recompile the kernel code for each one!)
 * make the max # of textures be a graphics setting?
 * graphics setting for texture sampling options? (linear vs nearest? although it's weird with 3d textures since the other texture shows through)
-* xml file to describe graphics options for now?
 * gamma setting
 * if no reflection or refraction from #define settings, remove loop completely.
-* make an xml settings file and pass those as #defines to the compiler thing?
 * have some way to do autodetection of graphics settings?
-* pass graphics settings as #defines to kernel code
 
 
 --GAME SETTINGS
@@ -330,6 +331,10 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--2/3/14
+* red/blue 3d mode
+* worked on the global connect xml nodes
 
 --2/2/14
 * convert testarea.xml to use new connectto feature

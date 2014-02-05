@@ -1,5 +1,5 @@
 <GfxSettings>
-  <DefaultMap Value="./data/maps/testarea.xml"/>
+  <DefaultMap Value="./data/maps/level.xml"/>
   <Resolution Value="1000,1000"/>
   <TextureSize Value="512"/>
   <InterlaceMode Value="true"/>
@@ -9,4 +9,5 @@
   <RedBlue3D Value="false"/>
   <RedBlueWidth Value="-0.4"/>
   <RayBounces Value="10"/>
+  <FastestMath Value="true"/>
 </GfxSettings>

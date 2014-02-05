@@ -214,6 +214,7 @@
     <ClInclude Include="DataSchemas\DataSchemas.h" />
     <ClInclude Include="DataSchemas\DataSchemasStructs.h" />
     <ClInclude Include="DataSchemas\DataSchemasXML.h" />
+    <ClInclude Include="DataSchemas\Schemas\DataSchemas_DaeFile.h" />
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_GameData.h" />
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_GfxSettings.h" />
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_World.h" />
@@ -266,6 +267,7 @@
     <Xml Include="Data\Maps\default.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="Data\Maps\level.xml" />
     <Xml Include="Data\Maps\testarea.xml" />
   </ItemGroup>
   <ItemGroup>

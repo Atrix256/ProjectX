@@ -99,12 +99,19 @@ SchemaBegin(SectorPlane)
 	Field_Schema(Vec2, ConnectToSectorOffset, "0,0")
 SchemaEnd
 
+SchemaBegin(Model)
+	Field(std::string, id, "")
+	Field(std::string, FileName, "")
+	Field_Schema(Vec3, Position, "0,0,0")
+SchemaEnd
+
 SchemaBegin(Sector)
 	Field_Schema(Vec3, AmbientLight, "0,0,0")
 	Field_Schema_Array(PointLight, PointLight)
 	Field_Schema_Array(Plane, Plane)
 	Field_Schema_Array(Box, Box)
 	Field_Schema_Array(Sphere, Sphere)
+	Field_Schema_Array(Model, Model)
 	Field(std::string, id, "")
 	Field_Schema(Vec3, Dimensions, "1,1,1")
 	Field_Schema_Array(SectorPlane, SectorPlane)

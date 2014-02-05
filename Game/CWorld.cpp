@@ -228,6 +228,25 @@ void CWorld::LoadSectorPointLights (
 }
 
 //-----------------------------------------------------------------------------
+void CWorld::LoadSectorModels (
+	SSector &sector,
+	struct SData_Sector &sectorSource,
+	std::vector<struct SData_Material> &materials,
+	std::vector<struct SData_Portal> &portals
+) {
+
+	for (unsigned int index = 0, count = sectorSource.m_Model.size(); index < count; ++index)
+	{
+		SData_Model &model = sectorSource.m_Model[index];
+		SData_DAEFILE modelData;
+		if (!DataSchemasXML::Load(modelData, model.m_FileName.c_str(), "COLLADA"))
+			continue;
+
+		int ijkl = 0;
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CWorld::HandleSectorConnectTos (
 	unsigned int sectorIndex,
 	const std::vector<struct SData_Sector> &sectorsSource
@@ -627,6 +646,7 @@ void CWorld::LoadSector (
 	LoadSectorPlanes(sector, sectorSource, materials, portals);
 	LoadSectorBoxes(sector, sectorSource, materials, portals);
 	LoadSectorSpheres(sector, sectorSource, materials, portals);
+	LoadSectorModels(sector, sectorSource, materials, portals);
 }
 
 //-----------------------------------------------------------------------------

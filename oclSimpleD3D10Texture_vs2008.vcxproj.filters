@@ -114,6 +114,9 @@
     <ClInclude Include="Game\InputToggleList.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="DataSchemas\Schemas\DataSchemas_DaeFile.h">
+      <Filter>DataSchemas\Schemas</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\tinyxml\tinyxml2.cpp">
@@ -165,6 +168,9 @@
       <Filter>Data\Maps</Filter>
     </Xml>
     <Xml Include="Data\Maps\testarea.xml">
+      <Filter>Data\Maps</Filter>
+    </Xml>
+    <Xml Include="Data\Maps\level.xml">
       <Filter>Data\Maps</Filter>
     </Xml>
   </ItemGroup>

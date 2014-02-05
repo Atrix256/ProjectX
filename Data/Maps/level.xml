@@ -1,0 +1,80 @@
+<World>
+  <StartSector Value="StartRoom"/>
+  <StartPoint Value="0,0,-4.5"/>
+  <StartFacing Value="0,0,1"/>
+  
+  <Material id="Floor" DiffuseTexture="Art/oildrum_Diffuse.png" DiffuseColor="1.0, 1.0, 1.0" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="WhiteLight" EmissiveColor="1,1,1" DiffuseColor="0,0,0" SpecularColor="0,0,0"/>
+  
+  <!--===============================================================
+  StartRoom
+  ================================================================-->
+  <Sector id="StartRoom" Dimensions="20,10,10" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+    <Sphere Position="4,5,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="4,5,0" Color="1,1,0.8" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+    
+    <Sphere Position="-4,5,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="-4,5,0" Color="0.8,1,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+    
+    <SectorPlane UAxis="0,0,-1" Material="Floor" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,0, 1" Material="Floor" TextureScale="0.25,0.25"/>
+
+    <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="-1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+
+    <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25" ConnectToSector="Hallway" ConnectToSectorPlane="5" ConnectToSectorOffset="0,1.5"/>
+    <SectorPlane UAxis="-1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+  </Sector>
+
+  <!--===============================================================
+  Hallway
+  ================================================================-->
+  <Sector id="Hallway" Dimensions="7,7,20" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+
+    <Sphere Position="0,3.5,5" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="0,3.5, 5" Color="1,0.8,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+
+    <Sphere Position="0,3.5,-5" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="0,3.5,-5" Color="0.8,1,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+
+    <SectorPlane UAxis="0,0,-1" Material="Floor" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,0, 1" Material="Floor" TextureScale="0.25,0.25"/>
+
+    <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="-1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+
+    <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25" ConnectToSector="Outside" ConnectToSectorPlane="5" ConnectToSectorOffset="0, -5"/>
+    <SectorPlane UAxis="-1,0,0" Material="Floor" TextureScale="0.25,0.25" ConnectToSector="StartRoom" ConnectToSectorPlane="4" ConnectToSectorOffset="0,-1.5"/>
+  </Sector>
+
+  <!--===============================================================
+  Outside
+  ================================================================-->
+  <Sector id="Outside" Dimensions="40,20,40" CastShadows="false" AmbientLight="0.1, 0.3, 0.4">
+
+    <PointLight Position="18,0, 19" Color="1,1,0.2" AttenuationConstant="1" AttenuationDistance="0.005"/>
+
+    <!--Box Position=" 1,-9, 1" Scale="2,1,1" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
+    <Box Position=" 1,-7,-1" Scale="1,1,2" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
+    <Box Position="-1,-5,-1" Scale="2,1,1" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
+    <Box Position="-1,-3, 1" Scale="1,1,2" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
+    <Box Position=" 1,-1, 1" Scale="2,1,1" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
+    <Box Position=" 1, 1,-1" Scale="1,1,2" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
+    <Box Position="-1, 3,-1" Scale="2,1,1" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
+    <Box Position="-1, 5, 1" Scale="1,1,2" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
+    <Box Position=" 1, 7, 1" Scale="2,1,1" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
+    <Box Position=" 1, 9,-1" Scale="1,1,2" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/-->
+
+    <Model FileName="Art/Models/box.dae"/>
+    
+    <SectorPlane UAxis="0,0,-1" Material="Floor" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,0, 1" Material="Floor" TextureScale="0.25,0.25"/>
+
+    <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="-1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+
+    <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="-1,0,0" Material="Floor" TextureScale="0.25,0.25" ConnectToSector="Hallway" ConnectToSectorPlane="4" ConnectToSectorOffset="0, 5"/>
+  </Sector>
+
+</World>

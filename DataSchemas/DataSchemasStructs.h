@@ -43,6 +43,8 @@ namespace SData
 #define Field_Schema(type, name, default) SData_##type m_##name;
 #define Field_Schema_Array(type, name) \
 	std::vector<SData_##type> m_##name;
+#define Field_Value_Array(type) \
+	std::vector<type> m_ValueArray;
 
 #include "DataSchemas.h"
 
@@ -51,3 +53,4 @@ namespace SData
 #undef Field
 #undef Field_Schema
 #undef Field_Schema_Array
+#undef Field_Value_Array

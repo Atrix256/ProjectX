@@ -82,6 +82,13 @@ private:
 		std::vector<struct SData_Portal> &portals
 	);
 
+	void LoadSectorModels (
+		SSector &sector,
+		struct SData_Sector &sectorSource,
+		std::vector<struct SData_Material> &materials,
+		std::vector<struct SData_Portal> &portals
+	);
+
 	void HandleSectorConnectTos (
 		unsigned int sectorIndex,
 		const std::vector<struct SData_Sector> &sectorsSource

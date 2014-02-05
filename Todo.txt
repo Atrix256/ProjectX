@@ -8,16 +8,30 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
+* load models
+ * break models into convex objects, represent them with a bunch of planes, wrap them in a sphere early out test?
+ * need orientation for models (x,y,z,w axis? that would also let scale and translation happen if doing it that way)
+ * maybe yaw pitch and roll instead
+
+* integrate lua
+ * interact with objects by id
+ * change light params etc
+
+* find a way to make GetSectorPlaneNormal (and similar functions) only implemented in 1 place, instead of once in kernel and once in host
+
 * make it so you can't get close enough to walls to see through them.
  * there is a distance from camera to the view plane, maybe we have the view plane be at zero, and move the camera back?
-
 
 * make sector walls be able to cast shadows
 * make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
 * if making shadows traverse sectors make shadows more expensive, could have a shadow quality setting: off, low (current), high (traverses sectors)
+* maybe need to think about this a bit more.
+ * It could be done by just instancing the objects, or by considering neighboring sectors explicitly.
+ * this is kind of what we want to do for lighting anyways.
+ * maybe need some kind of "cross sector awareness" solution besides traversal?
 
-* find a way to make GetSectorPlaneNormal (and similar functions) only implemented in 1 place, instead of once in kernel and once in host
 * make floor / cieling portals work (gravity won't let you fall through yet)
+* make it so jumping isn't frame rate dependant
 * better physics for player (and eventually other moving entities)
  * collision detection: walk on boxes, under objects, can't walk through walls?
 * somehow make portals contain dynamic geometry, or do some other dynamic geometry solution
@@ -164,6 +178,9 @@ NEXT
  -long distance - ?? not sure if needed, but if we have a lot of sectors, A* across sectors may be too much
 
 --GAME DATA
+* seperate the schemas a bit into their own includes, so that when you edit a schema, it doesnt make a massive recompile
+* put schemas into namespaces or something, to prevent name collision and reduce global namespace pollution!
+* log error if model load fails
 * log error if "connectToSector" is given but it can't be found (same for other connect to stuff)
 * find a better way to enforce / handle sectors needing 6 planes, than doing an assert (error / skip?)
  * maybe also let the schema define a min and max size for the array so data parsing can catch it?
@@ -178,6 +195,7 @@ NEXT
 * nake a "connect" tag at the global level
 
 --GFX SETTINGS
+* gamma setting
 * move default map from gfx settings to game data
 * graphics settings to allow reflection and refraction or not. With it off, reflection does nothing, and refraction doesn't change path of ray (so it's just transparent)
 * put m_viewWidthHeightDistance etc into graphics settings
@@ -190,7 +208,6 @@ NEXT
 * use +/- buttons to increase and decrease render quality (actually maybe just do low, med, high since it needs to recompile the kernel code for each one!)
 * make the max # of textures be a graphics setting?
 * graphics setting for texture sampling options? (linear vs nearest? although it's weird with 3d textures since the other texture shows through)
-* gamma setting
 * if no reflection or refraction from #define settings, remove loop completely.
 * have some way to do autodetection of graphics settings?
 * have a way to return values from kernel code - like max color so we can have a compressor on the brightness
@@ -259,8 +276,6 @@ NEXT
 * see how to get CPU involved.  Maybe having it help would be useful too? dunno.
  * maybe end user can choose device it runs on somehow...
 * is it running in SLI? how can i check
-* figure out optimizations for kernal (check link in notes).  like maybe do full opts in release mode or something?
- * make denormals zero! and other nice things
 
 
 --BUGS
@@ -319,6 +334,9 @@ NEXT
  * refraction
 
 =====DONE=====
+--2/5/14
+* started working on loading models
+* made a graphics setting to turn on and off full (unsafe) optimizations.  doesn't seem to make much of a difference for me unfortunately
 
 --2/4/14
 * sector wall portal window tests are done off a constant uv instead of it being tied to texture u axis.

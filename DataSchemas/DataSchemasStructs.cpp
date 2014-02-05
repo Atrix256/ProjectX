@@ -13,6 +13,7 @@ This expands the schemas defined in DataSchemas.h into structs
 #define Field(type, name, default)	m_##name = default;
 #define Field_Schema(type, name, default) m_##name.SetDefault();
 #define Field_Schema_Array(type, name) m_##name.clear();
+#define Field_Value_Array(type) m_ValueArray.clear();
 
 #include "DataSchemas.h"
 
@@ -21,6 +22,7 @@ This expands the schemas defined in DataSchemas.h into structs
 #undef Field
 #undef Field_Schema
 #undef Field_Schema_Array
+#undef Field_Value_Array
 
 // make the static schema name field
 #define SchemaBegin(name) const char *SData_##name::s_schemaName = "SData_" #name;
@@ -28,6 +30,7 @@ This expands the schemas defined in DataSchemas.h into structs
 #define Field(type, name, default)
 #define Field_Schema(type, name, default)
 #define Field_Schema_Array(type, name)
+#define Field_Value_Array(type)
 
 #include "DataSchemas.h"
 
@@ -36,3 +39,4 @@ This expands the schemas defined in DataSchemas.h into structs
 #undef Field
 #undef Field_Schema
 #undef Field_Schema_Array
+#undef Field_Value_Array

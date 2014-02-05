@@ -595,7 +595,7 @@ HRESULT CDirectX::CreateKernelProgram(
 	// make our build options
 	std::string buildOptions;
 	char buffer[32];
-	buildOptions = "-cl-fast-relaxed-math -I ./KernelCode/ -D OPENCL=1";
+	buildOptions = "-I ./KernelCode/ -D OPENCL=1 -Werror";
 	buildOptions.append(" -D SETTINGS_INTERLACED=");
 	buildOptions.append(m_graphicsSettings.m_InterlaceMode ? "1" : "0");
 	buildOptions.append(" -D SETTINGS_NORMALMAP=");
@@ -612,6 +612,14 @@ HRESULT CDirectX::CreateKernelProgram(
 	buildOptions.append(" -D SETTINGS_RAYBOUNCES=");
 	sprintf(buffer, "%i", m_graphicsSettings.m_RayBounces);
 	buildOptions.append(buffer);
+
+	// if this setting is on, turn on the optimizations that prefer speed over accuracy and safety
+	if (m_graphicsSettings.m_FastestMath) {
+		buildOptions.append(" -cl-single-precision-constant");
+		buildOptions.append(" -cl-denorms-are-zero");
+		buildOptions.append(" -cl-strict-aliasing");
+		buildOptions.append(" -cl-fast-relaxed-math");
+	}
 
     // build the program
 	ciErrNum = clBuildProgram(cpProgram, 0, NULL, buildOptions.c_str(), NULL, NULL);

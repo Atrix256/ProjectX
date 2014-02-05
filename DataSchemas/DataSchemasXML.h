@@ -153,6 +153,35 @@ namespace DataSchemasXML {
 		return false;
 	}
 
+	template <typename T>
+	inline bool LoadArrayFromString(std::vector<T> &data, const char *stringData)
+	{
+		bool ret = true;
+		data.clear();
+		char *tokenString = new char[strlen(stringData)+1];
+		strcpy(tokenString, stringData);
+
+		const char *token = strtok(tokenString, ", ");
+		while (token != NULL)
+		{
+			T value;
+			if (LoadFromString(value, token))
+			{
+				data.push_back(value);
+				token = strtok(NULL, ", ");
+			}
+			else
+			{
+				XMLError(__FUNCTION__" failed to read value from string '%s'", token);
+				token = NULL;
+				ret = false;
+			}
+		}
+
+		delete[] tokenString;
+		return ret;
+	}
+
 	// Generalized Load(tinyxml2::XMLElement*) function
 	template <typename T>
 	inline bool Load (T &data, tinyxml2::XMLElement *node)
@@ -261,6 +290,19 @@ namespace DataSchemasXML {
 	} \
 	if (!EnforceUniqueIds(data.m_##name, data.s_schemaName, #name)) \
 		return false;
+#define Field_Value_Array(type) \
+	{ \
+		XMLLog(__FUNCTION__" attempting to load field value array"); \
+		tinyxml2::XMLNode *childNode = node->FirstChild(); \
+		if (!childNode) { \
+			XMLError(__FUNCTION__" failed to load a schema value array, no child node found"); \
+			return false; \
+		} \
+		if (!LoadArrayFromString(data.m_ValueArray, childNode->Value())) { \
+			XMLError(__FUNCTION__" failed to load a schema value array"); \
+			return false; \
+		} \
+	}
 
 #include "DataSchemas.h"
 #undef SchemaBegin
@@ -268,6 +310,7 @@ namespace DataSchemasXML {
 #undef Field
 #undef Field_Schema
 #undef Field_Schema_Array
+#undef Field_Value_Array
 
 	template <typename T>
 	inline bool Load (T &data, const char *fileName, const char *nodeName)

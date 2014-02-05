@@ -10,4 +10,7 @@ SchemaBegin(GameData)
 	Field(float, StandingHeight, 3.0f)
 	Field(float, CrouchingHeight, 1.5f)
 	Field(float, CrouchSpeed, 10.0f)
+	Field(float, WalkSpeedStanding, 5.0f)
+	Field(float, WalkSpeedCrouching, 1.5f)
+	Field(float, SprintSpeedModifier, 2.0f)
 SchemaEnd

@@ -37,8 +37,14 @@ void CPlayer::Init ()
 //--------------------------------------------------------------------------------------------------
 void CPlayer::Update (float elapsed)
 {
-	const float moveAmount = m_crouched ? 1.5f : 5.0f;
+	const SData_GameData& gameData = CGame::GameData();
+
+	float moveAmount = m_crouched ? gameData.m_WalkSpeedCrouching : gameData.m_WalkSpeedStanding;
 	float3 moveDelta = {0.0f, 0.0f, 0.0f};
+
+	// handle sprinting
+	if (CInput::InputToggleOn(CInput::e_inputToggleSprint))
+		moveAmount *= gameData.m_SprintSpeedModifier;
 
 	if (CInput::InputToggleOn(CInput::e_inputToggleWalkForward))
 		moveDelta += CCamera::Get().Forward2D() * moveAmount * elapsed;
@@ -81,7 +87,6 @@ void CPlayer::Update (float elapsed)
 	if (CInput::InputToggleOn(CInput::e_inputToggleCrouch) != m_crouched)
 		m_crouched = !m_crouched;
 
-	const SData_GameData& gameData = CGame::GameData();
 	if (m_crouched && m_playerHeight > gameData.m_CrouchingHeight)
 	{
 		m_playerHeight -= elapsed * gameData.m_CrouchSpeed;

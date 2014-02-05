@@ -18,6 +18,7 @@ INPUT_TOGGLE(WalkRight,		true)
 INPUT_TOGGLE(WalkBack,		true)
 INPUT_TOGGLE(Jump,			false)
 INPUT_TOGGLE(Crouch,		true)
+INPUT_TOGGLE(Sprint,		true)
 
 // clean it up here for convincience
 #undef INPUT_TOGGLE

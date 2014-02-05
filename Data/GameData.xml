@@ -2,4 +2,7 @@
   <StandingHeight Value="3.0"/>
   <CrouchingHeight Value="1.5"/>
   <CrouchSpeed Value="10.0f"/>
+  <WalkSpeedStanding Value="5.0f"/>
+  <WalkSpeedCrouching Value="1.5f"/>
+  <SprintSpeedModifer Value="4.0f"/>
 </GameData>

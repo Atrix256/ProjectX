@@ -843,6 +843,7 @@ static LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 						case 'C': CInput::SetInputToggle(CInput::e_inputToggleCrouch, pressed); break;
 						case VK_CONTROL: CInput::SetInputToggle(CInput::e_inputToggleCrouch, pressed); break;
+						case VK_SHIFT: CInput::SetInputToggle(CInput::e_inputToggleSprint, pressed); break;
 
 						case 'Z': if (!pressed) CDirectX::Get().ToggleRecording(); break;
 					}

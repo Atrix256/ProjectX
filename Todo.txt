@@ -43,6 +43,7 @@ NEXT
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* if a sector doesn't have anything in it that casts shadows, maybe we don't even check for shadows? might speed things up, not sure
 * later on (next game) don't make everything so "up oriented".  could make some really cool stuff! not sure if it should be a flight sim or what
 * the calculation of portal window is likely wrong.  for some reason we have to invert the X axis offset...maybe because the "X walls" have u axis negated?
 * "deinterlacing" for the tear region?
@@ -236,11 +237,10 @@ NEXT
  * maybe have a shared object struct where things are updated every frame (like, camera position) and another where things are seldom changed?
 * #pragma warning ( disable : 4005 ) // fix this eventually
 * is it better to send the shared data root to kernel as a pointer?
-* some command to reload a map file? (like, pressing R?)
+* some command to reload a map file? (like, pressing R?) for faster iteration
 * handle the warnings under the code analasys option under the build menu
-* improve the video recording quality
+* improve the video recording quality for youtube usage
 * make the recorded video frame rate be specified in data somewhere
-* put crouch heights and blend time in some kind of data catalog
 * if the window doesn't have focus, i think we shoudl make it sleep (multiplayer?) or just not do rendering (as often?) or something.  it eats up a ton of cpu otherwise
 * should we prevent the issue of moving diagonally being faster?
 * should there be so many static classes? i kinda think not, or they should have real singleton interfaces
@@ -337,6 +337,8 @@ NEXT
 --2/5/14
 * started working on loading models
 * made a graphics setting to turn on and off full (unsafe) optimizations.  doesn't seem to make much of a difference for me unfortunately
+* implemented pressing shift for sprinting
+* put walk speed, walk speed crouch, and sprint speed modifier into game data.
 
 --2/4/14
 * sector wall portal window tests are done off a constant uv instead of it being tied to texture u axis.

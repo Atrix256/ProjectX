@@ -52,7 +52,8 @@
   ================================================================-->
   <Sector id="Outside" Dimensions="40,20,40" CastShadows="false" AmbientLight="0.1, 0.3, 0.4">
 
-    <PointLight Position="18,0, 19" Color="1,1,0.2" AttenuationConstant="1" AttenuationDistance="0.005"/>
+    <Sphere Position="18,5,19" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="18,5,19" Color="1,1,0.2" AttenuationConstant="1" AttenuationDistance="0.005" ConeDirection="-18,-10,-19" ConeAngle="50" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
 
     <!--Box Position=" 1,-9, 1" Scale="2,1,1" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>
     <Box Position=" 1,-7,-1" Scale="1,1,2" Material="Floor" TextureScale="0.25,0.25" CastShadows="true"/>

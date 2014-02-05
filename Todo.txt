@@ -8,23 +8,20 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
-* test both sector wall connect to as well as global connect to
-* test connections between walls... mirror, infinite, etc
-* test portals on cieling and floor too again
-* find a way to make GetSectorPlaneNormal (and similar functions) only implemented in 1 place, instead of once in kernel and once in host
-* make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
-* make floor / cieling portals work (gravity won't let you fall through yet)
-* better physics for player (and eventually other moving entities)
- * collision detection: walk on boxes, under objects, can't walk through walls?
-* make sector walls be able to cast shadows
-* somehow make portals contain dynamic geometry, or do some other dynamic geometry solution
-* only traverse portal if you walk through portal window.
 * make it so you can't get close enough to walls to see through them.
  * there is a distance from camera to the view plane, maybe we have the view plane be at zero, and move the camera back?
 
 
+* make sector walls be able to cast shadows
+* make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
+* if making shadows traverse sectors make shadows more expensive, could have a shadow quality setting: off, low (current), high (traverses sectors)
 
-
+* find a way to make GetSectorPlaneNormal (and similar functions) only implemented in 1 place, instead of once in kernel and once in host
+* make floor / cieling portals work (gravity won't let you fall through yet)
+* better physics for player (and eventually other moving entities)
+ * collision detection: walk on boxes, under objects, can't walk through walls?
+* somehow make portals contain dynamic geometry, or do some other dynamic geometry solution
+* only traverse portal if you walk through portal window.
 
  
 --MAP & GAME CONCEPTS
@@ -32,6 +29,7 @@ NEXT
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* later on (next game) don't make everything so "up oriented".  could make some really cool stuff! not sure if it should be a flight sim or what
 * the calculation of portal window is likely wrong.  for some reason we have to invert the X axis offset...maybe because the "X walls" have u axis negated?
 * "deinterlacing" for the tear region?
 * don't issue the undone work from C++ side when in interlace mode.  might be faster
@@ -137,6 +135,8 @@ NEXT
 
 
 --GAMEPLAY
+* when going into a "rage mode" could set cameraShared.m_viewWidthHeightDistance[2] to 1 (lerp to it)
+* when going into a scope, could set cameraShared.m_viewWidthHeightDistance[0] to 1
 * maybe "named dynamic objects" list to more quickly find named objects?
 * friction (and slipping), varying gravity, jump pads
 * revisit fixed game rate code (currently commented out)
@@ -178,9 +178,7 @@ NEXT
 * nake a "connect" tag at the global level
 
 --GFX SETTINGS
-* need a setting for eye width in red/blue 3d mode
 * move default map from gfx settings to game data
-* max ray bounces setting
 * graphics settings to allow reflection and refraction or not. With it off, reflection does nothing, and refraction doesn't change path of ray (so it's just transparent)
 * put m_viewWidthHeightDistance etc into graphics settings
 * let maps turn off gfx settings.  AKA if a map doesn't have any refraction, no need to test for it so turn off the setting.
@@ -195,7 +193,7 @@ NEXT
 * gamma setting
 * if no reflection or refraction from #define settings, remove loop completely.
 * have some way to do autodetection of graphics settings?
-
+* have a way to return values from kernel code - like max color so we can have a compressor on the brightness
 
 --GAME SETTINGS
 * mouse sensitivity / invert mouse settings
@@ -326,6 +324,8 @@ NEXT
 * sector wall portal window tests are done off a constant uv instead of it being tied to texture u axis.
 * converted ConnectTo offset to uv space.
 * ditched the global connect tag for now in xml.  not needed right now, and would need to convert uv offset (for destination sector wall) to make it work right
+* need a setting for eye width in red/blue 3d mode
+* max ray bounces setting
 
 --2/3/14
 * red/blue 3d mode

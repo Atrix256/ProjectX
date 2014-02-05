@@ -594,6 +594,7 @@ HRESULT CDirectX::CreateKernelProgram(
 
 	// make our build options
 	std::string buildOptions;
+	char buffer[32];
 	buildOptions = "-cl-fast-relaxed-math -I ./KernelCode/ -D OPENCL=1";
 	buildOptions.append(" -D SETTINGS_INTERLACED=");
 	buildOptions.append(m_graphicsSettings.m_InterlaceMode ? "1" : "0");
@@ -605,6 +606,12 @@ HRESULT CDirectX::CreateKernelProgram(
 	buildOptions.append(m_graphicsSettings.m_HighQualityLights ? "1" : "0");
 	buildOptions.append(" -D SETTINGS_REDBLUE3D=");
 	buildOptions.append(m_graphicsSettings.m_RedBlue3D ? "1" : "0");
+	buildOptions.append(" -D SETTINGS_REDBLUEWIDTH=");
+	sprintf(buffer, "%f", m_graphicsSettings.m_RedBlueWidth);
+	buildOptions.append(buffer);
+	buildOptions.append(" -D SETTINGS_RAYBOUNCES=");
+	sprintf(buffer, "%i", m_graphicsSettings.m_RayBounces);
+	buildOptions.append(buffer);
 
     // build the program
 	ciErrNum = clBuildProgram(cpProgram, 0, NULL, buildOptions.c_str(), NULL, NULL);

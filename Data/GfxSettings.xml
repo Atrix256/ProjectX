@@ -7,4 +7,6 @@
   <Shadows Value="true"/>
   <HighQualityLights Value="true"/>
   <RedBlue3D Value="false"/>
+  <RedBlueWidth Value="-0.4"/>
+  <RayBounces Value="10"/>
 </GfxSettings>

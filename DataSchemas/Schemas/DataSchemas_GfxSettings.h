@@ -15,4 +15,6 @@ SchemaBegin(GfxSettings)
 	Field(bool, Shadows, true)
 	Field(bool, HighQualityLights, true)
 	Field(bool, RedBlue3D, false)
+	Field(float, RedBlueWidth, -0.4f)
+	Field(unsigned int, RayBounces, 10)
 SchemaEnd

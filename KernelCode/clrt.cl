@@ -10,7 +10,7 @@ The kernel code
 #include "Shared/SharedGeometry.h"
 #include "KernelMath.h"
 
-#define c_maxRayBounces 10
+#define c_maxRayBounces SETTINGS_RAYBOUNCES
 
 const sampler_t g_textureSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_REPEAT | CLK_FILTER_NEAREST; 
 
@@ -783,7 +783,7 @@ __kernel void clrt (
 		float grayLeft = color.x * 0.3f + color.y * 0.59f + color.z * 0.11f;
 		color = (float3)(0);
 
-		float3 rightEyePos = dataRoot->m_camera.m_pos - dataRoot->m_camera.m_left * 0.4f;
+		float3 rightEyePos = dataRoot->m_camera.m_pos + dataRoot->m_camera.m_left * SETTINGS_REDBLUEWIDTH;
 		TraceRay(dataRoot, tex3dIn, rightEyePos, rayDir, &color, lights, spheres, boxes, planes, sectors, materials, portals);
 		float grayRight = color.x * 0.3f + color.y * 0.59f + color.z * 0.11f;
 

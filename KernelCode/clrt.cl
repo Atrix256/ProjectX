@@ -292,6 +292,8 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 	float closestHitTime = info->m_intersectionTime;
 	int closestHitPlaneIndex = SSECTOR_NUMPLANES;
 	float3 closestHitSurfaceNormal;
+	float3 closestHitSurfaceU;
+	float3 closestHitSurfaceV;
 
 	// test X axis slab if the ray isn't paralel with the x axis
 	if (rayDir.x != 0.0f)
@@ -309,6 +311,8 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 			if (time1 > 0.0f && time1 < closestHitTime)
 			{
 				closestHitSurfaceNormal = GetSectorPlaneNormal(0);
+				closestHitSurfaceU = GetSectorPlaneU(0);
+				closestHitSurfaceV = GetSectorPlaneV(0);
 				closestHitPlaneIndex = 0;
 				closestHitTime = time1;
 			}
@@ -316,6 +320,8 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 		else if (time2 > 0.0f && time2 < closestHitTime)
 		{
 			closestHitSurfaceNormal = GetSectorPlaneNormal(1);
+			closestHitSurfaceU = GetSectorPlaneU(1);
+			closestHitSurfaceV = GetSectorPlaneV(1);
 			closestHitPlaneIndex = 1;
 			closestHitTime = time2;
 		}
@@ -337,6 +343,8 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 			if (time1 > 0.0f && time1 < closestHitTime)
 			{
 				closestHitSurfaceNormal = GetSectorPlaneNormal(2);
+				closestHitSurfaceU = GetSectorPlaneU(2);
+				closestHitSurfaceV = GetSectorPlaneV(2);
 				closestHitPlaneIndex = 2;
 				closestHitTime = time1;
 			}
@@ -344,6 +352,8 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 		else if (time2 > 0.0f && time2 < closestHitTime)
 		{
 			closestHitSurfaceNormal = GetSectorPlaneNormal(3);
+			closestHitSurfaceU = GetSectorPlaneU(3);
+			closestHitSurfaceV = GetSectorPlaneV(3);
 			closestHitPlaneIndex = 3;
 			closestHitTime = time2;
 		}
@@ -365,6 +375,8 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 			if (time1 > 0.0f && time1 < closestHitTime)
 			{
 				closestHitSurfaceNormal = GetSectorPlaneNormal(4);
+				closestHitSurfaceU = GetSectorPlaneU(4); 
+				closestHitSurfaceV = GetSectorPlaneV(4);
 				closestHitPlaneIndex = 4;
 				closestHitTime = time1;
 			}
@@ -372,6 +384,8 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 		else if (time2 > 0.0f && time2 < closestHitTime)
 		{
 			closestHitSurfaceNormal = GetSectorPlaneNormal(5);
+			closestHitSurfaceU = GetSectorPlaneU(5);
+			closestHitSurfaceV = GetSectorPlaneV(5);
 			closestHitPlaneIndex = 5;
 			closestHitTime = time2;
 		}
@@ -400,11 +414,13 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 	
 	// for sector planes, only set the portal index if the ray is in the portal window
 	// this makes for more efficient portals when you can put the portal on a sector wall
+	float portalU = dot(info->m_intersectionPoint, closestHitSurfaceU);
+	float portalV = dot(info->m_intersectionPoint, closestHitSurfaceV);
 	if (sector->m_planes[closestHitPlaneIndex].m_portalIndex != -1
-	 && info->m_textureCoordinates.x >= sector->m_planes[closestHitPlaneIndex].m_portalWindow.x
-	 && info->m_textureCoordinates.y >= sector->m_planes[closestHitPlaneIndex].m_portalWindow.y
-	 && info->m_textureCoordinates.x <= sector->m_planes[closestHitPlaneIndex].m_portalWindow.z
-	 && info->m_textureCoordinates.y <= sector->m_planes[closestHitPlaneIndex].m_portalWindow.w)
+	 && portalU >= sector->m_planes[closestHitPlaneIndex].m_portalWindow.x
+	 && portalV >= sector->m_planes[closestHitPlaneIndex].m_portalWindow.y
+	 && portalU <= sector->m_planes[closestHitPlaneIndex].m_portalWindow.z
+	 && portalV <= sector->m_planes[closestHitPlaneIndex].m_portalWindow.w)
 	{
 		info->m_portalIndex = sector->m_planes[closestHitPlaneIndex].m_portalIndex;
 	}

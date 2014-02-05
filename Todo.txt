@@ -8,33 +8,19 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
-* need to transform the offset in <connect> tags, not just invert it (but inversion needs to happen too i think)
-* make some kind of global connect to xml thing to make 2 way connections between sector planes.  maybe also specify whether the connection is 2 way or just 1 way?
-* V coordinate (of uv) is flipped for some sector walls.  likely fixed w/ a set U axis independant of texture uaxis.
- * can we make this the default if uaxis not specified in data too?
+* test both sector wall connect to as well as global connect to
+* test connections between walls... mirror, infinite, etc
+* test portals on cieling and floor too again
 * find a way to make GetSectorPlaneNormal (and similar functions) only implemented in 1 place, instead of once in kernel and once in host
-* make the offsets be easier to understand for "connect to portal" stuff.  like put it in world space or something
-* should portal windows be based on fixed / consistent U/Vaxis instead of the texture uvaxis?  this keeps things consistent (we can assume things in the code for portals) and makes it so portal windows are axis aligned
 * make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
 * make floor / cieling portals work (gravity won't let you fall through yet)
 * better physics for player (and eventually other moving entities)
  * collision detection: walk on boxes, under objects, can't walk through walls?
-
-* make the game generate documentation of data schemas -> for map files, gfx settings and game data
-* map bulding and traversal
- -Have "connect" data nodes that make bidirectional connections between sectors.
- -All is needed is the plane index and point on each plane to connect to (in UV coordinate?) And it will handle the rest.  It will make the quad on each side for the 2 connections.
- -Maybe also want a one way hook up data node.
- -Also, should be able to generically make portals by hand.
- -Also, maybe all materials can be portals??? But only planes & quads can be walked through?
-
 * make sector walls be able to cast shadows
-* find a better way to enforce / handle sectors needing 6 planes, than doing an assert (error / skip?)
- * maybe also let the schema define a min and max size for the array so data parsing can catch it?
 * somehow make portals contain dynamic geometry, or do some other dynamic geometry solution
-* later: walk through any portal, not just sector walls
-* later: only traverse portal if you walk through portal window.
-* log error if "connectToSector" is given but it can't be found (same for other connect to stuff)
+* only traverse portal if you walk through portal window.
+* make it so you can't get close enough to walls to see through them.
+ * there is a distance from camera to the view plane, maybe we have the view plane be at zero, and move the camera back?
 
 
 
@@ -178,6 +164,10 @@ NEXT
  -long distance - ?? not sure if needed, but if we have a lot of sectors, A* across sectors may be too much
 
 --GAME DATA
+* log error if "connectToSector" is given but it can't be found (same for other connect to stuff)
+* find a better way to enforce / handle sectors needing 6 planes, than doing an assert (error / skip?)
+ * maybe also let the schema define a min and max size for the array so data parsing can catch it?
+* make the game generate documentation of data schemas -> for map files, gfx settings and game data
 * what to do about portal window setting for dest->src connection? need to do something... not doing the right thing currently
 * in connect tags, assert that the sectors can be found and that the plane indices are valid
 * assert that ConeAttenuationAngle <= ConeAngle in point lights (or log an error)
@@ -185,7 +175,7 @@ NEXT
  * same with game data
 * make graphics settings xml file generate if it doesn't exist
  * same for game data xml file
-
+* nake a "connect" tag at the global level
 
 --GFX SETTINGS
 * need a setting for eye width in red/blue 3d mode
@@ -331,6 +321,11 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--2/4/14
+* sector wall portal window tests are done off a constant uv instead of it being tied to texture u axis.
+* converted ConnectTo offset to uv space.
+* ditched the global connect tag for now in xml.  not needed right now, and would need to convert uv offset (for destination sector wall) to make it work right
 
 --2/3/14
 * red/blue 3d mode

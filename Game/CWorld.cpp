@@ -248,7 +248,7 @@ void CWorld::HandleSectorConnectTos (
 			continue;
 
 		// now we have a sector to connect to and the plane to connect it to, so let's make it happen
-		float3 offset;
+		cl_float2 offset;
 		cl_float4 portalWindow;
 		Copy(portalWindow, sectorPlaneSource.m_PortalWindow);
 		Copy(offset, sectorPlaneSource.m_ConnectToSectorOffset);
@@ -268,7 +268,7 @@ void CWorld::ConnectSectors (
 	unsigned int planeIndex,
 	unsigned int destSectorIndex,
 	unsigned int destPlaneIndex,
-	const float3 &offset,
+	const cl_float2 &offset,
 	const cl_float4 &portalWindow
 )
 {
@@ -302,6 +302,11 @@ void CWorld::ConnectSectors (
 		destSectorWaxis
 	);
 
+	// add the offset to the destination sector W axis
+	destSectorWaxis.s[0] += destSectorXaxis.s[0] * offset.s[0] + destSectorYaxis.s[0] * offset.s[1];
+	destSectorWaxis.s[1] += destSectorXaxis.s[1] * offset.s[0] + destSectorYaxis.s[1] * offset.s[1];
+	destSectorWaxis.s[2] += destSectorXaxis.s[2] * offset.s[0] + destSectorYaxis.s[2] * offset.s[1];
+
 	// to convert points & vectors from the specified sector & sector wall to the other specified sector & sector wall
 	// first you untransform by the first (source) wall, to bring it back to being "untransformed", and then you
 	// transform it by the destination walls transform to bring it into that wall's space.
@@ -315,13 +320,6 @@ void CWorld::ConnectSectors (
 		destSectorXaxis, destSectorYaxis, destSectorZaxis, destSectorWaxis
 	);
 
-	//X and Z axis work, but Y axis connections are fubar.  dunno why...  it should be identity matrix, and it is, except the Z is flipped and theres no offset!
-
-	// apply the specified offset as a translation - add it to the W axis!
-	portalWaxis.s[0] += offset[0];
-	portalWaxis.s[1] += offset[1];
-	portalWaxis.s[2] += offset[2];
-
 	// make a new portal with this information
 	SPortal &newPortal = m_portals.AddOne();
 	newPortal.m_sector = destSectorIndex;
@@ -333,14 +331,16 @@ void CWorld::ConnectSectors (
 	// calculate our portal window by taking the most restrictive values between
 	// the translated src and destination dimensions, and the portal window passed in
 	float srcMinX, srcMinY, srcMaxX, srcMaxY;
-	float3 adjustedOffset = {0.0f, 0.0f, 0.0f};
-	GetSectorPlaneDimenions(sector, planeIndex, srcMinX, srcMinY, srcMaxX, srcMaxY, adjustedOffset);
+	GetSectorPlaneDimenions(sector, planeIndex, srcMinX, srcMinY, srcMaxX, srcMaxY);
 
 	float destMinX, destMinY, destMaxX, destMaxY;
-	adjustedOffset[0] = offset[0];
-	adjustedOffset[1] = offset[1] * -1;
-	adjustedOffset[2] = offset[2] * -1;
-	GetSectorPlaneDimenions(destSector, destPlaneIndex, destMinX, destMinY, destMaxX, destMaxY, adjustedOffset);
+	GetSectorPlaneDimenions(destSector, destPlaneIndex, destMinX, destMinY, destMaxX, destMaxY);
+
+	// apply the offset passed in
+	destMinX += offset.s[0];
+	destMaxX += offset.s[0];
+	destMinY -= offset.s[1];
+	destMaxY -= offset.s[1];
 
 	sector.m_planes[planeIndex].m_portalWindow.s[0] = (srcMinX >= destMinX) ? srcMinX : destMinX;
 	sector.m_planes[planeIndex].m_portalWindow.s[1] = (srcMinY >= destMinY) ? srcMinY : destMinY;
@@ -551,8 +551,7 @@ void CWorld::GetSectorPlaneDimenions (
 	float &minX,
 	float &minY,
 	float &maxX,
-	float &maxY,
-	const float3 &offset
+	float &maxY
 ) {
 	switch (planeIndex / 2)
 	{
@@ -563,11 +562,6 @@ void CWorld::GetSectorPlaneDimenions (
 			minY = -sector.m_halfDims[1];
 			maxX = minX * -1;
 			maxY = minY * -1;
-
-			minX += offset[2];
-			maxX += offset[2];
-			minY += offset[1];
-			maxY += offset[1];
 			break;
 		}
 		// +/- Y Walls ->  X,Z
@@ -577,11 +571,6 @@ void CWorld::GetSectorPlaneDimenions (
 			minY = -sector.m_halfDims[2];
 			maxX = minX * -1;
 			maxY = minY * -1;
-
-			minX += offset[0];
-			maxX += offset[0];
-			minY += offset[2];
-			maxY += offset[2];
 			break;
 		}
 		// +/- Z Walls ->  X,Y
@@ -591,11 +580,6 @@ void CWorld::GetSectorPlaneDimenions (
 			minY = -sector.m_halfDims[1];
 			maxX = minX * -1;
 			maxY = minY * -1;
-
-			minX += offset[0];
-			maxX += offset[0];
-			minY += offset[1];
-			maxY += offset[1];
 			break;
 		}
 	}
@@ -718,6 +702,7 @@ bool CWorld::Load (const char *worldFileName)
 	for (unsigned int sectorIndex = 0, sectorCount = worldData.m_Sector.size(); sectorIndex < sectorCount; ++sectorIndex)
 		HandleSectorConnectTos(sectorIndex, worldData.m_Sector);
 
+	/*
 	// handle the connect tags that connect sectors together
 	for (unsigned int connectIndex = 0, connectCount = worldData.m_Connect.size(); connectIndex < connectCount; ++connectIndex)
 	{
@@ -725,7 +710,7 @@ bool CWorld::Load (const char *worldFileName)
 		
 		unsigned int srcSector = SData::GetEntryById(worldData.m_Sector, connect.m_SrcSector);
 		unsigned int destSector = SData::GetEntryById(worldData.m_Sector, connect.m_DestSector);
-		float3 offset;
+		cl_float2 offset;
 		Copy(offset, connect.m_Offset);
 		cl_float4 portalWindow;
 		Copy(portalWindow, connect.m_PortalWindow);
@@ -736,12 +721,31 @@ bool CWorld::Load (const char *worldFileName)
 		// make connection from dest to source if we are supposed to
 		if (connect.m_BothWays)
 		{
-			offset[0] *= -1.0f;
-			offset[1] *= -1.0f;
-			offset[2] *= -1.0f;
+			SSector &sector = m_sectors[srcSector];
+			const SPortal &portal = m_portals[m_portals.Count() - 1];
+
+			cl_float4 axisX,axisY,axisZ,axisW;
+			GetSectorPlaneTransformationMatrix(sector, connect.m_SrcSectorPlane, axisX, axisY, axisZ, axisW);
+
+			float3 offsetWorldSpace;
+			offsetWorldSpace[0] = axisX.s[0] * offset.s[0] + axisY.s[0] * offset.s[1];
+			offsetWorldSpace[1] = axisX.s[1] * offset.s[0] + axisY.s[1] * offset.s[1];
+			offsetWorldSpace[2] = axisX.s[2] * offset.s[0] + axisY.s[2] * offset.s[1];
+
+			cl_float2 newOffset;
+			//newOffset.s[0] = dot(
+
+			int ijkl = 0;
+
+			//float3 offset;
+			//offset[0] = portal.
+
+			//offset.s[0] *= -1.0f;
+			//offset.s[1] *= -1.0f;
 			ConnectSectors(destSector, connect.m_DestSectorPlane, srcSector, connect.m_SrcSectorPlane, offset, portalWindow);
 		}
 	}
+	*/
 
 	return true;
 }

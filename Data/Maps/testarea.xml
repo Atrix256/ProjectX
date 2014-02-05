@@ -36,14 +36,14 @@
     <Plane Normal="-1,0.7,0.1" UAxis="0,0,1" Dimensions="1,-1,3,1" D="-5" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
     <Plane Normal="-1,-0.1,-0.7" UAxis="0,0,1" Dimensions="-1,2,1,4" D="-2.5" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
 
-    <SectorPlane UAxis="0,0,-1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="BigRoom" ConnectToSectorPlane="1" ConnectToSectorOffset="0, -2, 0" PortalWindow="-2,-3,2,5"/>
+    <SectorPlane UAxis="0,0,-1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="BigRoom" ConnectToSectorPlane="1" ConnectToSectorOffset="0,-2," PortalWindow="-2,-3,2,5"/>
     <SectorPlane UAxis="0,0, 1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Hallway" ConnectToSectorPlane="0"/>
 
     <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="-1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
 
     <SectorPlane UAxis=" 1,0,0" Material="Cieling" TextureScale="0.25,0.25"/>
-    <SectorPlane UAxis="-1,0,0" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="BigRoom" ConnectToSectorPlane="4" ConnectToSectorOffset="0, 1, 0" PortalWindow="-5,-5,5,4"/>
+    <SectorPlane UAxis="-1,0,0" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="BigRoom" ConnectToSectorPlane="4" ConnectToSectorOffset="0,1" PortalWindow="-5,-5,5,4"/>
   </Sector>
 
   <!--===============================================================
@@ -60,7 +60,7 @@
     <Plane Normal="-1,0.3,0.2" UAxis="0,0,1" Dimensions="2,-1,4,1" D="0" Material="TexturedWall" TextureScale="0.25,0.25" CastShadows="1"/>
 
     <SectorPlane UAxis="0,0,-1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Room1" ConnectToSectorPlane="1"/>
-    <SectorPlane UAxis="0,0, 1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="BigRoom" ConnectToSectorPlane="0" ConnectToSectorOffset="0,-2,0"/>
+    <SectorPlane UAxis="0,0, 1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="BigRoom" ConnectToSectorPlane="0" ConnectToSectorOffset="0,-2"/>
 
     <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="-1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
@@ -83,13 +83,13 @@
     <Box Position="3,0,2" Scale="1.5,9.9,1.5" Material="FrostedGlass" TextureScale="0.25,0.25" CastShadows="true"/>
     <Box Position="-3,0,-2" Scale="1.5,9.9,1.5" Material="Glass" TextureScale="0.25,0.25" CastShadows="true"/>
 
-    <SectorPlane UAxis="0,0,-1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Hallway" ConnectToSectorPlane="1" ConnectToSectorOffset="0,2,0"/>
-    <SectorPlane UAxis="0,0, 1" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="-2,-1000,2,1000" ConnectToSector="Room1" ConnectToSectorPlane="0" ConnectToSectorOffset="0,2,0"/>
+    <SectorPlane UAxis="0,0,-1" Material="Cieling" TextureScale="0.25,0.25" ConnectToSector="Hallway" ConnectToSectorPlane="1" ConnectToSectorOffset="0,2"/>
+    <SectorPlane UAxis="0,0, 1" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="-2,-1000,2,1000" ConnectToSector="Room1" ConnectToSectorPlane="0" ConnectToSectorOffset="0,2"/>
 
     <SectorPlane UAxis=" 1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="-1,0,0" Material="Floor" TextureScale="0.25,0.25"/>
 
-    <SectorPlane UAxis=" 1,0,0" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="-5,-1000,5,1000" ConnectToSector="Room1" ConnectToSectorPlane="5" ConnectToSectorOffset="0,-1,0"/>
+    <SectorPlane UAxis=" 1,0,0" Material="Cieling" TextureScale="0.25,0.25" PortalWindow="-5,-1000,5,1000" ConnectToSector="Room1" ConnectToSectorPlane="5" ConnectToSectorOffset="0,-1"/>
     <SectorPlane UAxis="-1,0,0" Material="Cieling" TextureScale="0.25,0.25"/>
   </Sector>
 

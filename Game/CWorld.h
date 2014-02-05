@@ -92,7 +92,7 @@ private:
 		unsigned int planeIndex,
 		unsigned int destSectorIndex,
 		unsigned int destPlaneIndex,
-		const float3 &offset,
+		const cl_float2 &offset,
 		const cl_float4 &portalWindow
 	);
 
@@ -120,8 +120,7 @@ private:
 		float &minX,
 		float &minY,
 		float &maxX,
-		float &maxY,
-		const float3 &offset
+		float &maxY
 	);
 
 	CSharedArray<SPointLight>	m_pointLights;

@@ -96,7 +96,7 @@ SchemaBegin(SectorPlane)
 	Field_Schema(Vec4, PortalWindow, "-10000,-10000,10000,10000")
 	Field(std::string, ConnectToSector, "")
 	Field(unsigned int, ConnectToSectorPlane, -1)
-	Field_Schema(Vec3, ConnectToSectorOffset, "0,0,0")
+	Field_Schema(Vec2, ConnectToSectorOffset, "0,0")
 SchemaEnd
 
 SchemaBegin(Sector)
@@ -111,15 +111,17 @@ SchemaBegin(Sector)
 	Field(bool, CastShadows, true)
 SchemaEnd
 
+/*
 SchemaBegin(Connect)
 	Field(std::string, SrcSector, "")
 	Field(unsigned int, SrcSectorPlane, -1)
 	Field(std::string, DestSector, "")
 	Field(unsigned int, DestSectorPlane, -1)
-	Field_Schema(Vec3, Offset, "0,0,0")
+	Field_Schema(Vec2, Offset, "0,0")
 	Field(bool, BothWays, true)
 	Field_Schema(Vec4, PortalWindow, "-10000,-10000,10000,10000")
 SchemaEnd
+*/
 
 SchemaBegin(World)
 	Field(std::string, StartSector, "")
@@ -128,5 +130,5 @@ SchemaBegin(World)
 	Field_Schema_Array(Material, Material)
 	Field_Schema_Array(Portal, Portal)
 	Field_Schema_Array(Sector, Sector)
-	Field_Schema_Array(Connect, Connect)
+	//Field_Schema_Array(Connect, Connect)
 SchemaEnd

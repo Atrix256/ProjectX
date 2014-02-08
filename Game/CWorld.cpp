@@ -9,10 +9,12 @@ This class holds all information about the world
 #include "Platform\CDirectx.h"
 
 #include "CWorld.h"
-#include "CGame.h"
-#include "MatrixMath.h"
 
 #include "DataSchemas/DataSchemasXML.h"
+
+#include "CGame.h"
+#include "MatrixMath.h"
+#include "CDaeModelLoader.h"
 
 //-----------------------------------------------------------------------------
 void Copy(cl_float2 &lhs, const SData_Vec2 &rhs)
@@ -116,6 +118,7 @@ void CWorld::LoadSectorPlanes (
 		Copy(plane.m_UAxis, planeSource.m_UAxis);
 		plane.m_castsShadows = planeSource.m_CastShadows;
 		Copy(plane.m_textureScale, planeSource.m_TextureScale);
+		Copy(plane.m_textureOffset, planeSource.m_TextureOffset);
 		plane.m_dims.s[0] = planeSource.m_Dimensions.m_x;
 		plane.m_dims.s[1] = planeSource.m_Dimensions.m_y;
 		plane.m_dims.s[2] = planeSource.m_Dimensions.m_z;
@@ -153,6 +156,7 @@ void CWorld::LoadSectorBoxes (
 		Copy(box.m_scale, boxSource.m_Scale);
 		box.m_castsShadows = boxSource.m_CastShadows;
 		Copy(box.m_textureScale, boxSource.m_TextureScale);
+		Copy(box.m_textureOffset, boxSource.m_TextureOffset);
 
 		// set the material index
 		box.m_materialIndex = SData::GetEntryById(materials, boxSource.m_Material);
@@ -181,6 +185,7 @@ void CWorld::LoadSectorSpheres (
 		Copy(sphere.m_positionAndRadius, sphereSource.m_Position, sphereSource.m_Radius);
 		sphere.m_castsShadows = sphereSource.m_CastShadows;
 		Copy(sphere.m_textureScale, sphereSource.m_TextureScale);
+		Copy(sphere.m_textureOffset, sphereSource.m_TextureOffset);
 
 		// set the material index
 		sphere.m_materialIndex = SData::GetEntryById(materials, sphereSource.m_Material);
@@ -269,15 +274,19 @@ void CWorld::HandleSectorConnectTos (
 		// now we have a sector to connect to and the plane to connect it to, so let's make it happen
 		cl_float2 offset;
 		cl_float4 portalWindow;
+		float3 connectToPosition;
 		Copy(portalWindow, sectorPlaneSource.m_PortalWindow);
 		Copy(offset, sectorPlaneSource.m_ConnectToSectorOffset);
+		Copy(connectToPosition, sectorPlaneSource.m_ConnectToPosition);
 		ConnectSectors(
 			sectorIndex,
 			planeIndex,
 			connectToSectorIndex,
 			sectorPlaneSource.m_ConnectToSectorPlane,
 			offset,
-			portalWindow);
+			portalWindow,
+			sectorPlaneSource.m_ConnectToSetPosition,
+			connectToPosition);
 	}
 }
 
@@ -288,7 +297,9 @@ void CWorld::ConnectSectors (
 	unsigned int destSectorIndex,
 	unsigned int destPlaneIndex,
 	const cl_float2 &offset,
-	const cl_float4 &portalWindow
+	const cl_float4 &portalWindow,
+	bool setPosition,
+	const float3 &position
 )
 {
 	SSector &sector = m_sectors[sectorIndex];
@@ -346,6 +357,8 @@ void CWorld::ConnectSectors (
 	newPortal.m_yaxis = portalYaxis;
 	newPortal.m_zaxis = portalZaxis;
 	newPortal.m_waxis = portalWaxis;
+	newPortal.m_setPosition = setPosition;
+	newPortal.m_position = position;
 
 	// calculate our portal window by taking the most restrictive values between
 	// the translated src and destination dimensions, and the portal window passed in
@@ -628,6 +641,7 @@ void CWorld::LoadSector (
 
 		Copy(plane.m_UAxis, planeSource.m_UAxis);
 		Copy(plane.m_textureScale, planeSource.m_TextureScale);
+		Copy(plane.m_textureOffset, planeSource.m_TextureOffset);
 
 		// copy the portal window
 		Copy(plane.m_portalWindow, planeSource.m_PortalWindow);
@@ -670,6 +684,9 @@ bool CWorld::Load (const char *worldFileName)
 		Copy(m_portals[index].m_yaxis, worldData.m_Portal[index].m_YAxis);
 		Copy(m_portals[index].m_zaxis, worldData.m_Portal[index].m_ZAxis);
 		Copy(m_portals[index].m_waxis, worldData.m_Portal[index].m_WAxis);
+
+		m_portals[index].m_setPosition = worldData.m_Portal[index].m_SetPosition;
+		Copy(m_portals[index].m_position, worldData.m_Portal[index].m_Position);
 	}
 
 	// materials

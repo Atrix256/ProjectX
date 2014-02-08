@@ -117,6 +117,9 @@
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_DaeFile.h">
       <Filter>DataSchemas\Schemas</Filter>
     </ClInclude>
+    <ClInclude Include="Game\CDaeModelLoader.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\tinyxml\tinyxml2.cpp">
@@ -151,6 +154,9 @@
     </ClCompile>
     <ClCompile Include="Platform\CTextureManager.cpp">
       <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\CDaeModelLoader.cpp">
+      <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

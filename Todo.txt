@@ -8,6 +8,8 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
+* limiter for light! i think it will look bad ass!
+
 * load models
  * break models into convex objects, represent them with a bunch of planes, wrap them in a sphere early out test?
  * need orientation for models (x,y,z,w axis? that would also let scale and translation happen if doing it that way)
@@ -43,6 +45,9 @@ NEXT
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* it doesnt seem to keep same FOV when you change window size
+* in 3d red/blue mode, the "teleport" thing for skyboxes makes the eyes in the same place, which makes everything lose depth.
+* in 3d red/blue mode, its possible for the "other eye" to leave the sector and go black.
 * if a sector doesn't have anything in it that casts shadows, maybe we don't even check for shadows? might speed things up, not sure
 * later on (next game) don't make everything so "up oriented".  could make some really cool stuff! not sure if it should be a flight sim or what
 * the calculation of portal window is likely wrong.  for some reason we have to invert the X axis offset...maybe because the "X walls" have u axis negated?
@@ -334,6 +339,10 @@ NEXT
  * refraction
 
 =====DONE=====
+--2/7/14
+* added texture offset option
+* made skyboxes work!
+
 --2/5/14
 * started working on loading models
 * made a graphics setting to turn on and off full (unsafe) optimizations.  doesn't seem to make much of a difference for me unfortunately

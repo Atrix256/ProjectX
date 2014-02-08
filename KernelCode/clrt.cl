@@ -1,8 +1,8 @@
 /*==================================================================================================
 
-clrt.cl
+clrt.cl  
 
-The kernel code    
+The kernel code
 
 ==================================================================================================*/
 
@@ -91,6 +91,7 @@ bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollis
 	info->m_textureCoordinates.x = atan2(info->m_surfaceNormal.y, info->m_surfaceNormal.x);
 	info->m_textureCoordinates.y = acos(info->m_surfaceNormal.z );
 	info->m_textureCoordinates *= sphere->m_textureScale;
+	info->m_textureCoordinates += sphere->m_textureOffset;
 
 	// we found a hit!
 	info->m_objectHit = sphere->m_objectId;
@@ -215,6 +216,7 @@ bool RayIntersectAABox (__constant const struct SAABox *box, struct SCollisionIn
 	info->m_textureCoordinates.x = dot(relPoint, uaxis);
 	info->m_textureCoordinates.y = dot(relPoint, vaxis);
 	info->m_textureCoordinates *= box->m_textureScale;
+	info->m_textureCoordinates += box->m_textureOffset;
 
 	// we found a hit!
 	info->m_objectHit = box->m_objectId;
@@ -281,6 +283,7 @@ bool RayIntersectPlane (__constant const struct SPlane *plane, struct SCollision
 
 	// scaled texture coordinates
 	info->m_textureCoordinates = textureCoordinates * plane->m_textureScale;
+	info->m_textureCoordinates += plane->m_textureOffset;
 
 	// we found a hit!
 	info->m_objectHit = plane->m_objectId;
@@ -431,6 +434,7 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 
 	// scale the texture coordinates
 	info->m_textureCoordinates *= sector->m_planes[closestHitPlaneIndex].m_textureScale;
+	info->m_textureCoordinates += sector->m_planes[closestHitPlaneIndex].m_textureOffset;
 
 	info->m_fromInside = false;
 	info->m_materialIndex = sector->m_planes[closestHitPlaneIndex].m_materialIndex;
@@ -624,16 +628,23 @@ void TraceRay (
 		// if we hit a portal, change our sector, transform the ray and bail out of this loop.
 		if (collisionInfo.m_portalIndex != -1)
 		{
-			// transform the collision point into sector space
+			// set our point if we are supposed to
 			float3 transformedPoint;
-			TransformPointByMatrix(
-				&transformedPoint,
-				&collisionInfo.m_intersectionPoint,
-				&portals[collisionInfo.m_portalIndex].m_xaxis,
-				&portals[collisionInfo.m_portalIndex].m_yaxis,
-				&portals[collisionInfo.m_portalIndex].m_zaxis,
-				&portals[collisionInfo.m_portalIndex].m_waxis);
-
+			if (portals[collisionInfo.m_portalIndex].m_setPosition)
+			{
+				transformedPoint = portals[collisionInfo.m_portalIndex].m_position;
+			}
+			// else transform the collision point into sector space
+			else
+			{
+				TransformPointByMatrix(
+					&transformedPoint,
+					&collisionInfo.m_intersectionPoint,
+					&portals[collisionInfo.m_portalIndex].m_xaxis,
+					&portals[collisionInfo.m_portalIndex].m_yaxis,
+					&portals[collisionInfo.m_portalIndex].m_zaxis,
+					&portals[collisionInfo.m_portalIndex].m_waxis);
+			}
 
 			// transform the ray direction into sector space
 			float3 transformedDir;

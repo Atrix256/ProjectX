@@ -34,16 +34,18 @@ struct SPortal
 	cl_float4 m_yaxis;
 	cl_float4 m_zaxis;
 	cl_float4 m_waxis;
+	float3    m_position;
 
 	unsigned int m_sector;
-	unsigned int m_pad[3];
+	unsigned int m_setPosition;
+	unsigned int m_pad[2];
 };
 
 struct SSphere
 {
 	cl_float4 m_positionAndRadius;
 	cl_float2 m_textureScale;
-	cl_float2 m_pack2;
+	cl_float2 m_textureOffset;
 	cl_uint m_materialIndex;
 	cl_uint m_portalIndex;
 	TObjectId m_objectId;
@@ -58,7 +60,7 @@ struct SAABox
 	float3 m_position;
 	float3 m_scale;
 	cl_float2 m_textureScale;
-	cl_float2 m_pack2;
+	cl_float2 m_textureOffset;
 	cl_uint m_materialIndex;
 	cl_uint m_portalIndex;
 	TObjectId m_objectId;
@@ -74,7 +76,7 @@ struct SPlane
 	float3 m_UAxis;           
 	cl_float4 m_dims;         
 	cl_float2 m_textureScale; 
-	cl_float2 m_pack2;        
+	cl_float2 m_textureOffset;        
 	cl_uint m_materialIndex;  
 	cl_uint m_portalIndex;
 	TObjectId m_objectId;     
@@ -90,13 +92,12 @@ struct SSectorPlane
 {
 	float3 m_UAxis;
 	cl_float2 m_textureScale;
-	cl_uint m_materialIndex;
-	cl_uint m_portalIndex;
+	cl_float2 m_textureOffset;
 	cl_float4 m_portalWindow;
 	TObjectId m_objectId;
 	cl_uint m_pack1a;
-	cl_uint m_pack1b;
-	cl_uint m_pack1c;
+	cl_uint m_materialIndex;
+	cl_uint m_portalIndex;
 };
 
 struct SSector

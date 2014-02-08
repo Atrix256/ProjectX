@@ -1,8 +1,8 @@
 <GfxSettings>
   <DefaultMap Value="./data/maps/level.xml"/>
-  <Resolution Value="1000,1000"/>
+  <Resolution Value="1280,720"/>
   <TextureSize Value="512"/>
-  <InterlaceMode Value="true"/>
+  <InterlaceMode Value="false"/>
   <NormalMapping Value="true"/>
   <Shadows Value="true"/>
   <HighQualityLights Value="true"/>

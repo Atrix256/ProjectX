@@ -136,12 +136,14 @@ CDirectX::~CDirectX ()
 }
 
 //-----------------------------------------------------------------------------
- bool CDirectX::Init (unsigned int width, unsigned int height)
+ bool CDirectX::Init ()
 {
+	const SData_GfxSettings& settings = Settings();
+
 	m_textureManager.Init();
 
-	m_width = width;
-	m_height = height;
+	m_width = (unsigned int)settings.m_Resolution.m_x;
+	m_height = (unsigned int)settings.m_Resolution.m_y;
 
 	//
 	// create window
@@ -181,7 +183,7 @@ CDirectX::~CDirectX ()
 		return false;
 
 	// set the viewing height, based on aspect ratio of texture
-	SCamera &cameraShared = SSharedDataRoot::Camera();
+	SCamera &cameraShared = SSharedDataRootHostToKernel::Camera();
 	cameraShared.m_viewWidthHeightDistance[1] = cameraShared.m_viewWidthHeightDistance[0] * (float)m_texture_2d.height / (float)m_texture_2d.width;
 
 	return true;
@@ -740,8 +742,10 @@ void CDirectX::RunKernels(float elapsed)
     // render the scene
     {
 		// toggle the odd / even field
-		SCamera& camera = SSharedDataRoot::Camera();
+		SCamera& camera = SSharedDataRootHostToKernel::Camera();
 		camera.m_frameCount++;
+
+		CSharedObject<SSharedDataRootKernelToHost> &sharedDataRootKernelToHost = SSharedDataRootKernelToHost::Get();
 
 		// set global and local work item dimensions
 		m_szLocalWorkSize[0] = 16;
@@ -758,8 +762,8 @@ void CDirectX::RunKernels(float elapsed)
 		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(texture3d), &texture3d);
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
-		CSharedObject<SSharedDataRoot> &sharedDataRoot = SSharedDataRoot::Get();
-		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &sharedDataRoot.GetAndUpdateCLMem(m_cxGPUContext, m_cqCommandQueue));
+		CSharedObject<SSharedDataRootHostToKernel> &sharedDataRootHostToKernel = SSharedDataRootHostToKernel::Get();
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &sharedDataRootHostToKernel.GetAndWriteCLMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
 		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_pointLights.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
@@ -783,11 +787,39 @@ void CDirectX::RunKernels(float elapsed)
 		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_portals.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
+		sharedDataRootKernelToHost.GetObject().PreRender();
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &sharedDataRootKernelToHost.GetAndWriteCLMem(m_cxGPUContext, m_cqCommandQueue));
+		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
+
 		// launch computation kernel
 		ciErrNum = clEnqueueNDRangeKernel(m_cqCommandQueue, m_ckKernel_tex2d, 2, NULL,
 										  m_szGlobalWorkSize, m_szLocalWorkSize, 
 										 0, NULL, NULL);
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
+
+		// read the data the kernel wrote back
+		sharedDataRootKernelToHost.ReadFromCLMem(m_cxGPUContext, m_cqCommandQueue);
+
+		// do auto adjust brightness stuff if we should
+		if (camera.m_frameCount % camera.m_HDRBrightnessSamplingInterval == 0)
+		{
+			if (CCamera::Get().AutoAdjustBrightness())
+			{
+				float maxBrightness = ((float)(sharedDataRootKernelToHost.GetObjectConst().m_maxBrightness1000x)) / 1000.0f;
+				if (maxBrightness < 0.001f)
+					maxBrightness = 0.001f;
+
+				float target = CDirectX::Settings().m_Brightness / maxBrightness;
+
+				float delta = target - camera.m_brightnessMultiplier;
+
+				// todo: this is linear, need to make it not be
+				camera.m_brightnessMultiplier += delta * CGame::GameData().m_Gfx.m_HDRBrightnessDelta;
+			}
+			// else don't
+			else
+				camera.m_brightnessMultiplier = CDirectX::Settings().m_Brightness;
+		}
     }
 }
 
@@ -885,10 +917,12 @@ int main(int argc, char** argv)
 	else
 		CDirectX::Get().SetWorld(settings.m_DefaultMap.c_str());
 
-	if(!CDirectX::Get().Init((unsigned int)settings.m_Resolution.m_x, (unsigned int)settings.m_Resolution.m_y))
+	if(!CDirectX::Get().Init())
 		return 0;
 
 	CGame::Init();
+
+	SSharedDataRootHostToKernel::Get().GetObject().Camera().m_HDRBrightnessSamplingInterval = CGame::GameData().m_Gfx.m_HDRBrightnessSamplingInterval;
 
     RAWINPUTDEVICE Rid[2];
 

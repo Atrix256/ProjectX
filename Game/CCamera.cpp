@@ -16,7 +16,7 @@ CCamera CCamera::s_camera;
 void CCamera::AttemptMove (const float3 &delta)
 {
 	//move the camera
-	SCamera &camera = SSharedDataRoot::Camera();
+	SCamera &camera = SSharedDataRootHostToKernel::Camera();
 	camera.m_pos += delta;
 
 	//get our sectors
@@ -85,7 +85,7 @@ void CCamera::AttemptMove (const float3 &delta)
 }
 
 float CCamera::CurrentGroundHeight () const {
-	const SCamera &camera = SSharedDataRoot::CameraConst();
+	const SCamera &camera = SSharedDataRootHostToKernel::CameraConst();
 	const CWorld &world = CDirectX::GetWorld();
 	unsigned int numSectors = 0;
 	const SSector* sectors = world.GetSectors(numSectors);
@@ -98,7 +98,7 @@ float CCamera::CurrentGroundHeight () const {
 void CCamera::TransformFacing (const cl_float4& xAxis, const cl_float4& yAxis, const cl_float4& zAxis)
 {
 	// transform the basis vectors
-	SCamera &camera = SSharedDataRoot::Camera();
+	SCamera &camera = SSharedDataRootHostToKernel::Camera();
 	TransformVectorByMatrix(camera.m_fwd , xAxis, yAxis, zAxis);
 	SetFacing(camera.m_fwd[0],camera.m_fwd[1], camera.m_fwd[2]);
 }

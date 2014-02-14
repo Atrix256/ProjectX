@@ -1,4 +1,4 @@
-<World>
+<World AutoAdjustBrightness="false">
   <StartSector Value="Room1"/>
   <StartPoint Value="0,0,0"/>
   <StartFacing Value="1,0,0"/>

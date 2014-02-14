@@ -39,28 +39,42 @@ public:
 		m_clDataStale = true;
 	}
 
-	cl_mem& GetAndUpdateCLMem (cl_context& context, cl_command_queue& commandQueue)
+	void EnsureCLMemExists (cl_context& context)
 	{
+		// allocate a new cl_mem object if needed
+		if (!m_clData)
+		{
+			cl_int errorcode;
+			m_clData = clCreateBuffer(
+				context,
+				CL_MEM_READ_WRITE,
+				sizeof(T),
+				NULL, 
+				&errorcode
+			);
+			oclCheckErrorEX(errorcode, CL_SUCCESS, NULL);
+			m_clDataStale = true;
+			Assert_(m_clData != NULL);
+		}
+	}
+
+	void ReadFromCLMem (cl_context& context, cl_command_queue& commandQueue)
+	{
+		EnsureCLMemExists(context);
+		clEnqueueReadBuffer(commandQueue, m_clData, CL_TRUE, 0, sizeof(T), &m_object, 0, NULL, NULL);
+		m_clDataStale = false;
+	}
+
+	cl_mem& GetAndWriteCLMem (cl_context& context, cl_command_queue& commandQueue)
+	{
+		EnsureCLMemExists(context);
+
 		if (m_clDataStale)
 		{
-			// allocate a new cl_mem object if needed
-			if (!m_clData)
-			{
-				cl_int errorcode;
-				m_clData = clCreateBuffer(
-					context,
-					CL_MEM_READ_ONLY,
-					sizeof(T),
-					NULL, 
-					&errorcode
-				);
-				oclCheckErrorEX(errorcode, CL_SUCCESS, NULL);
-			}
-
-			Assert_(m_clData != NULL);
 			clEnqueueWriteBuffer(commandQueue, m_clData, CL_FALSE, 0, sizeof(T), &m_object, 0, NULL, NULL);
 			m_clDataStale = false;
 		}
+
 		return m_clData;
 	}
 

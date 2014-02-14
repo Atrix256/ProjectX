@@ -42,7 +42,7 @@ class CDirectX
 public:
 	~CDirectX ();
 
-	bool Init (unsigned int width, unsigned int height);
+	bool Init ();
 
 	void DrawScene (float elapsed);
 

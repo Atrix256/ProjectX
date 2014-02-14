@@ -18,4 +18,5 @@ SchemaBegin(GfxSettings)
 	Field(float, RedBlueWidth, -0.4f)
 	Field(unsigned int, RayBounces, 10)
 	Field(bool, FastestMath, true)
+	Field(float, Brightness, 1.0f)
 SchemaEnd

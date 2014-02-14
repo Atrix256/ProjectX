@@ -145,5 +145,6 @@ SchemaBegin(World)
 	Field_Schema_Array(Material, Material)
 	Field_Schema_Array(Portal, Portal)
 	Field_Schema_Array(Sector, Sector)
+	Field(bool, AutoAdjustBrightness, false)
 	//Field_Schema_Array(Connect, Connect)
 SchemaEnd

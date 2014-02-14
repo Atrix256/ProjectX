@@ -15,6 +15,7 @@ This class holds all information about the world
 #include "CGame.h"
 #include "MatrixMath.h"
 #include "CDaeModelLoader.h"
+#include "CCamera.h"
 
 //-----------------------------------------------------------------------------
 void Copy(cl_float2 &lhs, const SData_Vec2 &rhs)
@@ -670,10 +671,11 @@ bool CWorld::Load (const char *worldFileName)
 	if (!DataSchemasXML::Load(worldData, worldFileName, "World"))
 		worldData.SetDefault();
 
-	// Starting Sector, Position and facing
-	SSharedDataRoot::Camera().m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_StartSector);
+	// Starting Sector, Position and facing etc.
+	SSharedDataRootHostToKernel::Camera().m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_StartSector);
 	CGame::SetPlayerPos(worldData.m_StartPoint.m_x, worldData.m_StartPoint.m_y, worldData.m_StartPoint.m_z);
 	CGame::SetPlayerFacing(worldData.m_StartFacing.m_x, worldData.m_StartFacing.m_y, worldData.m_StartFacing.m_z);
+	CCamera::Get().SetAutoAjustBrightness(worldData.m_AutoAdjustBrightness);
 
 	// portals
 	m_portals.Resize(worldData.m_Portal.size());

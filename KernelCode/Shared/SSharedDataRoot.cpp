@@ -8,19 +8,25 @@ This holds all constant sized data that we send to the kernal program
 
 #include "SSharedDataRoot.h"
 
-static CSharedObject<SSharedDataRoot> s_data;
+static CSharedObject<SSharedDataRootHostToKernel> s_dataHostToKernel;
+static CSharedObject<SSharedDataRootKernelToHost> s_dataKernelToHost;
 
-CSharedObject<SSharedDataRoot>& SSharedDataRoot::Get()
+CSharedObject<SSharedDataRootHostToKernel>& SSharedDataRootHostToKernel::Get()
 {
-	return s_data;
+	return s_dataHostToKernel;
 }
 
-SCamera &SSharedDataRoot::Camera()
+CSharedObject<SSharedDataRootKernelToHost>& SSharedDataRootKernelToHost::Get()
 {
-	return s_data.GetObject().m_camera;
+	return s_dataKernelToHost;
 }
 
-const SCamera &SSharedDataRoot::CameraConst()
+SCamera &SSharedDataRootHostToKernel::Camera()
 {
-	return s_data.GetObjectConst().m_camera;
+	return s_dataHostToKernel.GetObject().m_camera;
+}
+
+const SCamera &SSharedDataRootHostToKernel::CameraConst()
+{
+	return s_dataHostToKernel.GetObjectConst().m_camera;
 }

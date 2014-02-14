@@ -1,4 +1,4 @@
-<World>
+<World AutoAdjustBrightness="false">
   <StartSector Value="StartRoom"/>
   <StartPoint Value="0,0,-4.5"/>
   <StartFacing Value="0,0,1"/>
@@ -31,13 +31,51 @@
     <Sphere Position="-4,5,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="-4,5,0" Color="0.8,1,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
     
+    <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="HallwayToDarkRoom" ConnectToSectorPlane="1" ConnectToSectorOffset="15,0"/>
+    <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="HallwayToDarkRoom" ConnectToSectorPlane="0" ConnectToSectorOffset="15,0"/>
+
+    <SectorPlane UAxis=" 1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="-1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
+
+    <SectorPlane UAxis=" 1,0,0" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="Hallway" ConnectToSectorPlane="5" ConnectToSectorOffset="0,1.5"/>
+    <SectorPlane UAxis="-1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
+  </Sector>
+
+  <!--===============================================================
+  HallwayToDarkRoom
+  ================================================================-->
+  <Sector id="HallwayToDarkRoom" Dimensions="10,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+
+    <Sphere Position="0,3.5,-15" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="0,3.5,-15" Color="1,1,0.8" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+
+    <Sphere Position="0,3.5,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="0,3.5, 0" Color="1,0.8,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+
+    <Sphere Position="0,3.5,15" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="0,3.5,15" Color="0.8,1,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+
+    <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="StartRoom" ConnectToSectorPlane="1" ConnectToSectorOffset="15,0"/>
+    <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="StartRoom" ConnectToSectorPlane="0" ConnectToSectorOffset="15,0"/>
+
+    <SectorPlane UAxis=" 1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="-1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
+
+    <SectorPlane UAxis=" 1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="-1,0,0" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSectorz="DarkRoom" ConnectToSectorPlane="4"/>
+  </Sector>
+
+  <!--===============================================================
+  DarkRoom
+  ================================================================-->
+  <Sector id="DarkRoom" Dimensions="40,10,40" CastShadows="false" AmbientLight="0.01, 0.01, 0.01">
     <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25"/>
 
     <SectorPlane UAxis=" 1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="-1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
 
-    <SectorPlane UAxis=" 1,0,0" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="Hallway" ConnectToSectorPlane="5" ConnectToSectorOffset="0,1.5"/>
+    <SectorPlane UAxis=" 1,0,0" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="HallwayToDarkRoom" ConnectToSectorPlane="5"/>
     <SectorPlane UAxis="-1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
   </Sector>
 

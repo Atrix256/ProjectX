@@ -8,7 +8,22 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
-* limiter for light! i think it will look bad ass!
+* exposure time (limiter for light! i think it will look bad ass!)
+ * figure out how other games do exposure time
+ * per level settings for "expore time adjustments"?  I want to turn it off sometimes, but it shouldn't be a graphics setting
+ * max pixel isn't doing it... need to average or something
+ * formalize a system (in the camera?) for brightness adjustment calculations
+ * graphics setting for bloom or not
+ * could do bloom blur with a single float precision buffer of "gray"s
+ * how is bloom going to work with red/blue 3d and interlanced mode?
+ * how is "max brightness" going to work with interlaced mode? like if the bottom of the screen is super bright but the top isnt
+
+* if hdr exposure time adjustments are part of gameplay, need to make it dependant on the frame rate as little as possible
+
+* before checking in... did fps go down?? download the zip from git from last checkin and compare
+ * yes it went, down, but why?!
+ * it's the atomic max of the brightness! do it every X frames instead i think
+
 
 * load models
  * break models into convex objects, represent them with a bunch of planes, wrap them in a sphere early out test?
@@ -45,6 +60,8 @@ NEXT
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* checking to see if we need to do the brightness atomic max in the kernel makes it drop from 92 to 87 fps for me even if it only actual samples every 500 frames.  maybe there's a better way to do it that's cheaper?
+* HDR tech -> tone mapping, bloom (?) etc?
 * it doesnt seem to keep same FOV when you change window size
 * in 3d red/blue mode, the "teleport" thing for skyboxes makes the eyes in the same place, which makes everything lose depth.
 * in 3d red/blue mode, its possible for the "other eye" to leave the sector and go black.
@@ -155,6 +172,10 @@ NEXT
 
 
 --GAMEPLAY
+* use refraction in the gameplay somehow? like legend where you make light point at the bad guy? or maybe make a lazer hit a target
+* if the camera adapts to light levels, could have a "close eyes" button to make your eyes adjust to darkness before going into a room?
+ * could also do that to avoid flash bang effects and things (or if an enemy does a really bright "bedazzle" attack or something)
+ * could then also have enemies which only chase you when your eyes are open.  You could walk through them and hear them, but as long as you kept your eyes closed, they wouldn't hurt you.
 * when going into a "rage mode" could set cameraShared.m_viewWidthHeightDistance[2] to 1 (lerp to it)
 * when going into a scope, could set cameraShared.m_viewWidthHeightDistance[0] to 1
 * maybe "named dynamic objects" list to more quickly find named objects?
@@ -271,6 +292,9 @@ NEXT
 
 
 --OPENCL INVESTIGATION
+* GetAndUpdateCLMem vs GetAndUpdateMem.  make it consistent
+* maybe make a template param (or something) for shared objects whether they need to be read or readwrite?
+* reading data from a shared object blocks.  maybe need to make a way where the read won't block, until someone actually does a GetObject or something?
 * could pass a random number, or hash of all relevant files, to the CL compiler as a #define, so it would recompile when needed
 * is there a limit to what can be sent to the kernel as arguments? max size or max count?
 * there is some way to get the capabilities of the system, we should probably use that to verify the things we are doing are ok
@@ -339,6 +363,11 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--2/8/14
+* brightness setting in gfx setings
+* started working on "autoadjust exposure time" stuff
+
 --2/7/14
 * added texture offset option
 * made skyboxes work!

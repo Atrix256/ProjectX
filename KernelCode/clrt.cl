@@ -1,8 +1,8 @@
 /*==================================================================================================
 
-clrt.cl  
+clrt.cl
 
-The kernel code
+The kernel code 
 
 ==================================================================================================*/
 
@@ -565,7 +565,7 @@ void ApplyPointLight (
 
 //
 void TraceRay (
-	__constant struct SSharedDataRoot *dataRoot,
+	__constant struct SSharedDataRootHostToKernel *dataRoot,
 	__read_only image3d_t tex3dIn,
 	float3 rayPos,
 	float3 rayDir,
@@ -754,14 +754,15 @@ void TraceRay (
 __kernel void clrt (
 	__write_only image2d_t texOut, 
 	__read_only image3d_t tex3dIn,
-	__constant struct SSharedDataRoot *dataRoot,
+	__constant struct SSharedDataRootHostToKernel *dataRoot,
 	__constant struct SPointLight *lights,
 	__constant struct SSphere *spheres,
 	__constant struct SAABox *boxes,
 	__constant struct SPlane *planes,
 	__constant struct SSector *sectors,
 	__constant struct SMaterial *materials,
-	__constant struct SPortal *portals
+	__constant struct SPortal *portals,
+	__global struct SSharedDataRootKernelToHost *outDataRoot
 )
 {
     const int2 dims = (int2)(get_image_width(texOut), get_image_height(texOut));
@@ -789,14 +790,23 @@ __kernel void clrt (
 	// trace the ray
 	float3 color = (float3)(0);
 	TraceRay(dataRoot, tex3dIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, planes, sectors, materials, portals);
-	
-	#if SETTINGS_REDBLUE3D == 1
-		float grayLeft = color.x * 0.3f + color.y * 0.59f + color.z * 0.11f;
+
+	// record the max brightness if we should
+	if (dataRoot->m_camera.m_frameCount % dataRoot->m_camera.m_HDRBrightnessSamplingInterval == 0)
+	  atomic_max(&outDataRoot->m_maxBrightness1000x, (unsigned int)(ColorToGray(&color) * 1000.0f));
+
+	// adjust for brightness
+	color *= dataRoot->m_camera.m_brightnessMultiplier;
+
+	#if SETTINGS_REDBLUE3D == 1	
+		float grayLeft = ColorToGray(&color);
 		color = (float3)(0);
 
+		// trace the ray for the other eye
 		float3 rightEyePos = dataRoot->m_camera.m_pos + dataRoot->m_camera.m_left * SETTINGS_REDBLUEWIDTH;
 		TraceRay(dataRoot, tex3dIn, rightEyePos, rayDir, &color, lights, spheres, boxes, planes, sectors, materials, portals);
-		float grayRight = color.x * 0.3f + color.y * 0.59f + color.z * 0.11f;
+		color *= dataRoot->m_camera.m_brightnessMultiplier;
+		float grayRight = ColorToGray(&color);
 
 		color.x = grayLeft;
 		color.y = 0.0f;

@@ -16,7 +16,7 @@ class CCamera
 public:
 	CCamera ()
 	{
-		SCamera &cameraShared = SSharedDataRoot::Camera();
+		SCamera &cameraShared = SSharedDataRootHostToKernel::Camera();
 
 		cameraShared.m_sector = 0;
 
@@ -47,8 +47,12 @@ public:
 		// distance
 		cameraShared.m_viewWidthHeightDistance[2] = 6.0f;
 
+		cameraShared.m_brightnessMultiplier = 1.0f;
+
 		m_cameraAngleX = 0.0f;
 		m_cameraAngleY = 0.0f;
+
+		m_autoAdjustBrightness = false;
 
 		UpdateCameraFacing();
 	}
@@ -58,24 +62,24 @@ public:
 
 	void GetPosition(float3 &pos)
 	{
-		pos = SSharedDataRoot::Camera().m_pos;
+		pos = SSharedDataRootHostToKernel::Camera().m_pos;
 	}
 
 	void SetPosition(const float3 &pos)
 	{
-		SSharedDataRoot::Camera().m_pos = pos;
+		SSharedDataRootHostToKernel::Camera().m_pos = pos;
 		float3 delta = {0,0,0};
 		AttemptMove(delta);
 	}
 
 	float3 Forward () const
 	{
-		return SSharedDataRoot::CameraConst().m_fwd;
+		return SSharedDataRootHostToKernel::CameraConst().m_fwd;
 	}
 
 	float3 Forward2D () const
 	{
-		float3 fwd2D = SSharedDataRoot::CameraConst().m_fwd;
+		float3 fwd2D = SSharedDataRootHostToKernel::CameraConst().m_fwd;
 		fwd2D[1] = 0.0f;
 		fwd2D = normalize(fwd2D);
 		return fwd2D;
@@ -83,18 +87,18 @@ public:
 	
 	float3 Left () const
 	{
-		return SSharedDataRoot::CameraConst().m_left;
+		return SSharedDataRootHostToKernel::CameraConst().m_left;
 	}
 
 	void MoveForward (float amount)
 	{
-		SCamera &cameraShared = SSharedDataRoot::Camera();
+		SCamera &cameraShared = SSharedDataRootHostToKernel::Camera();
 		AttemptMove(cameraShared.m_fwd * amount);
 	}
 
 	void MoveForward2D (float amount)
 	{
-		SCamera &cameraShared = SSharedDataRoot::Camera();
+		SCamera &cameraShared = SSharedDataRootHostToKernel::Camera();
 		float3 fwd2D = cameraShared.m_fwd;
 		fwd2D[1] = 0.0f;
 		fwd2D = normalize(fwd2D);
@@ -103,7 +107,7 @@ public:
 
 	void MoveLeft (float amount)
 	{
-		SCamera &cameraShared = SSharedDataRoot::Camera();
+		SCamera &cameraShared = SSharedDataRootHostToKernel::Camera();
 		AttemptMove(cameraShared.m_left * amount);
 	}
 
@@ -141,7 +145,7 @@ public:
 
 	void UpdateCameraFacing ()
 	{
-		SCamera &cameraShared = SSharedDataRoot::Camera();
+		SCamera &cameraShared = SSharedDataRootHostToKernel::Camera();
 		cameraShared.m_fwd[0] = cos(m_cameraAngleX) * cos(m_cameraAngleY);
 		cameraShared.m_fwd[1] = sin(m_cameraAngleY);
 		cameraShared.m_fwd[2] = sin(m_cameraAngleX) * cos(m_cameraAngleY);
@@ -158,10 +162,16 @@ public:
 
 	void TransformFacing (const cl_float4& xAxis, const cl_float4& yAxis, const cl_float4& zAxis);
 
+	void SetAutoAjustBrightness (bool autoAdjustBrightness) { m_autoAdjustBrightness = autoAdjustBrightness; }
+
+	bool AutoAdjustBrightness () const { return m_autoAdjustBrightness; }
+
 private:
 	// spherical coordinates of the camera (just angular coordinates to describe a direction)
 	float m_cameraAngleX;
 	float m_cameraAngleY;
+
+	bool m_autoAdjustBrightness;
 
 	// singleton
 	static CCamera s_camera;

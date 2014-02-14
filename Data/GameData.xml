@@ -4,5 +4,9 @@
   <CrouchSpeed Value="10.0f"/>
   <WalkSpeedStanding Value="5.0f"/>
   <WalkSpeedCrouching Value="1.5f"/>
-  <SprintSpeedModifer Value="4.0f"/>
+  <SprintSpeedModifier Value="4.0f"/>
+  <Gfx>
+    <HDRBrightnessSamplingInterval Value="5"/>
+    <HDRBrightnessDelta Value="0.05"/>
+  </Gfx>
 </GameData>

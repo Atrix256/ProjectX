@@ -2,6 +2,7 @@
   <DefaultMap Value="./data/maps/level.xml"/>
   <Resolution Value="1280,720"/>
   <TextureSize Value="512"/>
+  <TextureFilter Value="true"/>
   <InterlaceMode Value="false"/>
   <NormalMapping Value="true"/>
   <Shadows Value="true"/>

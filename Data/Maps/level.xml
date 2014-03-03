@@ -153,14 +153,14 @@
   Skybox
   ================================================================-->
   <Sector id="Skybox" Dimensions="512,512,512" CastShadows="false" AmbientLight="1,1,1">
-    <SectorPlane UAxis="0,0, 1" Material="SkyboxRight" TextureScale="0.001953125,0.001953125" TextureOffset="0.5,0.5"/>
-    <SectorPlane UAxis="0,0,-1" Material="SkyboxLeft" TextureScale="0.001953125,0.001953125" TextureOffset="0.5,0.5"/>
+    <SectorPlane UAxis="0,0, 1" Material="SkyboxRight" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>
+    <SectorPlane UAxis="0,0,-1" Material="SkyboxLeft" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>
 
-    <SectorPlane UAxis=" 1,0,0" Material="SkyboxTop" TextureScale="0.001953125,0.001953125" TextureOffset="0.5,0.5"/>
+    <SectorPlane UAxis=" 1,0,0" Material="SkyboxTop" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>
     <SectorPlane UAxis=" 1,0,0"/>
 
-    <SectorPlane UAxis="-1,0,0" Material="SkyboxBack" TextureScale="0.001953125,0.001953125" TextureOffset="0.5,0.5"/>
-    <SectorPlane UAxis=" 1,0,0" Material="SkyboxFront" TextureScale="0.001953125,0.001953125" TextureOffset="0.5,0.5"/>    
+    <SectorPlane UAxis="-1,0,0" Material="SkyboxBack" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>
+    <SectorPlane UAxis=" 1,0,0" Material="SkyboxFront" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>    
   </Sector>
   
 </World>

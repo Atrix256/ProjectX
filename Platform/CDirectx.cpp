@@ -598,6 +598,8 @@ HRESULT CDirectX::CreateKernelProgram(
 	std::string buildOptions;
 	char buffer[32];
 	buildOptions = "-I ./KernelCode/ -D OPENCL=1 -Werror";
+	buildOptions.append(" -D SETTINGS_TEXTUREFILTER=");
+	buildOptions.append(m_graphicsSettings.m_TextureFilter ? "1" : "0");
 	buildOptions.append(" -D SETTINGS_INTERLACED=");
 	buildOptions.append(m_graphicsSettings.m_InterlaceMode ? "1" : "0");
 	buildOptions.append(" -D SETTINGS_NORMALMAP=");

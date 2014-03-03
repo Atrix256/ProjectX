@@ -269,8 +269,12 @@
     <Xml Include="Data\Maps\default.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="Data\Maps\level.xml" />
-    <Xml Include="Data\Maps\testarea.xml" />
+    <Xml Include="Data\Maps\level.xml">
+      <SubType>Designer</SubType>
+    </Xml>
+    <Xml Include="Data\Maps\testarea.xml">
+      <SubType>Designer</SubType>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
     <None Include="KernelCode\clrt.cl" />

@@ -724,14 +724,16 @@ bool CWorld::Load (const char *worldFileName)
 	// calculate the texture indices of our textures
 	for (unsigned int index = 0, count = worldData.m_Material.size(); index < count; ++index)
 	{
-		m_materials[index].m_diffuseTextureIndex = (m_materials[index].m_diffuseTextureIndex - 1.0f) / (float)CDirectX::TextureManager().NumTextures();
-		m_materials[index].m_diffuseTextureIndex += 0.01f;
+		const float add = -0.5f / ((float)CDirectX::TextureManager().NumTextures());
 
-		m_materials[index].m_normalTextureIndex = (m_materials[index].m_normalTextureIndex - 1.0f) / (float)CDirectX::TextureManager().NumTextures();
-		m_materials[index].m_normalTextureIndex += 0.01f;
+		m_materials[index].m_diffuseTextureIndex = (m_materials[index].m_diffuseTextureIndex) / (float)CDirectX::TextureManager().NumTextures();
+		m_materials[index].m_diffuseTextureIndex += add;
 
-		m_materials[index].m_emissiveTextureIndex = (m_materials[index].m_emissiveTextureIndex - 1.0f) / (float)CDirectX::TextureManager().NumTextures();
-		m_materials[index].m_emissiveTextureIndex += 0.01f;
+		m_materials[index].m_normalTextureIndex = (m_materials[index].m_normalTextureIndex) / (float)CDirectX::TextureManager().NumTextures();
+		m_materials[index].m_normalTextureIndex += add;
+
+		m_materials[index].m_emissiveTextureIndex = (m_materials[index].m_emissiveTextureIndex) / (float)CDirectX::TextureManager().NumTextures();
+		m_materials[index].m_emissiveTextureIndex += add;
 	}
 
 	// combine all the textures now that they are all loaded

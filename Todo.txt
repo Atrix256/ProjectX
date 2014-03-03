@@ -24,6 +24,7 @@ NEXT
  * yes it went, down, but why?!
  * it's the atomic max of the brightness! do it every X frames instead i think
 
+* at work, its red/green not red/blue when 3d is on.  need to somehow query surface format or something?!
 
 * load models
  * break models into convex objects, represent them with a bunch of planes, wrap them in a sphere early out test?
@@ -60,6 +61,7 @@ NEXT
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* ray march implicit objects that are in a bounding sphere that is raytraced?
 * checking to see if we need to do the brightness atomic max in the kernel makes it drop from 92 to 87 fps for me even if it only actual samples every 500 frames.  maybe there's a better way to do it that's cheaper?
 * HDR tech -> tone mapping, bloom (?) etc?
 * it doesnt seem to keep same FOV when you change window size
@@ -228,16 +230,16 @@ NEXT
 * put m_viewWidthHeightDistance etc into graphics settings
 * let maps turn off gfx settings.  AKA if a map doesn't have any refraction, no need to test for it so turn off the setting.
 * maybe sometime if a texture is lower resolution that our texture setting (like if it's 256x256 and our texture size is 512x512) we can put multiple onto one sheet somehow?  texture coordinates would need to be fixed up somehow
-* window size as a graphics option
+* full screen option in graphics settings
 * figure out a decent number to choose for max textures, or make it dynamic in the future or something?
 * graphics setting for whether to use mips for textures or not? currently no mipmaps used
 * graphics option for vsync.  if vsync is on, it will pass (1, 0) to  m_pSwapChain->Present
 * use +/- buttons to increase and decrease render quality (actually maybe just do low, med, high since it needs to recompile the kernel code for each one!)
 * make the max # of textures be a graphics setting?
-* graphics setting for texture sampling options? (linear vs nearest? although it's weird with 3d textures since the other texture shows through)
-* if no reflection or refraction from #define settings, remove loop completely.
+* if no reflection or refraction from #define settings, remove loop completely?  Optimization for low end machines. what about doing transparency without refraction?
 * have some way to do autodetection of graphics settings?
 * have a way to return values from kernel code - like max color so we can have a compressor on the brightness
+* be able to specify texture lookup mode in material? like clamp, repeat, mirror repeat, etc?
 
 --GAME SETTINGS
 * mouse sensitivity / invert mouse settings
@@ -254,6 +256,12 @@ NEXT
 
 --KERNEL CODE
 * instead of kernel code checking for indices being in range, going to make it the responsibility of the CPU to not pass bad data. more dangerous but less kernel code & memory usage etc
+
+
+--ANALYTICS
+* have it record data and be able to view a replay?  Good for analytics & watching what players do.
+* have it keep track of health and other things at various points so can graph it on different axes
+* could also tie this feature into video recording.
 
 --CODE
 * texture manager likely doesn't need STexture2d struct since it doesn't use a lot of the fields
@@ -363,6 +371,9 @@ NEXT
  * refraction
 
 =====DONE=====
+
+--3/3/14
+* put in a graphics setting for texture filtering.  If true, CLK_FILTER_LINEAR is used, else CLK_FILTER_NEAREST is used when sampling textures.
 
 --2/8/14
 * brightness setting in gfx setings

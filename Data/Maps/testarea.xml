@@ -73,7 +73,7 @@
   BIGROOM
   ================================================================-->
   <Sector id="BigRoom" Dimensions="20,10,20" CastShadows="false" AmbientLight="0.5, 0.5, 0.5">
-    <PointLight Position="9,4,-5" Color="1,1,1" AttenuationConstant="0.5" ConeDirection="-9,-4,5" ConeAngle="90" ConeAttenuationAngle="20" ConeFalloffFactor="1"/>
+    <PointLight Position="9,4,-5" Color="1,1,1" AttenuationConstant="0.5" ConeDirection="-9,-4,5" ConeAngle="150" ConeAttenuationAngle="20" ConeFalloffFactor="1"/>
     <Sphere Position="9,4,-5" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
 
     <!--PointLight Position="-6, 3, 4" Color="1,1,0" AttenuationConstant="0.5" ConeDirection="6,-3,-4" ConeAngle="90" ConeAttenuationAngle="10" ConeFalloffFactor="1"/>

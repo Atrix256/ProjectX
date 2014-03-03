@@ -12,7 +12,11 @@ The kernel code
 
 #define c_maxRayBounces SETTINGS_RAYBOUNCES
 
-const sampler_t g_textureSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_REPEAT | CLK_FILTER_NEAREST; 
+#if SETTINGS_TEXTUREFILTER == 1
+const sampler_t g_textureSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_REPEAT | CLK_FILTER_LINEAR;
+#else
+const sampler_t g_textureSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_REPEAT | CLK_FILTER_NEAREST;
+#endif
 
 struct SCollisionInfo
 {

@@ -161,10 +161,10 @@ CDirectX::~CDirectX ()
 
     // Create the application's window (padding by window border for uniform BB sizes across OSs)
     m_hWnd = CreateWindow( m_wc.lpszClassName, "FPS",
-                              WS_OVERLAPPEDWINDOW, 0, 0, m_width + 2*xBorder, m_height+ 2*yBorder+yMenu,
+							settings.m_FullScreen ? WS_POPUP : WS_OVERLAPPEDWINDOW, 0, 0, m_width + 2*xBorder, m_height+ 2*yBorder+yMenu,
                               NULL, NULL, m_wc.hInstance, NULL );
 
-    ShowWindow(m_hWnd, SW_SHOWDEFAULT);
+	ShowWindow(m_hWnd, settings.m_FullScreen ? SW_MAXIMIZE : SW_SHOWDEFAULT);
     UpdateWindow(m_hWnd);
 
 	HRESULT hr = InitD3D10();

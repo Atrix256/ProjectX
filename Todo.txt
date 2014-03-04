@@ -8,6 +8,10 @@ TO "SHIP" TO TEAM
 * get people to try the exe
 
 NEXT
+* adjust FOV or whatever else needed when aspect ratio of resolution doesn't match the display when in full screen mode
+
+* hide the console window somehow?
+
 * exposure time (limiter for light! i think it will look bad ass!)
  * figure out how other games do exposure time
  * per level settings for "expore time adjustments"?  I want to turn it off sometimes, but it shouldn't be a graphics setting
@@ -373,6 +377,9 @@ NEXT
 =====DONE=====
 
 --3/3/14
+* put in a graphics option for full screen mode
+
+--3/2/14
 * put in a graphics setting for texture filtering.  If true, CLK_FILTER_LINEAR is used, else CLK_FILTER_NEAREST is used when sampling textures.
 
 --2/8/14

@@ -8,6 +8,7 @@
 
 SchemaBegin(GfxSettings)
 	Field_Schema(Vec2, Resolution, "1000, 1000")
+	Field(bool, FullScreen, false)
 	Field(std::string, DefaultMap, "./data/default.xml")
 	Field(unsigned int, TextureSize, 512)
 	Field(bool, TextureFilter, true)

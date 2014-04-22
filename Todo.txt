@@ -1,13 +1,27 @@
-*  Video cards / OpenCL support
- * Mike: NVIDIA geforce GT, 2gb mem
- * Eric: Amd but josh and Matthew have nvidia and I have physx card.  we have hd7950 a 470 gtx and a 480 gtx
- * Katie: going to test her 2 cards
-
-TO "SHIP" TO TEAM
-* give people access to the git repository and instructions on how to use it
-* get people to try the exe
 
 NEXT
+
+* check in a "check point" soon?
+
+* triangle buffer: a list of triangles in the precomputed format that im using, along with texture coordinates.  like current format
+* object buffer: a start/stop index into the triangle buffer describing all the triangles in one object.  material info and bounding sphere?
+* model buffer: a start/stop index into the object buffer describing all the objects in the model.  bounding sphere of all objects?
+* list models in a special global place in the level file where each one gets an id.  load them up at load time
+* model instances are defined in sectors.  specify a name as well as a position and rotation.
+
+
+* wrap triangles in bounding spheres for a quicker early out test
+* load models, put them in bounding spheres
+* allow models to be moved around and instanced
+* fix triangle u and v axis calculation! get it from texture coordinates i think.
+* the normal for the triangle seems to be wrong when viewed from one side.
+
+
+* ECS model with built in threading scheduling.  Entity, Component, System
+
+* bezier clipping and polygon rendering for speed comparisons
+
+
 * adjust FOV or whatever else needed when aspect ratio of resolution doesn't match the display when in full screen mode
 
 * hide the console window somehow?
@@ -65,6 +79,14 @@ NEXT
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* skybox could be specifed on portal instead of in sector, so that you could have multiple skybox views looking out into the same sector from different locations
+* cool procedural fractal texture that can animate: https://www.shadertoy.com/view/ldS3DK
+* sphere test early out for bezier surface.
+* ray march bezier surface if equations dont work out?
+* try scaling objects by changing t factor for x,y,z axis
+* could try 2d polygons on planes instead of triangles (maybe need less polys?)
+* investigate "infinite rendering" through modulus or something with raytracing
+* sparkly paint effect: https://www.shadertoy.com/view/ldsGzl
 * ray march implicit objects that are in a bounding sphere that is raytraced?
 * checking to see if we need to do the brightness atomic max in the kernel makes it drop from 92 to 87 fps for me even if it only actual samples every 500 frames.  maybe there's a better way to do it that's cheaper?
 * HDR tech -> tone mapping, bloom (?) etc?
@@ -374,7 +396,26 @@ NEXT
  * max raybounces
  * refraction
 
+=====NOT DOING=====
+*  Video cards / OpenCL support
+ * Mike: NVIDIA geforce GT, 2gb mem
+ * Eric: Amd but josh and Matthew have nvidia and I have physx card.  we have hd7950 a 470 gtx and a 480 gtx
+ * Katie: going to test her 2 cards
+
+TO "SHIP" TO TEAM
+* give people access to the git repository and instructions on how to use it
+* get people to try the exe
+
+
 =====DONE=====
+
+--4/13/14
+* add texture coordinates to triangles and use that instead of texture scale and stuff
+* find a better ray vs triangle test
+
+--4/10/14
+* started on triangle support
+* been trying to figure out math for curve based surfaces, but didnt find anything reasonable.
 
 --3/3/14
 * put in a graphics option for full screen mode

@@ -227,6 +227,67 @@ bool RayIntersectAABox (__constant const struct SAABox *box, struct SCollisionIn
 	return true;	
 }
 
+bool RayIntersectTriangle (__constant const struct STriangle *triangle, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
+{
+	if (ignorePrimitiveId == triangle->m_objectId)
+		return false;
+
+	// distance of p (start point) and q (some other point) to triangle plane
+	// could do backface culling here with distp and distq (check book if you want to do that later!) 
+	float distp = dot(rayPos, triangle->m_plane.xyz) - triangle->m_plane.w;
+	float distq = dot((rayPos + rayDir), triangle->m_plane.xyz) - triangle->m_plane.w;
+
+	// calculate t value of impact
+	float denom = distp - distq;
+	float t = distp / denom;
+
+	// enforce min and max distance
+	if(t < 0 || t > info->m_intersectionTime)
+		return false;
+
+	// calculate point of impact s
+	float3 s = rayPos + t * rayDir;
+
+	// calculate barycentric coordinate u, exit if outside of 0-1
+	float u = dot(s, triangle->m_planeBC.xyz) - triangle->m_planeBC.w;
+	if (u < 0.0f || u > 1.0f)
+		return false;
+
+	// calculate barycentric coordinate u, exit if negative
+	float v = dot(s, triangle->m_planeCA.xyz) - triangle->m_planeCA.w;
+	if (v < 0.0f)
+		return false;
+
+	// calculate w, exit if negative
+	float w = 1.0f - u - v;
+	if (w < 0.0f)
+		return false;
+
+	// set all the info params since we are garaunteed a hit at this point 
+	info->m_materialIndex = triangle->m_materialIndex;
+	info->m_portalIndex = triangle->m_portalIndex;
+
+	//compute the point of intersection
+	info->m_intersectionPoint = rayPos + rayDir * t;
+	info->m_intersectionTime = t;
+
+	// calculate the normal
+	info->m_surfaceNormal = triangle->m_plane.xyz;
+	info->m_fromInside = dot(rayDir, info->m_surfaceNormal) > 0;
+
+	// TODO: calculate U and V vectors.  this probably isn't the right way!
+	float3 up = {0, 1, 0};
+	info->m_surfaceU = normalize(cross(info->m_surfaceNormal, up));
+	info->m_surfaceV = normalize(cross(info->m_surfaceNormal, info->m_surfaceU));
+
+	// texture coordinates - get from texture coordinates on triangle
+	info->m_textureCoordinates = triangle->m_textureA * u + triangle->m_textureB * v + triangle->m_textureC * w;
+
+	// we found a hit!
+	info->m_objectHit = triangle->m_objectId;
+	return true;
+}
+
 bool RayIntersectPlane (__constant const struct SPlane *plane, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
 {
 	if (ignorePrimitiveId == plane->m_objectId)
@@ -455,6 +516,7 @@ inline bool PointCanSeePoint(
 	__constant const struct SSector *sector,
 	__constant struct SSphere *spheres,
 	__constant struct SAABox *boxes,
+	__constant struct STriangle *triangles,
 	__constant struct SPlane *planes
 )
 {
@@ -492,6 +554,13 @@ inline bool PointCanSeePoint(
 			return false;
 	}
 
+	for (int index = sector->m_staticTriangleStartIndex; index < sector->m_staticTriangleStopIndex; ++index)
+	{
+		if (triangles[index].m_castsShadows
+		 && RayIntersectTriangle(&triangles[index], &collisionInfo, startPos, rayDir, ignorePrimitiveId))
+			return false;
+	}
+
 	for (int index = sector->m_staticPlaneStartIndex; index < sector->m_staticPlaneStopIndex; ++index)
 	{
 		if (planes[index].m_castsShadows
@@ -514,6 +583,7 @@ void ApplyPointLight (
 	const float3 rayDir,
 	__constant struct SSphere *spheres,
 	__constant struct SAABox *boxes,
+	__constant struct STriangle *triangles,
 	__constant struct SPlane *planes,
 	float3 diffuseColor
 )
@@ -531,6 +601,7 @@ void ApplyPointLight (
 		sector,
 		spheres,
 		boxes,
+		triangles,
 		planes)
 	)
 		return;
@@ -577,6 +648,7 @@ void TraceRay (
 	__constant struct SPointLight *lights,
 	__constant struct SSphere *spheres,
 	__constant struct SAABox *boxes,
+	__constant struct STriangle *triangles,
 	__constant struct SPlane *planes,
 	__constant struct SSector *sectors,
 	__constant struct SMaterial *materials,
@@ -616,6 +688,9 @@ void TraceRay (
 
 		for (int index = sector->m_staticBoxStartIndex; index < sector->m_staticBoxStopIndex; ++index)
 			RayIntersectAABox(&boxes[index], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
+
+		for (int index = sector->m_staticTriangleStartIndex; index < sector->m_staticTriangleStopIndex; ++index)
+			RayIntersectTriangle(&triangles[index], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
 
 		for (int index = sector->m_staticPlaneStartIndex; index < sector->m_staticPlaneStopIndex; ++index)
 			RayIntersectPlane(&planes[index], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
@@ -720,6 +795,7 @@ void TraceRay (
 				rayDir,
 				spheres,
 				boxes,
+				triangles,
 				planes,
 				diffuseColorBase
 			);
@@ -762,6 +838,7 @@ __kernel void clrt (
 	__constant struct SPointLight *lights,
 	__constant struct SSphere *spheres,
 	__constant struct SAABox *boxes,
+	__constant struct STriangle *triangles,
 	__constant struct SPlane *planes,
 	__constant struct SSector *sectors,
 	__constant struct SMaterial *materials,
@@ -793,7 +870,7 @@ __kernel void clrt (
 
 	// trace the ray
 	float3 color = (float3)(0);
-	TraceRay(dataRoot, tex3dIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, planes, sectors, materials, portals);
+	TraceRay(dataRoot, tex3dIn, dataRoot->m_camera.m_pos, rayDir, &color, lights, spheres, boxes, triangles, planes, sectors, materials, portals);
 
 	// record the max brightness if we should
 	if (dataRoot->m_camera.m_frameCount % dataRoot->m_camera.m_HDRBrightnessSamplingInterval == 0)
@@ -808,7 +885,7 @@ __kernel void clrt (
 
 		// trace the ray for the other eye
 		float3 rightEyePos = dataRoot->m_camera.m_pos + dataRoot->m_camera.m_left * SETTINGS_REDBLUEWIDTH;
-		TraceRay(dataRoot, tex3dIn, rightEyePos, rayDir, &color, lights, spheres, boxes, planes, sectors, materials, portals);
+		TraceRay(dataRoot, tex3dIn, rightEyePos, rayDir, &color, lights, spheres, boxes, triangles, planes, sectors, materials, portals);
 		color *= dataRoot->m_camera.m_brightnessMultiplier;
 		float grayRight = ColorToGray(&color);
 

@@ -139,6 +139,61 @@ void CWorld::LoadSectorPlanes (
 }
 
 //-----------------------------------------------------------------------------
+void CWorld::LoadSectorTriangles (
+	SSector &sector,
+	struct SData_Sector &sectorSource,
+	std::vector<struct SData_Material> &materials,
+	std::vector<struct SData_Portal> &portals
+) {
+	// load the triangle geometry entries
+	sector.m_staticTriangleStartIndex = m_triangles.Count();
+	m_triangles.Resize(m_triangles.Count() + sectorSource.m_Triangle.size());
+	for (unsigned int triangleIndex = 0, triangleCount = sectorSource.m_Triangle.size(); triangleIndex < triangleCount; ++triangleIndex)
+	{
+		STriangle &triangle = m_triangles[sector.m_staticTriangleStartIndex + triangleIndex];
+		SData_Triangle &triangleSource = sectorSource.m_Triangle[triangleIndex];
+		triangle.m_objectId = m_nextObjectId++;
+
+		// calculate pre-calculated info for triangle
+		float3 a,b,c;
+		Copy(a, triangleSource.m_A);
+		Copy(b, triangleSource.m_B);
+		Copy(c, triangleSource.m_C);
+		
+		float3 normal      = cross(b-a, c-a);
+		triangle.m_plane   = plane(normalize(normal), a);
+		triangle.m_planeBC = plane(normalize(cross(normal, c-b)), b);
+		triangle.m_planeCA = plane(normalize(cross(normal, a-c)), c);
+
+		float bc = 1.0f / (dot(a, normalize(cross(normal, c-b))) - triangle.m_planeBC.s[3]);
+		float ca = 1.0f / (dot(b, normalize(cross(normal, a-c))) - triangle.m_planeCA.s[3]);
+
+		triangle.m_planeBC.s[0] *= bc;
+		triangle.m_planeBC.s[1] *= bc;
+		triangle.m_planeBC.s[2] *= bc;
+		triangle.m_planeBC.s[3] *= bc;
+
+		triangle.m_planeCA.s[0] *= ca;
+		triangle.m_planeCA.s[1] *= ca;
+		triangle.m_planeCA.s[2] *= ca;
+		triangle.m_planeCA.s[3] *= ca;
+
+		Copy(triangle.m_textureA, triangleSource.m_TextureA);
+		Copy(triangle.m_textureB, triangleSource.m_TextureB);
+		Copy(triangle.m_textureC, triangleSource.m_TextureC);
+
+		triangle.m_castsShadows = triangleSource.m_CastShadows;
+
+		// set the material index
+		triangle.m_materialIndex = SData::GetEntryById(materials, triangleSource.m_Material);
+
+		// set the portal index
+		triangle.m_portalIndex = SData::GetEntryById(portals, triangleSource.m_Portal);
+	}
+	sector.m_staticTriangleStopIndex = m_triangles.Count();
+}
+
+//-----------------------------------------------------------------------------
 void CWorld::LoadSectorBoxes (
 	SSector &sector,
 	struct SData_Sector &sectorSource,
@@ -659,6 +714,7 @@ void CWorld::LoadSector (
 
 	LoadSectorPointLights(sector, sectorSource, materials, portals);
 	LoadSectorPlanes(sector, sectorSource, materials, portals);
+	LoadSectorTriangles(sector, sectorSource, materials, portals);
 	LoadSectorBoxes(sector, sectorSource, materials, portals);
 	LoadSectorSpheres(sector, sectorSource, materials, portals);
 	LoadSectorModels(sector, sectorSource, materials, portals);

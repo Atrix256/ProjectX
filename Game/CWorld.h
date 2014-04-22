@@ -24,6 +24,7 @@ public:
 		m_pointLights.Release();
 		m_spheres.Release();
 		m_boxes.Release();
+		m_triangles.Release();
 		m_planes.Release();
 		m_sectors.Release();
 		m_materials.Release();
@@ -55,6 +56,13 @@ private:
 	);
 
 	void LoadSectorPlanes (
+		SSector &sector,
+		struct SData_Sector &sectorSource,
+		std::vector<struct SData_Material> &materials,
+		std::vector<struct SData_Portal> &portals
+	);
+
+	void LoadSectorTriangles (
 		SSector &sector,
 		struct SData_Sector &sectorSource,
 		std::vector<struct SData_Material> &materials,
@@ -135,6 +143,7 @@ private:
 	CSharedArray<SPointLight>	m_pointLights;
 	CSharedArray<SSphere>		m_spheres;
 	CSharedArray<SAABox>		m_boxes;
+	CSharedArray<STriangle>		m_triangles;
 	CSharedArray<SPlane>		m_planes;
 	CSharedArray<SSector>		m_sectors;
 	CSharedArray<SMaterial>		m_materials;

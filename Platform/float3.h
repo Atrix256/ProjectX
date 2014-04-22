@@ -109,6 +109,13 @@ inline float3 normalize (const float3& v)
 	return v / length(v);
 }
 
+#ifndef OPENCL
+inline float dot(const float3& A, const float3& B)
+{
+	return A[0]*B[0] + A[1]*B[1] + A[2]*B[2];
+}
+#endif
+
 inline float3 cross (const float3& A, const float3& B)
 {
 	const float x1 = A[0];
@@ -123,5 +130,15 @@ inline float3 cross (const float3& A, const float3& B)
 	ret[0] = (y1 * z2) - (y2 * z1);
 	ret[1] = (z1 * x2) - (z2 * x1);
 	ret[2] = (x1 * y2) - (x2 * y1);
+	return ret;
+}
+
+inline cl_float4 plane (const float3& normal, const float3& point)
+{
+	cl_float4 ret;
+	ret.s[0] = normal[0];
+	ret.s[1] = normal[1];
+	ret.s[2] = normal[2];
+	ret.s[3] = dot(normal, point);
 	return ret;
 }

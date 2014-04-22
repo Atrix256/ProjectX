@@ -9,6 +9,11 @@
   
   <Material id="WhiteLight" EmissiveColor="1,1,1" DiffuseColor="0,0,0" SpecularColor="0,0,0"/>
 
+  <Material id="Yellow" DiffuseColor="1,1,0.1"   SpecularColor="0,0,0"/>
+  <Material id="Red"    DiffuseColor="1,0.1,0.1" SpecularColor="0,0,0"/>
+  <Material id="Green"  DiffuseColor="0.1,1,0.1" SpecularColor="0,0,0"/>
+  <Material id="Blue"   DiffuseColor="0.1,0.1,1" SpecularColor="0,0,0"/>
+
   <Material id="Mirror" DiffuseColor="0,0.1,0" SpecularColor="0,0,0" ReflectionAmount="0.9"/>
   <Material id="BumpyMirror" NormalTexture="Art/simplenormal.png" DiffuseColor="0,0.1,0" SpecularColor="0,0,0" ReflectionAmount="0.9"/>
 
@@ -136,6 +141,15 @@
     <Sphere Position="3,-5,-15" Radius="1.5" Material="BumpySoapBubble" TextureScale="0.125,0.125" CastShadows="true"/>
 
     <Sphere Position="-5,-8,-18" Radius="1" Material="BumpySoapBubble" TextureScale="0.125,0.125" CastShadows="true"/>
+
+    <!--Triangle A="-10,-10,-15" TextureA="-5,-5" B="-5,-5,-15" TextureB="-2.5,-2.5" C="-10,0,-15" TextureC="-5,0" Material="BumpyGrid" CastShadows="true"/-->
+
+
+    <Triangle A="-2,-8,-15" B="0, 0,-15" C="2,-8,-15" Material="Yellow" CastShadows="true"/>
+    <Triangle A="-2,-8,-15" B="0, 0,-15" C="0, 0,-20" Material="Green"  CastShadows="true"/>
+    <Triangle A="-2,-8,-15" B="2,-8,-15" C="0, 0,-20" Material="Blue"   CastShadows="true"/>
+    <Triangle A=" 0, 0,-15" B="0, 0,-20" C="2,-8,-15" Material="Red"    CastShadows="true"/>
+
 
     <Model FileName="Art/Models/box.dae"/>
     

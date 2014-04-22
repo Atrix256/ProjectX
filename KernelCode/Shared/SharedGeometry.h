@@ -86,6 +86,26 @@ struct SPlane
 	cl_uchar m_pack1d;           
 };
 
+struct STriangle
+{
+	cl_float4 m_plane;
+	cl_float4 m_planeBC;
+	cl_float4 m_planeCA;
+	cl_float2 m_textureA;
+	cl_float2 m_textureB;
+
+	cl_float2 m_textureC;
+	cl_uint m_materialIndex;  
+	cl_uint m_portalIndex;
+	TObjectId m_objectId;
+	cl_uint m_castsShadows;  
+	cl_uint m_pack1; 
+	cl_uint m_pack2;                 
+
+	cl_float4 m_pack3;
+	cl_float4 m_pack4;
+};
+
 #define SSECTOR_NUMPLANES 6
 
 struct SSectorPlane
@@ -118,10 +138,10 @@ struct SSector
 	cl_uint m_staticSphereStartIndex;
 	cl_uint m_staticSphereStopIndex;
 
+	cl_uint m_staticTriangleStartIndex;
+	cl_uint m_staticTriangleStopIndex;
 	cl_uint m_staticLightStartIndex;
 	cl_uint m_staticLightStopIndex;
-	cl_uint m_pack2;
-	cl_uint m_pack3;
 };
 
 struct SPointLight

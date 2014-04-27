@@ -31,6 +31,9 @@
     <Filter Include="Data\Maps">
       <UniqueIdentifier>{b48c4f70-1948-442a-a0e3-dfba60b99a09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Blender">
+      <UniqueIdentifier>{21ee2e3d-0b2e-4ce9-a11e-c6de0494bc78}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\tinyxml\tinyxml2.h">
@@ -183,6 +186,9 @@
   <ItemGroup>
     <None Include="KernelCode\clrt.cl">
       <Filter>Kernel Code</Filter>
+    </None>
+    <None Include="Art\Blender\addons\ProjectX\__init__.py">
+      <Filter>Blender</Filter>
     </None>
   </ItemGroup>
 </Project>

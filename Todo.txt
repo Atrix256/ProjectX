@@ -1,7 +1,7 @@
 
 NEXT
 
-* check in a "check point" soon?
+* when loading models, faces may have either 3 or 4 verts.  If 4, make 2 triangles!
 
 * triangle buffer: a list of triangles in the precomputed format that im using, along with texture coordinates.  like current format
 * object buffer: a start/stop index into the triangle buffer describing all the triangles in one object.  material info and bounding sphere?
@@ -9,6 +9,11 @@ NEXT
 * list models in a special global place in the level file where each one gets an id.  load them up at load time
 * model instances are defined in sectors.  specify a name as well as a position and rotation.
 
+* u,v axis for normal mapping should come from model data.  like... already there in the model data.
+
+* exporter for levels!
+
+* investigate the other editors in blender -> such as node editor and graph editor
 
 * wrap triangles in bounding spheres for a quicker early out test
 * load models, put them in bounding spheres

@@ -1,0 +1,7 @@
+1) Set the scripts folder in user preferences to C:\Users\Atrix256\Documents\GitHub\ProjectX\Art\Blender
+
+2) save user preferences
+
+3) restart blender
+
+4) Enable "Import-Export: ProjectX Exporters" in Addons

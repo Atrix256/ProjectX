@@ -62,6 +62,22 @@ private:
 		std::vector<struct SData_Portal> &portals
 	);
 
+	// temp - until models are working more fully and the other (useless) primitives go away
+	void AddTriangle (
+		SSector &sector,
+		std::vector<struct SData_Material> &materials,
+		std::vector<struct SData_Portal> &portals,
+		const struct SData_Vec3 &sa,
+		const struct SData_Vec3 &sb,
+		const struct SData_Vec3 &sc,
+		const struct SData_Vec2 &ta,
+		const struct SData_Vec2 &tb,
+		const struct SData_Vec2 &tc,
+		bool castShadows,
+		const char *material,
+		const char *portal
+	);
+
 	void LoadSectorTriangles (
 		SSector &sector,
 		struct SData_Sector &sectorSource,

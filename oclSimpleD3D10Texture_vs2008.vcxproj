@@ -214,10 +214,10 @@
     <ClInclude Include="DataSchemas\DataSchemas.h" />
     <ClInclude Include="DataSchemas\DataSchemasStructs.h" />
     <ClInclude Include="DataSchemas\DataSchemasXML.h" />
-    <ClInclude Include="DataSchemas\Schemas\DataSchemas_DaeFile.h" />
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_GameData.h" />
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_GfxSettings.h" />
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_World.h" />
+    <ClInclude Include="DataSchemas\Schemas\DataSchemas_XmdFile.h" />
     <ClInclude Include="External\tinyxml\tinyxml2.h" />
     <ClInclude Include="Game\CCamera.h" />
     <ClInclude Include="Game\CDaeModelLoader.h" />

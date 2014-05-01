@@ -1,7 +1,14 @@
 
 NEXT
 
-* when loading models, faces may have either 3 or 4 verts.  If 4, make 2 triangles!
+* export tangent and binormal
+
+* ditch the useless primitive types.  leave sphere and model i think. get rid of plane, triangle and box.  Update or replace existing test maps?
+
+* specify translation when loading models
+* specify rotation when loading models
+* specify scale when loading models!
+* specify tinting (etc) when loading models
 
 * triangle buffer: a list of triangles in the precomputed format that im using, along with texture coordinates.  like current format
 * object buffer: a start/stop index into the triangle buffer describing all the triangles in one object.  material info and bounding sphere?
@@ -9,7 +16,7 @@ NEXT
 * list models in a special global place in the level file where each one gets an id.  load them up at load time
 * model instances are defined in sectors.  specify a name as well as a position and rotation.
 
-* u,v axis for normal mapping should come from model data.  like... already there in the model data.
+* texture name when loading models, and other material stuff like shadow casting
 
 * exporter for levels!
 
@@ -413,6 +420,18 @@ TO "SHIP" TO TEAM
 
 
 =====DONE=====
+
+--4/30/14
+* made it so the root transform is applied when exporting
+* maed it always export triangles (no quads anymore)
+
+--4/28/14
+* texture coordinates exported
+* when loading models, faces may have either 3 or 4 verts.  If 4, make 2 triangles!
+* need to make it handle non geometric objects when exporting (ignore them!)
+
+--4/27/14
+* a basic custom blender model exporter is at version 1 and im loading those models into the game.  needs some work though to support existing features and required model features
 
 --4/13/14
 * add texture coordinates to triangles and use that instead of texture scale and stuff

@@ -139,6 +139,63 @@ void CWorld::LoadSectorPlanes (
 }
 
 //-----------------------------------------------------------------------------
+void CWorld::AddTriangle (
+	SSector &sector,
+	std::vector<struct SData_Material> &materials,
+	std::vector<struct SData_Portal> &portals,
+	const SData_Vec3 &sa,
+	const SData_Vec3 &sb,
+	const SData_Vec3 &sc,
+	const SData_Vec2 &ta,
+	const SData_Vec2 &tb,
+	const SData_Vec2 &tc,
+	bool castShadows,
+	const char *material,
+	const char *portal
+) {
+	sector.m_staticTriangleStopIndex++;
+
+	STriangle &triangle = m_triangles.AddOne();
+	triangle.m_objectId = m_nextObjectId++;
+
+	// calculate pre-calculated info for triangle
+	float3 a,b,c;
+	Copy(a, sa);
+	Copy(b, sb);
+	Copy(c, sc);
+		
+	float3 normal      = cross(b-a, c-a);
+	triangle.m_plane   = plane(normalize(normal), a);
+	triangle.m_planeBC = plane(normalize(cross(normal, c-b)), b);
+	triangle.m_planeCA = plane(normalize(cross(normal, a-c)), c);
+
+	float bc = 1.0f / (dot(a, normalize(cross(normal, c-b))) - triangle.m_planeBC.s[3]);
+	float ca = 1.0f / (dot(b, normalize(cross(normal, a-c))) - triangle.m_planeCA.s[3]);
+
+	triangle.m_planeBC.s[0] *= bc;
+	triangle.m_planeBC.s[1] *= bc;
+	triangle.m_planeBC.s[2] *= bc;
+	triangle.m_planeBC.s[3] *= bc;
+
+	triangle.m_planeCA.s[0] *= ca;
+	triangle.m_planeCA.s[1] *= ca;
+	triangle.m_planeCA.s[2] *= ca;
+	triangle.m_planeCA.s[3] *= ca;
+
+	Copy(triangle.m_textureA, ta);
+	Copy(triangle.m_textureB, tb);
+	Copy(triangle.m_textureC, tc);
+
+	triangle.m_castsShadows = castShadows;
+
+	// set the material index
+	triangle.m_materialIndex = SData::GetEntryById(materials, material);
+
+	// set the portal index
+	triangle.m_portalIndex = SData::GetEntryById(portals, portal);
+}
+
+//-----------------------------------------------------------------------------
 void CWorld::LoadSectorTriangles (
 	SSector &sector,
 	struct SData_Sector &sectorSource,
@@ -147,50 +204,25 @@ void CWorld::LoadSectorTriangles (
 ) {
 	// load the triangle geometry entries
 	sector.m_staticTriangleStartIndex = m_triangles.Count();
-	m_triangles.Resize(m_triangles.Count() + sectorSource.m_Triangle.size());
+	sector.m_staticTriangleStopIndex = sector.m_staticTriangleStartIndex;
 	for (unsigned int triangleIndex = 0, triangleCount = sectorSource.m_Triangle.size(); triangleIndex < triangleCount; ++triangleIndex)
 	{
-		STriangle &triangle = m_triangles[sector.m_staticTriangleStartIndex + triangleIndex];
 		SData_Triangle &triangleSource = sectorSource.m_Triangle[triangleIndex];
-		triangle.m_objectId = m_nextObjectId++;
-
-		// calculate pre-calculated info for triangle
-		float3 a,b,c;
-		Copy(a, triangleSource.m_A);
-		Copy(b, triangleSource.m_B);
-		Copy(c, triangleSource.m_C);
-		
-		float3 normal      = cross(b-a, c-a);
-		triangle.m_plane   = plane(normalize(normal), a);
-		triangle.m_planeBC = plane(normalize(cross(normal, c-b)), b);
-		triangle.m_planeCA = plane(normalize(cross(normal, a-c)), c);
-
-		float bc = 1.0f / (dot(a, normalize(cross(normal, c-b))) - triangle.m_planeBC.s[3]);
-		float ca = 1.0f / (dot(b, normalize(cross(normal, a-c))) - triangle.m_planeCA.s[3]);
-
-		triangle.m_planeBC.s[0] *= bc;
-		triangle.m_planeBC.s[1] *= bc;
-		triangle.m_planeBC.s[2] *= bc;
-		triangle.m_planeBC.s[3] *= bc;
-
-		triangle.m_planeCA.s[0] *= ca;
-		triangle.m_planeCA.s[1] *= ca;
-		triangle.m_planeCA.s[2] *= ca;
-		triangle.m_planeCA.s[3] *= ca;
-
-		Copy(triangle.m_textureA, triangleSource.m_TextureA);
-		Copy(triangle.m_textureB, triangleSource.m_TextureB);
-		Copy(triangle.m_textureC, triangleSource.m_TextureC);
-
-		triangle.m_castsShadows = triangleSource.m_CastShadows;
-
-		// set the material index
-		triangle.m_materialIndex = SData::GetEntryById(materials, triangleSource.m_Material);
-
-		// set the portal index
-		triangle.m_portalIndex = SData::GetEntryById(portals, triangleSource.m_Portal);
+		AddTriangle(
+			sector,
+			materials,
+			portals,
+			triangleSource.m_A,
+			triangleSource.m_B,
+			triangleSource.m_C,
+			triangleSource.m_TextureA,
+			triangleSource.m_TextureB,
+			triangleSource.m_TextureC,
+			triangleSource.m_CastShadows,
+			triangleSource.m_Material.c_str(),
+			triangleSource.m_Portal.c_str()
+		);
 	}
-	sector.m_staticTriangleStopIndex = m_triangles.Count();
 }
 
 //-----------------------------------------------------------------------------
@@ -299,11 +331,32 @@ void CWorld::LoadSectorModels (
 	for (unsigned int index = 0, count = sectorSource.m_Model.size(); index < count; ++index)
 	{
 		SData_Model &model = sectorSource.m_Model[index];
-		SData_DAEFILE modelData;
-		if (!DataSchemasXML::Load(modelData, model.m_FileName.c_str(), "COLLADA"))
+		SData_XMDFILE modelData;
+		if (!DataSchemasXML::Load(modelData, model.m_FileName.c_str(), "model"))
 			continue;
 
-		int ijkl = 0;
+		for (unsigned int objectIndex = 0, objectCount = modelData.m_object.size(); objectIndex < objectCount; ++objectIndex) {
+			SData_object &object = modelData.m_object[objectIndex];
+			for (unsigned int faceIndex = 0, faceCount = object.m_face.size(); faceIndex < faceCount; ++faceIndex) {
+				SData_face &face = object.m_face[faceIndex];
+				Assert_(face.m_vert.size() == 3); // TODO: log error instead
+				SData_Vec2 noTexCoords;
+				AddTriangle(
+					sector,
+					materials,
+					portals,
+					face.m_vert[0],
+					face.m_vert[1],
+					face.m_vert[2],
+					face.m_uv.size() >= 0 ? face.m_uv[0] : noTexCoords,
+					face.m_uv.size() >= 1 ? face.m_uv[1] : noTexCoords,
+					face.m_uv.size() >= 2 ? face.m_uv[2] : noTexCoords,
+					true,
+					model.m_Material.c_str(),
+					NULL
+				);
+			}
+		}
 	}
 }
 

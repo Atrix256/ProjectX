@@ -117,11 +117,11 @@
     <ClInclude Include="Game\InputToggleList.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="DataSchemas\Schemas\DataSchemas_DaeFile.h">
-      <Filter>DataSchemas\Schemas</Filter>
-    </ClInclude>
     <ClInclude Include="Game\CDaeModelLoader.h">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSchemas\Schemas\DataSchemas_XmdFile.h">
+      <Filter>DataSchemas\Schemas</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

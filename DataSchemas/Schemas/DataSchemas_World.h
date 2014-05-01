@@ -122,6 +122,7 @@ SchemaEnd
 SchemaBegin(Model)
 	Field(std::string, id, "")
 	Field(std::string, FileName, "")
+	Field(std::string, Material, "") // temp! get material from model data in the future
 	Field_Schema(Vec3, Position, "0,0,0")
 SchemaEnd
 

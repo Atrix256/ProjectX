@@ -108,11 +108,12 @@
   <!--===============================================================
   Outside
   ================================================================-->
-  <Sector id="Outside" Dimensions="40,20,80" CastShadows="false" AmbientLight="0.2, 0.6, 0.8">
+  <Sector id="Outside" Dimensions="40,20,80" CastShadows="false" AmbientLight="0.2, 0.2, 0.2">
 
     <Sphere Position="-27,5,69" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="-27,5,69" Color="1,1,0.2" AttenuationConstant="1" AttenuationDistance="0.0025" />
 
+    <!--
     <Box Position=" 1,-9, 1" Scale="3,2,2" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
     <Box Position=" 1,-7,-1" Scale="2,2,3" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
     <Box Position="-1,-5,-1" Scale="3,2,2" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
@@ -123,7 +124,7 @@
     <Box Position="-1, 5, 1" Scale="2,2,3" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
     <Box Position=" 1, 7, 1" Scale="3,2,2" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
     <Box Position=" 1, 9,-1" Scale="2,2,3" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
-
+    -->
 
     <Box Position="-19,-5,20" Scale="0.5,8,10" Material="Mirror" TextureScale="0.25,0.25" CastShadows="true"/>
 
@@ -144,14 +145,14 @@
 
     <!--Triangle A="-10,-10,-15" TextureA="-5,-5" B="-5,-5,-15" TextureB="-2.5,-2.5" C="-10,0,-15" TextureC="-5,0" Material="BumpyGrid" CastShadows="true"/-->
 
-
+<!--
     <Triangle A="-2,-8,-15" B="0, 0,-15" C="2,-8,-15" Material="Yellow" CastShadows="true"/>
     <Triangle A="-2,-8,-15" B="0, 0,-15" C="0, 0,-20" Material="Green"  CastShadows="true"/>
     <Triangle A="-2,-8,-15" B="2,-8,-15" C="0, 0,-20" Material="Blue"   CastShadows="true"/>
     <Triangle A=" 0, 0,-15" B="0, 0,-20" C="2,-8,-15" Material="Red"    CastShadows="true"/>
+-->
 
-
-    <Model FileName="Art/Models/box.dae"/>
+    <Model FileName="Art/Models/box.xmd" Material="BumpyMirror"/>
     
     <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="Skybox" ConnectToSectorPlane="1" ConnectToSetPosition="true" ConnectToPosition="0,0,0"/>
     <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="Skybox" ConnectToSectorPlane="0" ConnectToSetPosition="true" ConnectToPosition="0,0,0"/>

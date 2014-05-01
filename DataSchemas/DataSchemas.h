@@ -23,4 +23,4 @@ Field_Schema_Array(type, name) - define a field in the schema that is an array o
 #include "Schemas/DataSchemas_World.h"
 #include "Schemas/DataSchemas_GfxSettings.h"
 #include "Schemas/DataSchemas_GameData.h"
-#include "Schemas/DataSchemas_DaeFile.h"
+#include "Schemas/DataSchemas_XmdFile.h"

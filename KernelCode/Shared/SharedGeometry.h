@@ -55,38 +55,7 @@ struct SSphere
 	cl_uchar m_pack1d;
 };
 
-struct SAABox
-{
-	float3 m_position;
-	float3 m_scale;
-	cl_float2 m_textureScale;
-	cl_float2 m_textureOffset;
-	cl_uint m_materialIndex;
-	cl_uint m_portalIndex;
-	TObjectId m_objectId;
-	cl_uchar m_castsShadows;
-	cl_uchar m_pack1b;
-	cl_uchar m_pack1c;
-	cl_uchar m_pack1d;
-};
-
-struct SPlane
-{
-	cl_float4 m_equation;     
-	float3 m_UAxis;           
-	cl_float4 m_dims;         
-	cl_float2 m_textureScale; 
-	cl_float2 m_textureOffset;        
-	cl_uint m_materialIndex;  
-	cl_uint m_portalIndex;
-	TObjectId m_objectId;     
-	cl_uchar m_castsShadows;  
-	cl_uchar m_pack1b;        
-	cl_uchar m_pack1c;        
-	cl_uchar m_pack1d;           
-};
-
-struct STriangle
+struct SModelTriangle
 {
 	cl_float4 m_plane;
 	cl_float4 m_planeBC;
@@ -95,15 +64,39 @@ struct STriangle
 	cl_float2 m_textureB;
 
 	cl_float2 m_textureC;
+	TObjectId m_objectId;
+	cl_uint m_pack1;
+	float3 m_tangent;
+	float3 m_bitangent;
+	cl_float4 m_pack2;
+};
+
+struct SModelObject
+{
+	cl_uint m_startTriangleIndex;
+	cl_uint m_stopTriangleIndex;
 	cl_uint m_materialIndex;
 	cl_uint m_portalIndex;
-	TObjectId m_objectId;
+
 	cl_uint m_castsShadows;
+	cl_uint m_triangleStartIndex;
+	cl_uint m_triangleStopIndex;
+	cl_uint m_pack3;
+};
+
+struct SModelInstance
+{
+	cl_uint m_startObjectIndex;
+	cl_uint m_stopObjectIndex;
 	cl_uint m_pack1;
 	cl_uint m_pack2;
 
-	float3 m_tangent;
-	float3 m_bitangent;
+	cl_float4 m_boundingSphere;
+
+	cl_float4 m_transform1;
+	cl_float4 m_transform2;
+	cl_float4 m_transform3;
+	cl_float4 m_transform4;
 };
 
 #define SSECTOR_NUMPLANES 6
@@ -129,19 +122,14 @@ struct SSector
 	float3 m_ambientLight;
 	
 	cl_uint m_castsShadows;
-	cl_uint m_staticPlaneStartIndex;
-	cl_uint m_staticPlaneStopIndex;
-	cl_uint m_pack1;
-
-	cl_uint m_staticBoxStartIndex;
-	cl_uint m_staticBoxStopIndex;
 	cl_uint m_staticSphereStartIndex;
 	cl_uint m_staticSphereStopIndex;
+	cl_uint m_pack1;
 
-	cl_uint m_staticTriangleStartIndex;
-	cl_uint m_staticTriangleStopIndex;
 	cl_uint m_staticLightStartIndex;
 	cl_uint m_staticLightStopIndex;
+	cl_uint m_staticModelStartIndex;
+	cl_uint m_staticModelStopIndex;
 };
 
 struct SPointLight

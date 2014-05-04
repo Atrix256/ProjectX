@@ -99,22 +99,27 @@ public:
 	cl_float3 m_data;
 };
 
-inline float length (const float3& v)
-{
-	return sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-}
-
-inline float3 normalize (const float3& v)
-{
-	return v / length(v);
-}
-
 #ifndef OPENCL
 inline float dot(const float3& A, const float3& B)
 {
 	return A[0]*B[0] + A[1]*B[1] + A[2]*B[2];
 }
 #endif
+
+inline float lengthsq (const float3& v)
+{
+	return dot(v, v);
+}
+
+inline float length (const float3& v)
+{
+	return sqrt(lengthsq(v));
+}
+
+inline float3 normalize (const float3& v)
+{
+	return v / length(v);
+}
 
 inline float3 cross (const float3& A, const float3& B)
 {

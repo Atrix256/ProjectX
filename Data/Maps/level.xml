@@ -143,14 +143,7 @@
 
     <Sphere Position="-5,-8,-18" Radius="1" Material="BumpySoapBubble" TextureScale="0.125,0.125" CastShadows="true"/>
 
-    <!--Triangle A="-10,-10,-15" TextureA="-5,-5" B="-5,-5,-15" TextureB="-2.5,-2.5" C="-10,0,-15" TextureC="-5,0" Material="BumpyGrid" CastShadows="true"/-->
-
-<!--
-    <Triangle A="-2,-8,-15" B="0, 0,-15" C="2,-8,-15" Material="Yellow" CastShadows="true"/>
-    <Triangle A="-2,-8,-15" B="0, 0,-15" C="0, 0,-20" Material="Green"  CastShadows="true"/>
-    <Triangle A="-2,-8,-15" B="2,-8,-15" C="0, 0,-20" Material="Blue"   CastShadows="true"/>
-    <Triangle A=" 0, 0,-15" B="0, 0,-20" C="2,-8,-15" Material="Red"    CastShadows="true"/>
--->
+    <Model FileName="Art/Models/icosphere.xmd" Material="RoughBrick"/>
 
     <Model FileName="Art/Models/rack.xmd" Material="RoughBrick"/>
     

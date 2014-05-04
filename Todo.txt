@@ -1,6 +1,18 @@
 
 NEXT
 
+* try simpler, quicker geometry tests for shadow tests
+
+* make model instance transform work
+
+* better bounding sphere calculations
+
+? when instancing model triangles, they share object id's.  is that what we want? might need to think about having a "base index" or something
+
+? could try "hard coding" stuff for perf so long as it's ok that things aren't destroyed.  for instance, the number of models in a specific sector.
+
+* replace <box> usages with models? at least in level.xml.  then maybe delete other maps?
+
 * specify translation when loading models
 * specify rotation when loading models
 * specify scale when loading models!
@@ -421,6 +433,11 @@ TO "SHIP" TO TEAM
 
 
 =====DONE=====
+
+--5/4/14
+* Ditched plane and box, and non model triangle support
+* organized model stuff to make more sense (triangles -> objects -> model instances)
+* Got bounding spheres working for models, nice speed up even with low quality spheres
 
 --5/3/14
 * import tangent / bitangent.  normal maps look better now even for cube case which should be equivelant?

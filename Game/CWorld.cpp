@@ -101,48 +101,7 @@ void Normalize4D(cl_float4 &vec)
 }
 
 //-----------------------------------------------------------------------------
-void CWorld::LoadSectorPlanes (
-	SSector &sector,
-	struct SData_Sector &sectorSource,
-	std::vector<struct SData_Material> &materials,
-	std::vector<struct SData_Portal> &portals
-) {
-	// load the planes geometry entries
-	sector.m_staticPlaneStartIndex = m_planes.Count();
-	m_planes.Resize(m_planes.Count() + sectorSource.m_Plane.size());
-	for (unsigned int planeIndex = 0, planeCount = sectorSource.m_Plane.size(); planeIndex < planeCount; ++planeIndex)
-	{
-		SPlane &plane = m_planes[sector.m_staticPlaneStartIndex + planeIndex];
-		SData_Plane &planeSource = sectorSource.m_Plane[planeIndex];
-		plane.m_objectId = m_nextObjectId++;
-		Copy(plane.m_equation, planeSource.m_Normal, planeSource.m_D);
-		Copy(plane.m_UAxis, planeSource.m_UAxis);
-		plane.m_castsShadows = planeSource.m_CastShadows;
-		Copy(plane.m_textureScale, planeSource.m_TextureScale);
-		Copy(plane.m_textureOffset, planeSource.m_TextureOffset);
-		plane.m_dims.s[0] = planeSource.m_Dimensions.m_x;
-		plane.m_dims.s[1] = planeSource.m_Dimensions.m_y;
-		plane.m_dims.s[2] = planeSource.m_Dimensions.m_z;
-		plane.m_dims.s[3] = planeSource.m_Dimensions.m_w;
-
-		// make sure the normal is normalized in the equation and normalize the U axis
-		Normalize(plane.m_equation);
-		Normalize(plane.m_UAxis);
-
-		// set the material index
-		plane.m_materialIndex = SData::GetEntryById(materials, planeSource.m_Material);
-
-		// set the portal index
-		plane.m_portalIndex = SData::GetEntryById(portals, planeSource.m_Portal);
-	}
-	sector.m_staticPlaneStopIndex = m_planes.Count();
-}
-
-//-----------------------------------------------------------------------------
 void CWorld::AddTriangle (
-	SSector &sector,
-	std::vector<struct SData_Material> &materials,
-	std::vector<struct SData_Portal> &portals,
 	const SData_Vec3 &sa,
 	const SData_Vec3 &sb,
 	const SData_Vec3 &sc,
@@ -150,14 +109,9 @@ void CWorld::AddTriangle (
 	const SData_Vec2 &tb,
 	const SData_Vec2 &tc,
 	const struct SData_Vec3 &tangent,
-	const struct SData_Vec3 &bitangent,
-	bool castShadows,
-	const char *material,
-	const char *portal
+	const struct SData_Vec3 &bitangent
 ) {
-	sector.m_staticTriangleStopIndex++;
-
-	STriangle &triangle = m_triangles.AddOne();
+	SModelTriangle &triangle = m_modelTriangles.AddOne();
 	triangle.m_objectId = m_nextObjectId++;
 
 	// calculate pre-calculated info for triangle
@@ -190,77 +144,6 @@ void CWorld::AddTriangle (
 
 	Copy(triangle.m_tangent, tangent);
 	Copy(triangle.m_bitangent, bitangent);
-
-	triangle.m_castsShadows = castShadows;
-
-	// set the material index
-	triangle.m_materialIndex = SData::GetEntryById(materials, material);
-
-	// set the portal index
-	triangle.m_portalIndex = SData::GetEntryById(portals, portal);
-}
-
-//-----------------------------------------------------------------------------
-void CWorld::LoadSectorTriangles (
-	SSector &sector,
-	struct SData_Sector &sectorSource,
-	std::vector<struct SData_Material> &materials,
-	std::vector<struct SData_Portal> &portals
-) {
-	// load the triangle geometry entries
-	sector.m_staticTriangleStartIndex = m_triangles.Count();
-	sector.m_staticTriangleStopIndex = sector.m_staticTriangleStartIndex;
-	for (unsigned int triangleIndex = 0, triangleCount = sectorSource.m_Triangle.size(); triangleIndex < triangleCount; ++triangleIndex)
-	{
-		SData_Triangle &triangleSource = sectorSource.m_Triangle[triangleIndex];
-		SData_Vec3 dummy; 
-		AddTriangle(
-			sector,
-			materials,
-			portals,
-			triangleSource.m_A,
-			triangleSource.m_B,
-			triangleSource.m_C,
-			triangleSource.m_TextureA,
-			triangleSource.m_TextureB,
-			triangleSource.m_TextureC,
-			dummy,
-			dummy,
-			triangleSource.m_CastShadows,
-			triangleSource.m_Material.c_str(),
-			triangleSource.m_Portal.c_str()
-		);
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CWorld::LoadSectorBoxes (
-	SSector &sector,
-	struct SData_Sector &sectorSource,
-	std::vector<struct SData_Material> &materials,
-	std::vector<struct SData_Portal> &portals
-) {
-	// load the box geometry entries
-	sector.m_staticBoxStartIndex = m_boxes.Count();
-	m_boxes.Resize(m_boxes.Count() + sectorSource.m_Box.size());
-	for (unsigned int index = 0, count = sectorSource.m_Box.size(); index < count; ++index)
-	{
-		SAABox &box = m_boxes[sector.m_staticBoxStartIndex + index];
-		SData_Box &boxSource = sectorSource.m_Box[index];
-		box.m_objectId = m_nextObjectId++;
-		Copy(box.m_position, boxSource.m_Position);
-		Copy(box.m_scale, boxSource.m_Scale);
-		box.m_castsShadows = boxSource.m_CastShadows;
-		Copy(box.m_textureScale, boxSource.m_TextureScale);
-		Copy(box.m_textureOffset, boxSource.m_TextureOffset);
-
-		// set the material index
-		box.m_materialIndex = SData::GetEntryById(materials, boxSource.m_Material);
-
-		// set the portal index
-		box.m_portalIndex = SData::GetEntryById(portals, boxSource.m_Portal);
-	}
-	sector.m_staticBoxStopIndex = m_boxes.Count();
 }
 
 //-----------------------------------------------------------------------------
@@ -335,38 +218,100 @@ void CWorld::LoadSectorModels (
 	std::vector<struct SData_Material> &materials,
 	std::vector<struct SData_Portal> &portals
 ) {
+	sector.m_staticModelStartIndex = m_modelInstances.Count();
 
 	for (unsigned int index = 0, count = sectorSource.m_Model.size(); index < count; ++index)
 	{
+		SModelInstance &modelInstance = m_modelInstances.AddOne();
+		modelInstance.m_startObjectIndex = m_modelObjects.Count();
+		
+		// init bounding sphere data
+		modelInstance.m_boundingSphere.s[0] = 0.0f;
+		modelInstance.m_boundingSphere.s[1] = 0.0f;
+		modelInstance.m_boundingSphere.s[2] = 0.0f;
+		modelInstance.m_boundingSphere.s[3] = 0.0f;
+
 		SData_Model &model = sectorSource.m_Model[index];
 		SData_XMDFILE modelData;
-		if (!DataSchemasXML::Load(modelData, model.m_FileName.c_str(), "model"))
-			continue;
+		if (DataSchemasXML::Load(modelData, model.m_FileName.c_str(), "model"))
+		{
+			// calculate the bounding sphere
+			float3 boundingSphereCenter;
+			float boundingSphereRadius;
+			CalculateModelBoundingSphere(modelData, boundingSphereCenter, boundingSphereRadius);
+			modelInstance.m_boundingSphere.s[0] = boundingSphereCenter[0];
+			modelInstance.m_boundingSphere.s[1] = boundingSphereCenter[1];
+			modelInstance.m_boundingSphere.s[2] = boundingSphereCenter[2];
+			modelInstance.m_boundingSphere.s[3] = boundingSphereRadius;
 
-		for (unsigned int objectIndex = 0, objectCount = modelData.m_object.size(); objectIndex < objectCount; ++objectIndex) {
-			SData_object &object = modelData.m_object[objectIndex];
-			for (unsigned int faceIndex = 0, faceCount = object.m_face.size(); faceIndex < faceCount; ++faceIndex) {
-				SData_face &face = object.m_face[faceIndex];
-				Assert_(face.m_vert.size() == 3); // TODO: log error instead
-				AddTriangle(
-					sector,
-					materials,
-					portals,
-					face.m_vert[0].m_pos,
-					face.m_vert[1].m_pos,
-					face.m_vert[2].m_pos,
-					face.m_vert[0].m_uv,
-					face.m_vert[1].m_uv,
-					face.m_vert[2].m_uv,
-					face.m_vert[0].m_tangent,
-					face.m_vert[0].m_bitangent,
-					true,
-					model.m_Material.c_str(),
-					NULL
-				);
+			// create the objects and triangles and such
+			for (unsigned int objectIndex = 0, objectCount = modelData.m_object.size(); objectIndex < objectCount; ++objectIndex) {
+
+				// add an object
+				SModelObject &modelobject = m_modelObjects.AddOne();
+				modelobject.m_castsShadows = true;
+				modelobject.m_materialIndex = SData::GetEntryById(materials, model.m_Material.c_str());
+				modelobject.m_portalIndex = SData::GetEntryById(portals, NULL);
+				modelobject.m_startTriangleIndex = m_modelTriangles.Count();
+
+				SData_object &object = modelData.m_object[objectIndex];
+				for (unsigned int faceIndex = 0, faceCount = object.m_face.size(); faceIndex < faceCount; ++faceIndex) {
+					SData_face &face = object.m_face[faceIndex];
+					Assert_(face.m_vert.size() == 3); // TODO: log error instead
+					AddTriangle(
+						face.m_vert[0].m_pos,
+						face.m_vert[1].m_pos,
+						face.m_vert[2].m_pos,
+						face.m_vert[0].m_uv,
+						face.m_vert[1].m_uv,
+						face.m_vert[2].m_uv,
+						face.m_vert[0].m_tangent,
+						face.m_vert[0].m_bitangent
+					);
+				}
+
+				modelobject.m_stopTriangleIndex = m_modelTriangles.Count();
+			}
+		}
+
+		modelInstance.m_stopObjectIndex = m_modelObjects.Count();
+	}
+
+	sector.m_staticModelStopIndex = m_modelInstances.Count();
+}
+
+//-----------------------------------------------------------------------------
+void CWorld::CalculateModelBoundingSphere (
+	const struct SData_XMDFILE &modelData,
+	float3 &center,
+	float &radius
+) {
+	center[0] = 0.0f;
+	center[1] = 0.0f;
+	center[2] = 0.0f;
+	radius = 0.0f;
+
+	// find the maximum squared distance any point has from 0,0,0
+	// TODO: calculate a tighter bounding sphere later, this assumes center point of 0,0,0
+	for (unsigned int objectIndex = 0, objectCount = modelData.m_object.size(); objectIndex < objectCount; ++objectIndex)
+	{
+		const SData_object &object = modelData.m_object[objectIndex];
+		for (unsigned int faceIndex = 0, faceCount = object.m_face.size(); faceIndex < faceCount; ++faceIndex)
+		{
+			const SData_face &face = object.m_face[faceIndex];
+			for (unsigned int vertIndex = 0, vertCount = face.m_vert.size(); vertIndex < vertCount; ++vertIndex)
+			{
+				float3 pos;
+				Copy(pos, face.m_vert[vertIndex].m_pos);
+				float posRadius = lengthsq(pos);
+				if (posRadius > radius)
+					radius = posRadius;
 			}
 		}
 	}
+
+	// take the square root since we were working with squared radii
+	radius = sqrtf(radius);
 }
 
 //-----------------------------------------------------------------------------
@@ -775,9 +720,6 @@ void CWorld::LoadSector (
 	}
 
 	LoadSectorPointLights(sector, sectorSource, materials, portals);
-	LoadSectorPlanes(sector, sectorSource, materials, portals);
-	LoadSectorTriangles(sector, sectorSource, materials, portals);
-	LoadSectorBoxes(sector, sectorSource, materials, portals);
 	LoadSectorSpheres(sector, sectorSource, materials, portals);
 	LoadSectorModels(sector, sectorSource, materials, portals);
 }

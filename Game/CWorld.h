@@ -23,9 +23,9 @@ public:
 	{
 		m_pointLights.Release();
 		m_spheres.Release();
-		m_boxes.Release();
-		m_triangles.Release();
-		m_planes.Release();
+		m_modelTriangles.Release();
+		m_modelObjects.Release();
+		m_modelInstances.Release();
 		m_sectors.Release();
 		m_materials.Release();
 		m_portals.Release();
@@ -55,18 +55,8 @@ private:
 		std::vector<struct SData_Portal> &portals
 	);
 
-	void LoadSectorPlanes (
-		SSector &sector,
-		struct SData_Sector &sectorSource,
-		std::vector<struct SData_Material> &materials,
-		std::vector<struct SData_Portal> &portals
-	);
-
 	// temp - until models are working more fully and the other (useless) primitives go away
 	void AddTriangle (
-		SSector &sector,
-		std::vector<struct SData_Material> &materials,
-		std::vector<struct SData_Portal> &portals,
 		const struct SData_Vec3 &sa,
 		const struct SData_Vec3 &sb,
 		const struct SData_Vec3 &sc,
@@ -74,24 +64,7 @@ private:
 		const struct SData_Vec2 &tb,
 		const struct SData_Vec2 &tc,
 		const struct SData_Vec3 &tangent,
-		const struct SData_Vec3 &bitangent,
-		bool castShadows,
-		const char *material,
-		const char *portal
-	);
-
-	void LoadSectorTriangles (
-		SSector &sector,
-		struct SData_Sector &sectorSource,
-		std::vector<struct SData_Material> &materials,
-		std::vector<struct SData_Portal> &portals
-	);
-
-	void LoadSectorBoxes (
-		SSector &sector,
-		struct SData_Sector &sectorSource,
-		std::vector<struct SData_Material> &materials,
-		std::vector<struct SData_Portal> &portals
+		const struct SData_Vec3 &bitangent
 	);
 
 	void LoadSectorSpheres (
@@ -113,6 +86,12 @@ private:
 		struct SData_Sector &sectorSource,
 		std::vector<struct SData_Material> &materials,
 		std::vector<struct SData_Portal> &portals
+	);
+
+	void CalculateModelBoundingSphere (
+		const struct SData_XMDFILE &modelData,
+		float3 &center,
+		float &radius
 	);
 
 	void HandleSectorConnectTos (
@@ -158,14 +137,14 @@ private:
 		float &maxY
 	);
 
-	CSharedArray<SPointLight>	m_pointLights;
-	CSharedArray<SSphere>		m_spheres;
-	CSharedArray<SAABox>		m_boxes;
-	CSharedArray<STriangle>		m_triangles;
-	CSharedArray<SPlane>		m_planes;
-	CSharedArray<SSector>		m_sectors;
-	CSharedArray<SMaterial>		m_materials;
-	CSharedArray<SPortal>		m_portals;
+	CSharedArray<SPointLight>		m_pointLights;
+	CSharedArray<SSphere>			m_spheres;
+	CSharedArray<SModelTriangle>	m_modelTriangles;	// a face
+	CSharedArray<SModelObject>		m_modelObjects;		// objects are a collection of triangles
+	CSharedArray<SModelInstance>	m_modelInstances;	// a list of objects, along with a bounding sphere and a transform object
+	CSharedArray<SSector>			m_sectors;
+	CSharedArray<SMaterial>			m_materials;
+	CSharedArray<SPortal>			m_portals;
 
 	unsigned int m_nextObjectId;
 };

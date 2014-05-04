@@ -774,13 +774,13 @@ void CDirectX::RunKernels(float elapsed)
 		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_spheres.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
-		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_boxes.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_modelTriangles.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
-		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_triangles.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_modelObjects.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
-		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_planes.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
+		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_modelInstances.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
 		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_sectors.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
@@ -792,9 +792,9 @@ void CDirectX::RunKernels(float elapsed)
 		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &m_world.m_portals.GetAndUpdateMem(m_cxGPUContext, m_cqCommandQueue));
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
-		sharedDataRootKernelToHost.GetObject().PreRender();
-		ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &sharedDataRootKernelToHost.GetAndWriteCLMem(m_cxGPUContext, m_cqCommandQueue));
-		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
+		//sharedDataRootKernelToHost.GetObject().PreRender();
+		//ciErrNum = clSetKernelArg(m_ckKernel_tex2d, argNumber++, sizeof(cl_mem), &sharedDataRootKernelToHost.GetAndWriteCLMem(m_cxGPUContext, m_cqCommandQueue));
+		//oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
 		// launch computation kernel
 		ciErrNum = clEnqueueNDRangeKernel(m_cqCommandQueue, m_ckKernel_tex2d, 2, NULL,
@@ -803,7 +803,7 @@ void CDirectX::RunKernels(float elapsed)
 		oclCheckErrorEX(ciErrNum, CL_SUCCESS, NULL);
 
 		// read the data the kernel wrote back
-		sharedDataRootKernelToHost.ReadFromCLMem(m_cxGPUContext, m_cqCommandQueue);
+		//sharedDataRootKernelToHost.ReadFromCLMem(m_cxGPUContext, m_cqCommandQueue);
 
 		// do auto adjust brightness stuff if we should
 		if (camera.m_frameCount % camera.m_HDRBrightnessSamplingInterval == 0)

@@ -1,10 +1,6 @@
 
 NEXT
 
-* export tangent and binormal
-
-* ditch the useless primitive types.  leave sphere and model i think. get rid of plane, triangle and box.  Update or replace existing test maps?
-
 * specify translation when loading models
 * specify rotation when loading models
 * specify scale when loading models!
@@ -16,7 +12,12 @@ NEXT
 * list models in a special global place in the level file where each one gets an id.  load them up at load time
 * model instances are defined in sectors.  specify a name as well as a position and rotation.
 
+* how does bitangent sign work? data in blender
+
+* ditch the useless primitive types.  leave sphere and model i think. get rid of plane, triangle and box.  Update or replace existing test maps?
+
 * texture name when loading models, and other material stuff like shadow casting
+* just create a new material per material in the model? if it matters, can try to share them later
 
 * exporter for levels!
 
@@ -420,6 +421,11 @@ TO "SHIP" TO TEAM
 
 
 =====DONE=====
+
+--5/3/14
+* import tangent / bitangent.  normal maps look better now even for cube case which should be equivelant?
+* back face culling.  Doesn't seem to affect perf but leaving it.
+* made it export from blender (z is up) to my world (y is up) properly.
 
 --4/30/14
 * made it so the root transform is applied when exporting

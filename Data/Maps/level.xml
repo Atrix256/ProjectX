@@ -152,7 +152,7 @@
     <Triangle A=" 0, 0,-15" B="0, 0,-20" C="2,-8,-15" Material="Red"    CastShadows="true"/>
 -->
 
-    <Model FileName="Art/Models/box.xmd" Material="BumpyMirror"/>
+    <Model FileName="Art/Models/rack.xmd" Material="RoughBrick"/>
     
     <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="Skybox" ConnectToSectorPlane="1" ConnectToSetPosition="true" ConnectToPosition="0,0,0"/>
     <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="Skybox" ConnectToSectorPlane="0" ConnectToSetPosition="true" ConnectToPosition="0,0,0"/>

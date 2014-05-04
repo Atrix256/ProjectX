@@ -149,6 +149,8 @@ void CWorld::AddTriangle (
 	const SData_Vec2 &ta,
 	const SData_Vec2 &tb,
 	const SData_Vec2 &tc,
+	const struct SData_Vec3 &tangent,
+	const struct SData_Vec3 &bitangent,
 	bool castShadows,
 	const char *material,
 	const char *portal
@@ -186,6 +188,9 @@ void CWorld::AddTriangle (
 	Copy(triangle.m_textureB, tb);
 	Copy(triangle.m_textureC, tc);
 
+	Copy(triangle.m_tangent, tangent);
+	Copy(triangle.m_bitangent, bitangent);
+
 	triangle.m_castsShadows = castShadows;
 
 	// set the material index
@@ -208,6 +213,7 @@ void CWorld::LoadSectorTriangles (
 	for (unsigned int triangleIndex = 0, triangleCount = sectorSource.m_Triangle.size(); triangleIndex < triangleCount; ++triangleIndex)
 	{
 		SData_Triangle &triangleSource = sectorSource.m_Triangle[triangleIndex];
+		SData_Vec3 dummy; 
 		AddTriangle(
 			sector,
 			materials,
@@ -218,6 +224,8 @@ void CWorld::LoadSectorTriangles (
 			triangleSource.m_TextureA,
 			triangleSource.m_TextureB,
 			triangleSource.m_TextureC,
+			dummy,
+			dummy,
 			triangleSource.m_CastShadows,
 			triangleSource.m_Material.c_str(),
 			triangleSource.m_Portal.c_str()
@@ -340,17 +348,18 @@ void CWorld::LoadSectorModels (
 			for (unsigned int faceIndex = 0, faceCount = object.m_face.size(); faceIndex < faceCount; ++faceIndex) {
 				SData_face &face = object.m_face[faceIndex];
 				Assert_(face.m_vert.size() == 3); // TODO: log error instead
-				SData_Vec2 noTexCoords;
 				AddTriangle(
 					sector,
 					materials,
 					portals,
-					face.m_vert[0],
-					face.m_vert[1],
-					face.m_vert[2],
-					face.m_uv.size() >= 0 ? face.m_uv[0] : noTexCoords,
-					face.m_uv.size() >= 1 ? face.m_uv[1] : noTexCoords,
-					face.m_uv.size() >= 2 ? face.m_uv[2] : noTexCoords,
+					face.m_vert[0].m_pos,
+					face.m_vert[1].m_pos,
+					face.m_vert[2].m_pos,
+					face.m_vert[0].m_uv,
+					face.m_vert[1].m_uv,
+					face.m_vert[2].m_uv,
+					face.m_vert[0].m_tangent,
+					face.m_vert[0].m_bitangent,
 					true,
 					model.m_Material.c_str(),
 					NULL

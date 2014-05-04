@@ -95,15 +95,15 @@ struct STriangle
 	cl_float2 m_textureB;
 
 	cl_float2 m_textureC;
-	cl_uint m_materialIndex;  
+	cl_uint m_materialIndex;
 	cl_uint m_portalIndex;
 	TObjectId m_objectId;
-	cl_uint m_castsShadows;  
-	cl_uint m_pack1; 
-	cl_uint m_pack2;                 
+	cl_uint m_castsShadows;
+	cl_uint m_pack1;
+	cl_uint m_pack2;
 
-	cl_float4 m_pack3;
-	cl_float4 m_pack4;
+	float3 m_tangent;
+	float3 m_bitangent;
 };
 
 #define SSECTOR_NUMPLANES 6

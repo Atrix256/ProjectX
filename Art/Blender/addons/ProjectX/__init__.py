@@ -11,6 +11,10 @@ bl_info = {
 import bpy
 from bpy_extras.io_utils import ExportHelper
 
+from mathutils import Matrix, Vector
+
+GLOBAL_EXPORT_MATRIX = Matrix([[1, 0, 0, 0],[0, 0, 1, 0],[0, 1, 0, 0],[0, 0, 0, 1]])
+
 def mesh_triangulate(me):
     import bmesh
     bm = bmesh.new()
@@ -39,28 +43,26 @@ class ExportModel(bpy.types.Operator, ExportHelper):
 			if data is None:
 				continue
 
-			data.transform(obj.matrix_world)
+			data.transform(obj.matrix_world * GLOBAL_EXPORT_MATRIX)
 
 			mesh_triangulate(data)
 			data.calc_tessface();
 			data.calc_tangents();
 
 			out.write('\t<object>\n')
-			for face_num, face in enumerate(data.tessfaces):
-				out.write('\t\t<face Normal="%f,%f,%f">\n' % (face.normal.x, face.normal.y, face.normal.z))
-				for vert_num in (face.vertices):
-					vert = data.vertices[vert_num]
-					out.write('\t\t\t<vert Value="%f,%f,%f"/>\n' % (vert.co.x, vert.co.y, vert.co.z) )
+			for face_num, face in enumerate(data.polygons):
+				out.write('\t\t<face>\n')
 
-				if data.tessface_uv_textures.active != None:
-					uv = data.tessface_uv_textures.active.data[face_num].uv1;
-					out.write('\t\t\t<uv Value="%f,%f"/>\n' % (uv.x, uv.y));
-
-					uv = data.tessface_uv_textures.active.data[face_num].uv2;
-					out.write('\t\t\t<uv Value="%f,%f"/>\n' % (uv.x, uv.y));
-
-					uv = data.tessface_uv_textures.active.data[face_num].uv3;
-					out.write('\t\t\t<uv Value="%f,%f"/>\n' % (uv.x, uv.y));
+				for loopIndex in (face.loop_indices):
+					vert = data.vertices[data.loops[loopIndex].vertex_index];
+					out.write('\t\t\t<vert>\n');
+					out.write('\t\t\t\t<pos Value="%f,%f,%f"/>\n' % (vert.co[:]));
+					out.write('\t\t\t\t<normal Value="%f,%f,%f"/>\n' % (data.loops[loopIndex].normal[:]));
+					out.write('\t\t\t\t<tangent Value="%f,%f,%f"/>\n' % (data.loops[loopIndex].tangent[:]));
+					out.write('\t\t\t\t<bitangent Value="%f,%f,%f"/>\n' % (data.loops[loopIndex].bitangent[:]));
+					if data.uv_layers.active != None:
+						out.write('\t\t\t\t<uv Value="%f,%f"/>\n' % (data.uv_layers.active.data[loopIndex].uv[:]));
+					out.write('\t\t\t</vert>\n');
 
 				out.write('\t\t</face>\n')
 			out.write('\t</object>\n')

@@ -1,7 +1,7 @@
 /*==================================================================================================
 
 clrt.cl
-
+ 
 The kernel code 
 
 ==================================================================================================*/
@@ -31,6 +31,16 @@ struct SCollisionInfo
 	unsigned int		m_materialIndex;
 	unsigned int		m_portalIndex;
 };
+
+inline bool IsReflective (__constant const struct SMaterial *material)
+{
+	return material->m_reflectionAmount > 0.0f;
+}
+
+inline bool IsRefractive (__constant const struct SMaterial *material)
+{
+	return !IsReflective(material) && material->m_refractionAmount > 0.0f;
+}
 
 bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
 {
@@ -227,9 +237,13 @@ bool RayIntersectAABox (__constant const struct SAABox *box, struct SCollisionIn
 	return true;	
 }
 
-bool RayIntersectTriangle (__constant const struct STriangle *triangle, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
+bool RayIntersectTriangle (__constant const struct STriangle *triangle, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId, bool backFaceCulling)
 {
 	if (ignorePrimitiveId == triangle->m_objectId)
+		return false;
+
+	// do back face culling if we are allowed.  It seems to make no impact on performance from what i can tell though unfortunately ):
+	if (backFaceCulling && dot(rayDir, triangle->m_plane.xyz) > 0.0f)
 		return false;
 
 	// distance of p (start point) and q (some other point) to triangle plane
@@ -275,10 +289,9 @@ bool RayIntersectTriangle (__constant const struct STriangle *triangle, struct S
 	info->m_surfaceNormal = triangle->m_plane.xyz;
 	info->m_fromInside = dot(rayDir, info->m_surfaceNormal) > 0;
 
-	// TODO: calculate U and V vectors.  this probably isn't the right way!
-	float3 up = {0, 1, 0};
-	info->m_surfaceU = normalize(cross(info->m_surfaceNormal, up));
-	info->m_surfaceV = normalize(cross(info->m_surfaceNormal, info->m_surfaceU));
+	// set the tangent and bitangent
+	info->m_surfaceU = triangle->m_tangent;
+	info->m_surfaceV = triangle->m_bitangent;
 
 	// texture coordinates - get from texture coordinates on triangle
 	info->m_textureCoordinates = triangle->m_textureA * u + triangle->m_textureB * v + triangle->m_textureC * w;
@@ -517,7 +530,8 @@ inline bool PointCanSeePoint(
 	__constant struct SSphere *spheres,
 	__constant struct SAABox *boxes,
 	__constant struct STriangle *triangles,
-	__constant struct SPlane *planes
+	__constant struct SPlane *planes,
+	__constant struct SMaterial *materials
 )
 {
 	#if SETTINGS_SHADOWS == 1
@@ -556,8 +570,9 @@ inline bool PointCanSeePoint(
 
 	for (int index = sector->m_staticTriangleStartIndex; index < sector->m_staticTriangleStopIndex; ++index)
 	{
+		__constant const struct SMaterial *material = &materials[triangles[index].m_materialIndex];
 		if (triangles[index].m_castsShadows
-		 && RayIntersectTriangle(&triangles[index], &collisionInfo, startPos, rayDir, ignorePrimitiveId))
+		 && RayIntersectTriangle(&triangles[index], &collisionInfo, startPos, rayDir, ignorePrimitiveId, !IsRefractive(material)))
 			return false;
 	}
 
@@ -585,6 +600,7 @@ void ApplyPointLight (
 	__constant struct SAABox *boxes,
 	__constant struct STriangle *triangles,
 	__constant struct SPlane *planes,
+	__constant struct SMaterial *materials,
 	float3 diffuseColor
 )
 {
@@ -602,7 +618,8 @@ void ApplyPointLight (
 		spheres,
 		boxes,
 		triangles,
-		planes)
+		planes,
+		materials)
 	)
 		return;
 
@@ -690,7 +707,11 @@ void TraceRay (
 			RayIntersectAABox(&boxes[index], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
 
 		for (int index = sector->m_staticTriangleStartIndex; index < sector->m_staticTriangleStopIndex; ++index)
-			RayIntersectTriangle(&triangles[index], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
+		{
+			// allow back face culling if the triangle isn't refractive (transparent)
+			__constant const struct SMaterial *material = &materials[triangles[index].m_materialIndex];
+			RayIntersectTriangle(&triangles[index], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId, !IsRefractive(material));
+		}
 
 		for (int index = sector->m_staticPlaneStartIndex; index < sector->m_staticPlaneStopIndex; ++index)
 			RayIntersectPlane(&planes[index], &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
@@ -797,6 +818,7 @@ void TraceRay (
 				boxes,
 				triangles,
 				planes,
+				materials,
 				diffuseColorBase
 			);
 

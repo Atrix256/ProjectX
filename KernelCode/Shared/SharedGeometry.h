@@ -22,10 +22,13 @@ struct SMaterial
 	cl_float m_refractionIndex;
 	cl_float m_refractionAmount;
 	cl_float m_diffuseTextureIndex;
+
 	cl_float m_normalTextureIndex;
 	cl_float m_emissiveTextureIndex;
+	cl_float m_pad1;
 	cl_float m_pad2;
-	cl_float m_pad3;
+
+	cl_float4 m_absorptionColorAndAmount;
 };
 
 struct SPortal

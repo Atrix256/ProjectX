@@ -48,6 +48,8 @@ SchemaBegin(Material)
 	Field(float, ReflectionAmount, 0.0f)
 	Field(float, RefractionIndex, 1.0f)
 	Field(float, RefractionAmount, 0.0f)
+	Field_Schema(Vec3, AbsorptionColor, "0,0,0")
+	Field(float, AbsorptionAmount, 0.0f)
 SchemaEnd
 
 SchemaBegin(Portal)

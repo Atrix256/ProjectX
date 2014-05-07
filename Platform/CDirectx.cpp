@@ -616,6 +616,8 @@ HRESULT CDirectX::CreateKernelProgram(
 	buildOptions.append(" -D SETTINGS_RAYBOUNCES=");
 	sprintf(buffer, "%i", m_graphicsSettings.m_RayBounces);
 	buildOptions.append(buffer);
+	buildOptions.append(" -D SETTINGS_COLORABSORB=");
+	buildOptions.append(m_graphicsSettings.m_ColorAbsorption ? "1" : "0");
 
 	// if this setting is on, turn on the optimizations that prefer speed over accuracy and safety
 	if (m_graphicsSettings.m_FastestMath) {

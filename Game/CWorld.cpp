@@ -244,6 +244,11 @@ void CWorld::LoadSectorModels (
 			modelInstance.m_boundingSphere.s[2] = boundingSphereCenter[2];
 			modelInstance.m_boundingSphere.s[3] = boundingSphereRadius;
 
+			// TEMP - until there is a World2Local and Local2World matrix
+			modelInstance.m_boundingSphere.s[0] = model.m_Position.m_x;
+			modelInstance.m_boundingSphere.s[1] = model.m_Position.m_y;
+			modelInstance.m_boundingSphere.s[2] = model.m_Position.m_z;
+
 			// create the objects and triangles and such
 			for (unsigned int objectIndex = 0, objectCount = modelData.m_object.size(); objectIndex < objectCount; ++objectIndex) {
 
@@ -761,6 +766,8 @@ bool CWorld::Load (const char *worldFileName)
 		m_materials[index].m_reflectionAmount = worldData.m_Material[index].m_ReflectionAmount;
 		m_materials[index].m_refractionAmount = worldData.m_Material[index].m_RefractionAmount;
 		m_materials[index].m_refractionIndex = worldData.m_Material[index].m_RefractionIndex;
+
+		Copy(m_materials[index].m_absorptionColorAndAmount, worldData.m_Material[index].m_AbsorptionColor, worldData.m_Material[index].m_AbsorptionAmount);
 		
 		m_materials[index].m_diffuseTextureIndex = 0.0f;
 		if (worldData.m_Material[index].m_DiffuseTexture.length() > 0)

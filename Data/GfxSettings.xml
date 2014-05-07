@@ -13,4 +13,5 @@
   <RayBounces Value="10"/>
   <FastestMath Value="true"/>
   <Brightness Value="1.0"/>
+  <ColorAbsorption Value="true"/>
 </GfxSettings>

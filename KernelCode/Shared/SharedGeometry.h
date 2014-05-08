@@ -28,7 +28,7 @@ struct SMaterial
 	cl_float m_pad1;
 	cl_float m_pad2;
 
-	cl_float4 m_absorptionColorAndAmount;
+	float3 m_absorptionColor;
 };
 
 struct SPortal

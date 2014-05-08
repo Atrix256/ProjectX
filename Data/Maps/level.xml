@@ -19,6 +19,8 @@
   <Material id="Mirror" DiffuseColor="0,0.1,0" SpecularColor="0,0,0" ReflectionAmount="0.9"/>
   <Material id="BumpyMirror" NormalTexture="Art/simplenormal.png" DiffuseColor="0,0.1,0" SpecularColor="0,0,0" ReflectionAmount="0.9"/>
 
+  <Material id="Ruby" DiffuseColor="0,0,0" SpecularColor="1,0.6,0.6" SpecularPower="1" RefractionIndex="0.75" RefractionAmount="1" AbsorptionColor="0,1,1" AbsorptionAmount="0.5"/>
+
   <Material id="SoapBubble" DiffuseColor="0.1,0.02,0.1" SpecularColor="0.5,0.1,0.5" SpecularPower="5" RefractionIndex="0.75" RefractionAmount="1"/>
   <Material id="BumpySoapBubble" NormalTexture="Art/cells.png" DiffuseColor="0.1,0.02,0.1" SpecularColor="0.5,0.1,0.5" SpecularPower="5" RefractionIndex="0.95" RefractionAmount="1"/>
 
@@ -144,10 +146,12 @@
     <Sphere Position="3,-5,-15" Radius="1.5" Material="BumpySoapBubble" TextureScale="0.125,0.125" CastShadows="true"/>
 
     <Sphere Position="-5,-8,-18" Radius="1" Material="BumpySoapBubble" TextureScale="0.125,0.125" CastShadows="true"/>
+    
+    <Model FileName="Art/Models/icosphere.xmd" Material="Ruby" Position="-15,-7,-1"/>
+    <Model FileName="Art/Models/icosphere_sm.xmd" Material="Ruby" Position="1,-7,-1"/>
 
-    <Model FileName="Art/Models/icosphere.xmd" Material="Mirror" Position="-10,-5,-1"/>
     <Model FileName="Art/Models/icosphere.xmd" Material="Grid" Position="10,-3,0"/>
-    <Model FileName="Art/Models/icosphere.xmd" Material="Grid" Position="5,-1,20"/>
+    <Model FileName="Art/Models/icosphere.xmd" Material="Mirror" Position="5,-1,20"/>
     <Model FileName="Art/Models/icosphere.xmd" Material="RoughBrick" Position="-12,-4,18"/>
     
     <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="Skybox" ConnectToSectorPlane="1" ConnectToSetPosition="true" ConnectToPosition="0,0,0"/>

@@ -767,7 +767,10 @@ bool CWorld::Load (const char *worldFileName)
 		m_materials[index].m_refractionAmount = worldData.m_Material[index].m_RefractionAmount;
 		m_materials[index].m_refractionIndex = worldData.m_Material[index].m_RefractionIndex;
 
-		Copy(m_materials[index].m_absorptionColorAndAmount, worldData.m_Material[index].m_AbsorptionColor, worldData.m_Material[index].m_AbsorptionAmount);
+		Copy(m_materials[index].m_absorptionColor, worldData.m_Material[index].m_AbsorptionColor);
+		m_materials[index].m_absorptionColor[0] *= worldData.m_Material[index].m_AbsorptionAmount;
+		m_materials[index].m_absorptionColor[1] *= worldData.m_Material[index].m_AbsorptionAmount;
+		m_materials[index].m_absorptionColor[2] *= worldData.m_Material[index].m_AbsorptionAmount;
 		
 		m_materials[index].m_diffuseTextureIndex = 0.0f;
 		if (worldData.m_Material[index].m_DiffuseTexture.length() > 0)

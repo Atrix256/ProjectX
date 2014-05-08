@@ -1,14 +1,6 @@
 
 NEXT
 
-
-
-* how do we calculate "time inside shape" for models, which may not even be a closed shape?
- * shoot a ray in the opposite direction that tests only against the shape, and take the closest hit if there is any
- * only do this if the shape is refractive, and has absorption
- * graphics option to turn on and off absorption since it's more expensive
- * implement this
-
 * in the cpu only side model data, keep knowledge of the farthest point from the origin, so that we can apply scale to it to get a better bounding sphere radius
 
 * make model instance transforms work.  make a world2local and local2world (inverse) matrix 
@@ -21,13 +13,6 @@ NEXT
 * try simpler, quicker geometry tests for shadow tests
 
 * better bounding sphere calculations
-
-* beers law absorption for transparent shapes
- * what do you do about hitting a different object, but being inside of an object?
- * the absorption stuff doesn't handle it right because it looks at the target for absorption info
- * more like, you need to keep track of what object(s?) you are in, and the total current absorption levels.
-
-* beers law absorption for transparent shape shadows
 
 * try billboarded models that orient themselves based on the incoming ray orientation? (or camera orientation perhaps... dunno)
 
@@ -78,6 +63,7 @@ NEXT
 
 * bezier clipping and polygon rendering for speed comparisons
 
+* beers law absorption - need to calculate on CPU side what the starting absorption color is based on what object the eye is in. otherwise it doesn't look right when you enter a shape
 
 * adjust FOV or whatever else needed when aspect ratio of resolution doesn't match the display when in full screen mode
 
@@ -469,6 +455,9 @@ TO "SHIP" TO TEAM
 
 
 =====DONE=====
+
+--5/7/14
+* fixed beers law absorption stuff!
 
 --5/5/14
 * made translation of models work (tentatively).  need better implementation longer term in matrix form to take it in and out of local space

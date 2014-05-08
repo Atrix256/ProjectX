@@ -30,7 +30,6 @@ struct SCollisionInfo
 	float2				m_textureCoordinates;
 	unsigned int		m_materialIndex;
 	unsigned int		m_portalIndex;
-	float				m_timeInsideShape;
 };
 
 inline bool IsReflective (__constant const struct SMaterial *material)
@@ -90,7 +89,6 @@ bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollis
 
 	//not inside til proven otherwise
 	bool fromInside = false;
-	float timeInsideShape = 0.0f;
 
 	//ray now found to intersect sphere, compute smallest t value of intersection
 	float collisionTime = -b - sqrt(discr);
@@ -99,7 +97,6 @@ bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollis
 	if(collisionTime < 0.0)
 	{
 		collisionTime = -b + sqrt(discr);
-		timeInsideShape = collisionTime;
 		fromInside = true;
 	}
 
@@ -108,7 +105,6 @@ bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollis
 		return false;
 
 	// set all the info params since we are garaunteed a hit at this point
-	info->m_timeInsideShape = timeInsideShape;
 	info->m_fromInside = fromInside;
 	info->m_materialIndex = sphere->m_materialIndex;
 	info->m_portalIndex = sphere->m_portalIndex;
@@ -176,9 +172,6 @@ inline bool RayIntersectTriangle (__constant const struct SModelTriangle *triang
 	float w = 1.0f - u - v;
 	if (w < 0.0f)
 		return false;
-
-	// TODO: figure this out!
-	info->m_timeInsideShape = 0.0f;
 
 	// set all the info params since we are garaunteed a hit at this point 
 	info->m_materialIndex = materialIndex;
@@ -350,7 +343,6 @@ bool RayIntersectSector (__constant const struct SSector *sector, struct SCollis
 	info->m_textureCoordinates *= sector->m_planes[closestHitPlaneIndex].m_textureScale;
 	info->m_textureCoordinates += sector->m_planes[closestHitPlaneIndex].m_textureOffset;
 
-	info->m_timeInsideShape = 0.0f;
 	info->m_fromInside = false;
 	info->m_materialIndex = sector->m_planes[closestHitPlaneIndex].m_materialIndex;
 
@@ -385,7 +377,6 @@ inline bool PointCanSeePoint(
 		{ 0.0f, 0.0f },
 		0,
 		0,
-		0.0f,
 	};
 	
 	float3 rayDir = targetPos - startPos;
@@ -520,6 +511,8 @@ void TraceRay (
 
 	float3 colorMultiplier = {1.0f, 1.0f, 1.0f};
 
+	float3 colorAbsorption = {0.0f, 0.0f, 0.0f};
+
 	float3 rayToCameraDir = rayDir;
 
 	unsigned int currentSector = dataRoot->m_camera.m_sector;
@@ -538,7 +531,6 @@ void TraceRay (
 			{ 0.0f, 0.0f },
 			0,
 			0,
-			0.0f,
 		};
 
 		__constant const struct SSector *sector = &sectors[currentSector];
@@ -643,6 +635,14 @@ void TraceRay (
 		}
 		#endif
 
+		#if SETTINGS_COLORABSORB == 1
+		float3 absorpbance = colorAbsorption * -collisionInfo.m_intersectionTime;
+		absorpbance.x = exp(absorpbance.x);
+		absorpbance.y = exp(absorpbance.y);
+		absorpbance.z = exp(absorpbance.z);
+		colorMultiplier *= absorpbance;
+		#endif
+
 		// get the diffuse color of the object we hit
 		float3 diffuseColorBase = material->m_diffuseColor;
 		if (material->m_diffuseTextureIndex >= 0)
@@ -680,7 +680,7 @@ void TraceRay (
 				diffuseColorBase
 			);
 
-		// add the color in
+		// add the diffuse color in
 		*pixelColor += diffuseColor * colorMultiplier;
 
 		// if reflective, set up the reflected ray
@@ -703,16 +703,10 @@ void TraceRay (
 				
 			rayDir = refract(rayToCameraDir, collisionInfo.m_surfaceNormal, material->m_refractionIndex);
 			
-			#if SETTINGS_COLORABSORB == 1
-			if (collisionInfo.m_timeInsideShape > 0.0f)
-			{
-				float3 absorpbance = material->m_absorptionColorAndAmount.xyz * material->m_absorptionColorAndAmount.w * -collisionInfo.m_timeInsideShape;
-				absorpbance.x = exp(absorpbance.x);
-				absorpbance.y = exp(absorpbance.y);
-				absorpbance.z = exp(absorpbance.z);
-				colorMultiplier *= absorpbance;
-			}
-			#endif
+			if (collisionInfo.m_fromInside)
+				colorAbsorption -= material->m_absorptionColor;
+			else
+				colorAbsorption += material->m_absorptionColor;
 
 			colorMultiplier *= material->m_refractionAmount;
 		}

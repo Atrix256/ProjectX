@@ -181,12 +181,13 @@ inline void __oclCheckErrorEX(cl_int iSample, cl_int iReference, void (*pCleanup
     // An error condition is defined by the sample/test value not equal to the reference
     if (iReference != iSample)
     {
-		Assert_(false);
         // If the sample/test value isn't equal to the ref, it's an error by defnition, so override 0 sample/test value
         iSample = (iSample == 0) ? -9999 : iSample; 
 
         // Log the error info
         printf("\n !!! Error # %i (%s) at line %i , in file %s !!!\n\n", iSample, oclErrorString(iSample), iLine, cFile);
+
+		Assert_(false);
 
         // Cleanup and exit, or just exit if no cleanup function pointer provided.  Use iSample (error code in this case) as process exit code.
         if (pCleanup != NULL)

@@ -67,6 +67,8 @@ private:
 		const struct SData_Vec3 &bitangent
 	);
 
+	void SortTrianglesByHalfSpace (SModelObject &object);
+
 	void LoadSectorSpheres (
 		SSector &sector,
 		struct SData_Sector &sectorSource,

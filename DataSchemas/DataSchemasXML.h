@@ -208,7 +208,7 @@ namespace DataSchemasXML {
 	}
 
 // Load(tinyxml2::XMLElement*)
-#define SchemaBegin(name) \
+#define SchemaBegin(name, hint) \
 	template <> \
 	inline bool Load <SData_##name> ( SData_##name &data, tinyxml2::XMLElement *node) \
 	{ \
@@ -233,7 +233,7 @@ namespace DataSchemasXML {
 #define SchemaEnd \
 	XMLLog(__FUNCTION__" succeeded"); \
 	return true; }
-#define Field(type, name, default) \
+#define Field(type, name, default, hint) \
 		XMLLog(__FUNCTION__" attempting to load field '%s'", #name); \
 		attr = node->FindAttribute(#name); \
 		if (attr) \
@@ -251,7 +251,7 @@ namespace DataSchemasXML {
 				return false; \
 			} \
 		}
-#define Field_Schema(type, name, default) \
+#define Field_Schema(type, name, default, hint) \
 		XMLLog(__FUNCTION__" attempting to load schema field '%s'", #name); \
 		if (default != NULL && !LoadFromString(data.m_##name, default)) { \
 			XMLError(__FUNCTION__" failed to load schema field '%s' default value from string", #name); \
@@ -273,7 +273,7 @@ namespace DataSchemasXML {
 				return false; \
 			} \
 		}
-#define Field_Schema_Array(type, name) \
+#define Field_Schema_Array(type, name, hint) \
 	XMLLog(__FUNCTION__" attempting to load schema field array '%s'", #name); \
 	childNode = node->FirstChildElement(#name); \
 	arrayIndex = 0; \
@@ -290,7 +290,7 @@ namespace DataSchemasXML {
 	} \
 	if (!EnforceUniqueIds(data.m_##name, data.s_schemaName, #name)) \
 		return false;
-#define Field_Value_Array(type) \
+#define Field_Value_Array(type, hint) \
 	{ \
 		XMLLog(__FUNCTION__" attempting to load field value array"); \
 		tinyxml2::XMLNode *childNode = node->FirstChild(); \

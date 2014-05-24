@@ -17,6 +17,8 @@ This class holds all information about the world
 #include "CDaeModelLoader.h"
 #include "CCamera.h"
 
+#include <algorithm>
+
 //-----------------------------------------------------------------------------
 void Copy(cl_float2 &lhs, const SData_Vec2 &rhs)
 {
@@ -144,6 +146,64 @@ void CWorld::AddTriangle (
 
 	Copy(triangle.m_tangent, tangent);
 	Copy(triangle.m_bitangent, bitangent);
+
+	// calculate the quadrant flags by noting which half spaces this triangle exists in
+	triangle.m_halfSpaceFlags = 0;
+
+	triangle.m_halfSpaceFlags |= sa.m_y > 0.0f ? e_halfSpacePosY : e_halfSpaceNegY;
+	triangle.m_halfSpaceFlags |= sb.m_y > 0.0f ? e_halfSpacePosY : e_halfSpaceNegY;
+	triangle.m_halfSpaceFlags |= sc.m_y > 0.0f ? e_halfSpacePosY : e_halfSpaceNegY;
+}
+
+//-----------------------------------------------------------------------------
+bool TriangleHalfSpaceSortFunc (const SModelTriangle &a, const SModelTriangle &b)
+{
+	// sort order is e_halfSpaceNegY, then mixed, then e_halfSpacePosY
+	int orderA = 0;
+	switch (a.m_halfSpaceFlags)
+	{
+		case e_halfSpaceNegY: orderA = 0; break;
+		case e_halfSpaceNegY | e_halfSpacePosY: orderA = 1; break;
+		case e_halfSpacePosY: orderA = 2; break;
+		default: Assert_(false);
+	}
+
+	int orderB = 0;
+	switch (b.m_halfSpaceFlags)
+	{
+		case e_halfSpaceNegY: orderB = 0; break;
+		case e_halfSpaceNegY | e_halfSpacePosY: orderB = 1; break;
+		case e_halfSpacePosY: orderB = 2; break;
+		default: Assert_(false);
+	}
+
+	// sort by the order described above
+	return orderA < orderB;
+}
+
+//-----------------------------------------------------------------------------
+void CWorld::SortTrianglesByHalfSpace (SModelObject &object)
+{
+	// sort the triangles by the y axis half space flags
+	std::sort(
+		&m_modelTriangles[object.m_startTriangleIndex],
+		&m_modelTriangles[object.m_startTriangleIndex] + (object.m_stopTriangleIndex - object.m_startTriangleIndex),
+		TriangleHalfSpaceSortFunc
+	);
+
+	// find where any e_halfSpacePosY starts, and store it in m_mixStartTriangleIndex
+	for (object.m_mixStartTriangleIndex = object.m_startTriangleIndex;  object.m_mixStartTriangleIndex < object.m_stopTriangleIndex; ++object.m_mixStartTriangleIndex)
+	{
+		if ((m_modelTriangles[object.m_mixStartTriangleIndex].m_halfSpaceFlags & e_halfSpacePosY) != 0)
+			break;
+	}
+
+	// find where all e_halfSpaceNegY ends and store it in m_mixStopTriangleIndex
+	for (object.m_mixStopTriangleIndex = object.m_startTriangleIndex;  object.m_mixStopTriangleIndex < object.m_stopTriangleIndex; ++object.m_mixStopTriangleIndex)
+	{
+		if ((m_modelTriangles[object.m_mixStopTriangleIndex].m_halfSpaceFlags & e_halfSpaceNegY) == 0)
+			break;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -276,6 +336,12 @@ void CWorld::LoadSectorModels (
 				}
 
 				modelobject.m_stopTriangleIndex = m_modelTriangles.Count();
+
+				// sort the triangles from m_startTriangleIndex to m_stopTriangleIndex, based on their 
+				// y axis (negative only, mixed, positive only) so that we can set the mix start and mix end
+				// indices.  This way, when rendering, if the line segment is only in pos, or only in neg,
+				// we can limit the triangles we test.
+				SortTrianglesByHalfSpace(modelobject);
 			}
 		}
 
@@ -767,11 +833,13 @@ bool CWorld::Load (const char *worldFileName)
 		m_materials[index].m_refractionAmount = worldData.m_Material[index].m_RefractionAmount;
 		m_materials[index].m_refractionIndex = worldData.m_Material[index].m_RefractionIndex;
 
-		Copy(m_materials[index].m_absorptionColor, worldData.m_Material[index].m_AbsorptionColor);
-		m_materials[index].m_absorptionColor[0] *= worldData.m_Material[index].m_AbsorptionAmount;
-		m_materials[index].m_absorptionColor[1] *= worldData.m_Material[index].m_AbsorptionAmount;
-		m_materials[index].m_absorptionColor[2] *= worldData.m_Material[index].m_AbsorptionAmount;
-		
+		Copy(m_materials[index].m_absorbance, worldData.m_Material[index].m_Absorbance);
+
+		// convert absorbance from absorbance per centimeter to absorbance per world unit (meters)
+		m_materials[index].m_absorbance[0] *= 100.0f;
+		m_materials[index].m_absorbance[1] *= 100.0f;
+		m_materials[index].m_absorbance[2] *= 100.0f;
+
 		m_materials[index].m_diffuseTextureIndex = 0.0f;
 		if (worldData.m_Material[index].m_DiffuseTexture.length() > 0)
 			m_materials[index].m_diffuseTextureIndex = (float)CDirectX::TextureManager().GetOrLoad(worldData.m_Material[index].m_DiffuseTexture.c_str());

@@ -1004,7 +1004,7 @@ void UpdateFPS(float elapsed)
 		frameCount = 0;
 		time = 0;
 		char buffer[256];
-		sprintf(buffer, "FPS - %0.2f", fps);
+		sprintf(buffer, "FPS - %0.2f (%0.2f ms)", fps, fps > 0.0f ? 1000.0f / fps : 0.0f);
 		SetWindowText(CDirectX::Get().GetHWND(), buffer);
 	}
 }

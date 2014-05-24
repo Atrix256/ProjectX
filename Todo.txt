@@ -1,7 +1,20 @@
 
 NEXT
 
+* import materials
+
+* the space ship texture coordinates aren't importing/exporting right ):
+
+* only allow uniform scaling
+ * This way we don't need to keep track of farthest point from origin, just farthest distance
+ * Also, max collision time can be scaled by radius, instead of doing some crazy thing to convert max time?
+
+* it looks like the normals in the game for models are reversed, investigate
+
+* a mode to show model bounding spheres for debugging?
+
 * in the cpu only side model data, keep knowledge of the farthest point from the origin, so that we can apply scale to it to get a better bounding sphere radius
+ * keep point farthest from origin in CPu side model data.  Apply scaling to it, then get length, for circle radius.
 
 * make model instance transforms work.  make a world2local and local2world (inverse) matrix 
  * translation
@@ -10,11 +23,24 @@ NEXT
 
 * reuse model data instead of making new model data for the same model
 
+* is the sector's "CastShadows" flag even used? probably should get rid of it i think?
+
 * try simpler, quicker geometry tests for shadow tests
+ * not usable by transparent shadows though ):
 
-* better bounding sphere calculations
+* transparent shadows
 
-* try billboarded models that orient themselves based on the incoming ray orientation? (or camera orientation perhaps... dunno)
+* is the refraction index correct in my data input? i think it's actually 1.0 less than reality.  need to investigate and update hint text and/or fix up the math on load.
+
+* verify hint comment that triangle points are assumed to be in clockwise order
+
+* move portal and shadow information off of triangle, onto the model object?
+
+* ConnectToSectorOffset, ConnectToPosition -> better explaination hint text
+
+* try better bounding sphere calculations? (find the smallest bounding sphere) Probly not worth it, expensive to find for animated meshes?
+
+* try billboarded models that orient themselves based on the incoming ray orientation? (or camera orientation perhaps... dunno.  what happens for reflections)
 
 * version number in MDX files
 
@@ -22,7 +48,12 @@ NEXT
 
 * don't do shadow ray if dot product is negative?
 
+* there are cracks in meshes.  watch a icosphere in front of a back background, and you'll see a couple bright dots poke out as you move around
+
 * try softmax for melding shapes?
+
+* make hints generate into a file somewhere or something...
+* add hints to everything
 
 ? when instancing model triangles, they share object id's.  is that what we want? might need to think about having a "base index" or something
 
@@ -126,6 +157,16 @@ NEXT
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 
 --RENDERING
+* did some "half space flags" to try and cull triangles from tests, didn't seem to help. made it slower in fact!  i had 6 flags for whether the triangle / segment was in posx, negx, y, z, and & the flags together as an early out for the triangle
+ * try just vertical axis separation in the future, sorting the triangles so it's a different starting / stopping index instead of a per triangle test
+
+* back face culling seems to slightly slow things down very slightly
+ * is it programmed in some way that is not so great, like bad memory access pattern or something?
+
+* initialize collision info max distance to max fog value, when fog is in effect?
+* try having a "mirror axis" for models to save on polygon storage and possibly collision detection time.
+* could have an offset to the "quadrant flags" origin so that you can put the origin in a place that is more balanced for numbers of triangles in each half space
+* try making the quadrant flags actualy keep track of which quadrants are hit, instead of which half spaces are hit, and see if it makes that much of a difference for performance.
 * skybox could be specifed on portal instead of in sector, so that you could have multiple skybox views looking out into the same sector from different locations
 * cool procedural fractal texture that can animate: https://www.shadertoy.com/view/ldS3DK
 * sphere test early out for bezier surface.
@@ -373,6 +414,9 @@ NEXT
 
 
 --OPENCL INVESTIGATION
+? speed of __constant vs __global space
+* be able to get info back about the ray under the mouse cursor for debugging?
+* look into attribute reqd_work_group_size attribute, since it's known at runtime anyways.  apparently some optimizations can be done if this is used
 * GetAndUpdateCLMem vs GetAndUpdateMem.  make it consistent
 * maybe make a template param (or something) for shared objects whether they need to be read or readwrite?
 * reading data from a shared object blocks.  maybe need to make a way where the read won't block, until someone actually does a GetObject or something?
@@ -411,9 +455,12 @@ NEXT
 
 
 
+=====PERF NOTE=====
+* "interlaced mode" helps perf a lot
+* turning shadows off helps a lot
+* complex models not having shadows
 
-
-=====NOTES=====
+=====OPENCL NOTES=====
 ? is there an instruction limit in opencl?
  * not really but you dont want to make it too large since the instruction cache is like 64KB usually.
  * http://devgurus.amd.com/thread/158542
@@ -427,6 +474,11 @@ NEXT
 * when packing a 3 vector and a scalar into a float4 be careful... operations on the 3 vector will overwrite w! you have to do it like this below.  may not be particularly safe... but it does pack things tighter, so tough to say we shouldn't do it at all
  (*(float3*)&info->m_intersectionPointAndTime) = rayPos + rayDir * collisionTime;
  info->m_intersectionPointAndTime.w = collisionTime;
+
+* opencl notes __constant has 64Kb limit and is cached but is global mem. __global higher limits
+ * this seems due to it priming a cache with the data or something.
+ * people say __constant is faster than __global.  I haven't profiled, but it seems comparable in my usage cases
+ * had to switch model triangle list from constant to global because i was hit with a 512 total triangle limit - ouch!
 
 * could use address of primitive instead of having to have an ID per primitive
  * no - for some reason when i did that it went from 400fps down to about 70fps.  no idea why
@@ -455,6 +507,21 @@ TO "SHIP" TO TEAM
 
 
 =====DONE=====
+
+--5/24/14
+* fixed a problem where 2nd ship specified in level data wasn't getting rendered problery (probly with sorting the triangles, was starting at index 0!!)
+* got the y half spaces mesh model optimization in.  looks like a 33% speed up for meshes!! (didnt do a full test in all scenarios, but my test cases show about 33% improvement)
+
+--5/23/14
+* playing around with just y axis half space optimization for meshes.  a line segment that is only in negative y half space doesn't need to test agaisnt triangles that are only in positive y half space, etc! (in model's local space of course)
+* make fps display also show mspf
+
+--5/22/14
+* tried to use "half space flags" in triangles and segment tests, to cull out triangle tests that don't matter.  it was actually slower for some reason!
+ * seems to be a memory access thing or something, will try again later.
+
+--5/12/14
+* more beers law absorption stuff.
 
 --5/7/14
 * fixed beers law absorption stuff!

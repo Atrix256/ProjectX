@@ -6,22 +6,22 @@
 
 ==================================================================================================*/
 
-SchemaBegin(vert)
-	Field_Schema(Vec3, pos, "0,0,0")
-	Field_Schema(Vec3, normal, "0,0,0")
-	Field_Schema(Vec3, tangent, "0,0,0")
-	Field_Schema(Vec3, bitangent, "0,0,0")
-	Field_Schema(Vec2, uv, "0,0")
+SchemaBegin(vert, "Data for a single vertex")
+	Field_Schema(Vec3, pos, "0,0,0", "The vertex position")
+	Field_Schema(Vec3, normal, "0,0,0", "The normal of the face at this vertex")
+	Field_Schema(Vec3, tangent, "0,0,0", "The tangent of the face at this vertex")
+	Field_Schema(Vec3, bitangent, "0,0,0", "The bitangent of the face at this vertex")
+	Field_Schema(Vec2, uv, "0,0", "The U,V texture coordinates of the face at this vertex")
 SchemaEnd
 
-SchemaBegin(face)
-	Field_Schema_Array(vert, vert)
+SchemaBegin(face, "A face in an object is made up of an array of 3 vertices")
+	Field_Schema_Array(vert, vert, "An array of vertices in the face")
 SchemaEnd
 
-SchemaBegin(object)
-	Field_Schema_Array(face, face)
+SchemaBegin(object, "An object in a model is made up of a mesh of faces")
+	Field_Schema_Array(face, face, "An array of faces in the model")
 SchemaEnd
 
-SchemaBegin(XMDFILE)
-	Field_Schema_Array(object, object)
+SchemaBegin(XMDFILE, "Custom model file format")
+	Field_Schema_Array(object, object, "An array of objects in the model")
 SchemaEnd

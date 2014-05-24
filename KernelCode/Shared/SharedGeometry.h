@@ -28,7 +28,7 @@ struct SMaterial
 	cl_float m_pad1;
 	cl_float m_pad2;
 
-	float3 m_absorptionColor;
+	float3 m_absorbance;
 };
 
 struct SPortal
@@ -58,6 +58,13 @@ struct SSphere
 	cl_uchar m_pack1d;
 };
 
+// flags for each 3d half space
+enum EHalfSpaceFlags
+{
+	e_halfSpacePosY = 0x01,
+	e_halfSpaceNegY = 0x02,
+};
+
 struct SModelTriangle
 {
 	cl_float4 m_plane;
@@ -68,7 +75,7 @@ struct SModelTriangle
 
 	cl_float2 m_textureC;
 	TObjectId m_objectId;
-	cl_uint m_pack1;
+	cl_uint m_halfSpaceFlags;  // could be an 8 bit number, just need 6 bits currently
 	float3 m_tangent;
 	float3 m_bitangent;
 	cl_float4 m_pack2;
@@ -76,14 +83,14 @@ struct SModelTriangle
 
 struct SModelObject
 {
-	cl_uint m_startTriangleIndex;
-	cl_uint m_stopTriangleIndex;
-	cl_uint m_materialIndex;
-	cl_uint m_portalIndex;
+	cl_uint m_startTriangleIndex;    // this is where the triangles start - also the beginning of the e_halfSpaceNegY triangles
+	cl_uint m_mixStartTriangleIndex; // this is where the triangles start that are both e_halfSpaceNegY and e_halfSpacePosY
+	cl_uint m_mixStopTriangleIndex;  // this is where the triangles end that are both e_halfSpaceNegY and e_halfSpacePosY - also the start of the e_halfSpacePosY triangles
+	cl_uint m_stopTriangleIndex;     // this is where the triangles end - also the end of e_halfSpacePosY triangles
 
 	cl_uint m_castsShadows;
-	cl_uint m_triangleStartIndex;
-	cl_uint m_triangleStopIndex;
+	cl_uint m_materialIndex;
+	cl_uint m_portalIndex;
 	cl_uint m_pack3;
 };
 

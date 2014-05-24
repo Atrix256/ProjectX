@@ -1,9 +1,9 @@
 /*==================================================================================================
 
 clrt.cl
-
-The kernel code 
-
+ 
+The kernel code
+ 
 ==================================================================================================*/
 
 #include "Shared/SSharedDataRoot.h"
@@ -11,6 +11,7 @@ The kernel code
 #include "KernelMath.h"
 
 #define c_maxRayBounces SETTINGS_RAYBOUNCES
+#define c_maxRayLength 1000.0f
 
 #if SETTINGS_TEXTUREFILTER == 1
 const sampler_t g_textureSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_REPEAT | CLK_FILTER_LINEAR;
@@ -32,17 +33,17 @@ struct SCollisionInfo
 	unsigned int		m_portalIndex;
 };
 
-inline bool IsReflective (__constant const struct SMaterial *material)
+inline bool IsReflective (__global const struct SMaterial *material)
 {
 	return material->m_reflectionAmount > 0.0f;
 }
 
-inline bool IsRefractive (__constant const struct SMaterial *material)
+inline bool IsRefractive (__global const struct SMaterial *material)
 {
 	return !IsReflective(material) && material->m_refractionAmount > 0.0f;
 }
 
-inline bool RayHitsSphere(const float4 sphere, const float3 rayPos, const float3 rayDir)
+inline bool RayHitsSphere(const float4 sphere, const float3 rayPos, const float3 rayDir, float3 *sphereStartPoint, float3 *sphereEndPoint)
 {
 	// get the vector from the center of this circle to where the ray begins.
 	float3 m = rayPos - sphere.xyz;
@@ -60,10 +61,23 @@ inline bool RayHitsSphere(const float4 sphere, const float3 rayPos, const float3
 	float discr = b * b - c;
 
 	//a negative discriminant corresponds to ray missing sphere
-	return discr > 0.0;
+	if(discr < 0.0)
+		return false;
+
+	//ray now found to intersect sphere, compute smallest t value of intersection
+	float collisionTime = -b - sqrt(discr);
+
+	//if t is negative, ray started inside sphere so use that as the sphere start point, else use the place we hit the sphere
+	*sphereStartPoint = (collisionTime < 0.0) ? rayPos : rayPos + rayDir * collisionTime;
+
+	// the sphere end point is the other side of the sphere hit
+	collisionTime = -b + sqrt(discr);
+	*sphereEndPoint = rayPos + rayDir * collisionTime;
+
+	return true;
 }
 
-bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
+bool RayIntersectSphere (__global const struct SSphere *sphere, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
 {
 	if (ignorePrimitiveId == sphere->m_objectId)
 		return false;
@@ -133,7 +147,7 @@ bool RayIntersectSphere (__constant const struct SSphere *sphere, struct SCollis
 	return true;
 }
 
-inline bool RayIntersectTriangle (__constant const struct SModelTriangle *triangle, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId, bool backFaceCulling, cl_uint materialIndex, cl_uint portalIndex)
+inline bool RayIntersectTriangle (__global const struct SModelTriangle *triangle, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId, bool backFaceCulling, cl_uint materialIndex, cl_uint portalIndex)
 {
 	if (ignorePrimitiveId == triangle->m_objectId)
 		return false;
@@ -197,7 +211,7 @@ inline bool RayIntersectTriangle (__constant const struct SModelTriangle *triang
 	return true;
 }
 
-bool RayIntersectSector (__constant const struct SSector *sector, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
+bool RayIntersectSector (__global const struct SSector *sector, struct SCollisionInfo *info, const float3 rayPos, const float3 rayDir, const TObjectId ignorePrimitiveId)
 {
 	float closestHitTime = info->m_intersectionTime;
 	int closestHitPlaneIndex = SSECTOR_NUMPLANES;
@@ -355,12 +369,12 @@ inline bool PointCanSeePoint(
 	const float3 startPos,
 	const float3 targetPos,
 	const TObjectId ignorePrimitiveId,
-	__constant const struct SSector *sector,
-	__constant struct SSphere *spheres,
-	__constant struct SModelTriangle *triangles,
-	__constant struct SModelObject *objects,
-	__constant struct SModelInstance *models,
-	__constant struct SMaterial *materials
+	__global const struct SSector *sector,
+	__global struct SSphere *spheres,
+	__global struct SModelTriangle *triangles,
+	__global struct SModelObject *objects,
+	__global struct SModelInstance *models,
+	__global struct SMaterial *materials
 )
 {
 	#if SETTINGS_SHADOWS == 1
@@ -370,7 +384,7 @@ inline bool PointCanSeePoint(
 		c_invalidObjectId,
 		false,
 		{ 0.0f, 0.0f, 0.0f },
-		FLT_MAX,
+		c_maxRayLength,
 		{ 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 0.0f, 0.0f },
@@ -392,21 +406,35 @@ inline bool PointCanSeePoint(
 
 	for (int modelIndex = sector->m_staticModelStartIndex; modelIndex < sector->m_staticModelStopIndex; ++modelIndex)
 	{
-		__constant struct SModelInstance *model = &models[modelIndex];
-		if (RayHitsSphere(model->m_boundingSphere, startPos, rayDir))
+		__global struct SModelInstance *model = &models[modelIndex];
+		float3 hitStart, hitEnd;
+		if (RayHitsSphere(model->m_boundingSphere, startPos, rayDir, &hitStart, &hitEnd))
 		{
 			// TODO: better world to local
 			float3 startPosLocal = startPos - model->m_boundingSphere.xyz;
 			float3 rayDirLocal = rayDir;
 
+			float3 hitStartLocal = hitStart - model->m_boundingSphere.xyz;
+			float3 hitEndLocal = hitEnd - model->m_boundingSphere.xyz;
+
+			// calculate which y half spaces this segment goes through
+			cl_uint halfSpaceFlags = 0;
+			halfSpaceFlags |= hitStartLocal.y > 0.0f ? e_halfSpacePosY : e_halfSpaceNegY;
+			halfSpaceFlags |= hitEndLocal.y > 0.0f ? e_halfSpacePosY : e_halfSpaceNegY;
+
 			for (int objectIndex = model->m_startObjectIndex; objectIndex < model->m_stopObjectIndex; ++objectIndex)
 			{
-				__constant struct SModelObject *object = &objects[objectIndex];
+				__global struct SModelObject *object = &objects[objectIndex];
 				bool backFaceCulling = !IsRefractive(&materials[object->m_materialIndex]);
-				bool castShadows = object->m_castsShadows;
-				if (castShadows)
+				if (object->m_castsShadows)
 				{
-					for (int triangleIndex = object->m_startTriangleIndex; triangleIndex < object->m_stopTriangleIndex; ++triangleIndex)
+					// figure out the triangle start and stop index to test against.
+					// if the segment we are testing is in only the positive y half space or only the negative y half space, we can cut out triangles
+					// that are completely in the other y half space.  If it has both, we need to test all unfortunately.
+					unsigned int triangleIndex = (halfSpaceFlags & e_halfSpaceNegY) ? object->m_startTriangleIndex : object->m_mixStartTriangleIndex;
+					unsigned int triangleStopIndex = (halfSpaceFlags & e_halfSpacePosY) ? object->m_stopTriangleIndex : object->m_mixStopTriangleIndex;
+
+					for (; triangleIndex < triangleStopIndex; ++triangleIndex)
 					{
 						if (RayIntersectTriangle(&triangles[triangleIndex], &collisionInfo, startPosLocal, rayDirLocal, ignorePrimitiveId, backFaceCulling, object->m_materialIndex, object->m_portalIndex))
 							return false;
@@ -425,16 +453,16 @@ inline bool PointCanSeePoint(
 void ApplyPointLight (
 	float3 *pixelColor,
 	const struct SCollisionInfo *collisionInfo,
-	__constant const struct SSector *sector,
-	__constant const struct SMaterial *material,
-	__constant const struct SPointLight *light,
+	__global const struct SSector *sector,
+	__global const struct SMaterial *material,
+	__global const struct SPointLight *light,
 	const float3 colorMultiplier,
 	const float3 rayDir,
-	__constant struct SSphere *spheres,
-	__constant struct SModelTriangle *triangles,
-	__constant struct SModelObject *objects,
-	__constant struct SModelInstance *models,
-	__constant struct SMaterial *materials,
+	__global struct SSphere *spheres,
+	__global struct SModelTriangle *triangles,
+	__global struct SModelObject *objects,
+	__global struct SModelInstance *models,
+	__global struct SMaterial *materials,
 	float3 diffuseColor
 )
 {
@@ -492,26 +520,26 @@ void ApplyPointLight (
 
 //
 void TraceRay (
-	__constant struct SSharedDataRootHostToKernel *dataRoot,
+	__global struct SSharedDataRootHostToKernel *dataRoot,
 	__read_only image3d_t tex3dIn,
 	float3 rayPos,
 	float3 rayDir,
 	float3 *pixelColor,
-	__constant struct SPointLight *lights,
-	__constant struct SSphere *spheres,
-	__constant struct SModelTriangle *triangles,
-	__constant struct SModelObject *objects,
-	__constant struct SModelInstance *models,
-	__constant struct SSector *sectors,
-	__constant struct SMaterial *materials,
-	__constant struct SPortal *portals
+	__global struct SPointLight *lights,
+	__global struct SSphere *spheres,
+	__global struct SModelTriangle *triangles,
+	__global struct SModelObject *objects,
+	__global struct SModelInstance *models,
+	__global struct SSector *sectors,
+	__global struct SMaterial *materials,
+	__global struct SPortal *portals
 )
 {
 	TObjectId lastHitPrimitiveId = c_invalidObjectId;
 
 	float3 colorMultiplier = {1.0f, 1.0f, 1.0f};
 
-	float3 colorAbsorption = {0.0f, 0.0f, 0.0f};
+	float3 absorbance = {0.0f, 0.0f, 0.0f};
 
 	float3 rayToCameraDir = rayDir;
 
@@ -524,7 +552,7 @@ void TraceRay (
 			c_invalidObjectId,
 			false,
 			{ 0.0f, 0.0f, 0.0f },
-			FLT_MAX,
+			c_maxRayLength,
 			{ 0.0f, 0.0f, 0.0f },
 			{ 0.0f, 0.0f, 0.0f },
 			{ 0.0f, 0.0f, 0.0f },
@@ -533,7 +561,7 @@ void TraceRay (
 			0,
 		};
 
-		__constant const struct SSector *sector = &sectors[currentSector];
+		__global const struct SSector *sector = &sectors[currentSector];
 
 		const float3 ambientLight = sector->m_ambientLight;
 
@@ -542,19 +570,42 @@ void TraceRay (
 
 		for (int modelIndex = sector->m_staticModelStartIndex; modelIndex < sector->m_staticModelStopIndex; ++modelIndex)
 		{
-			__constant struct SModelInstance *model = &models[modelIndex];
-			if (RayHitsSphere(model->m_boundingSphere, rayPos, rayDir))
+			__global struct SModelInstance *model = &models[modelIndex];
+			float3 hitStart, hitEnd;
+			if (RayHitsSphere(model->m_boundingSphere, rayPos, rayDir, &hitStart, &hitEnd))
 			{
 				// TODO: better world to local
 				float3 rayPosLocal = rayPos - model->m_boundingSphere.xyz;
 				float3 rayDirLocal = rayDir;
 
+				float3 hitStartLocal = hitStart - model->m_boundingSphere.xyz;
+				float3 hitEndLocal = hitEnd - model->m_boundingSphere.xyz;
+
+				// calculate which y half spaces this segment goes through
+				cl_uint halfSpaceFlags = 0;
+				halfSpaceFlags |= hitStartLocal.y > 0.0f ? e_halfSpacePosY : e_halfSpaceNegY;
+				halfSpaceFlags |= hitEndLocal.y > 0.0f ? e_halfSpacePosY : e_halfSpaceNegY;
+
 				for (int objectIndex = model->m_startObjectIndex; objectIndex < model->m_stopObjectIndex; ++objectIndex)
 				{
-					__constant struct SModelObject *object = &objects[objectIndex];
+					__global struct SModelObject *object = &objects[objectIndex];
 					// allow back face culling if the triangle isn't refractive (transparent)
 					bool backFaceCulling = !IsRefractive(&materials[object->m_materialIndex]);
-					for (int triangleIndex = object->m_startTriangleIndex; triangleIndex < object->m_stopTriangleIndex; ++triangleIndex)
+
+					// figure out the triangle start and stop index to test against.
+					// if the segment we are testing is in only the positive y half space or only the negative y half space, we can cut out triangles
+					// that are completely in the other y half space.  If it has both, we need to test all unfortunately.
+					#if 1
+						unsigned int triangleIndex = (halfSpaceFlags & e_halfSpaceNegY) ? object->m_startTriangleIndex : object->m_mixStartTriangleIndex;
+						unsigned int triangleStopIndex = (halfSpaceFlags & e_halfSpacePosY) ? object->m_stopTriangleIndex : object->m_mixStopTriangleIndex;
+					#else
+						//unsigned int triangleIndex = object->m_startTriangleIndex;
+						//unsigned int triangleStopIndex = object->m_stopTriangleIndex;
+						unsigned int triangleIndex = object->m_mixStartTriangleIndex;
+						unsigned int triangleStopIndex = object->m_stopTriangleIndex;
+					#endif
+
+					for (; triangleIndex < triangleStopIndex; ++triangleIndex)
 					{
 						bool intersected = RayIntersectTriangle(&triangles[triangleIndex], &collisionInfo, rayPosLocal, rayDirLocal, lastHitPrimitiveId, backFaceCulling, object->m_materialIndex, object->m_portalIndex);
 
@@ -612,7 +663,7 @@ void TraceRay (
 			continue;
 		}
 
-		__constant const struct SMaterial *material = &materials[collisionInfo.m_materialIndex];
+		__global const struct SMaterial *material = &materials[collisionInfo.m_materialIndex];
 
 		if (collisionInfo.m_fromInside)
 			collisionInfo.m_surfaceNormal *= -1.0f;
@@ -636,11 +687,13 @@ void TraceRay (
 		#endif
 
 		#if SETTINGS_COLORABSORB == 1
-		float3 absorpbance = colorAbsorption * -collisionInfo.m_intersectionTime;
-		absorpbance.x = exp(absorpbance.x);
-		absorpbance.y = exp(absorpbance.y);
-		absorpbance.z = exp(absorpbance.z);
-		colorMultiplier *= absorpbance;
+		float3 currentAbsorbance = absorbance * -collisionInfo.m_intersectionTime;
+
+		currentAbsorbance.x = pow(10, currentAbsorbance.x);
+		currentAbsorbance.y = pow(10, currentAbsorbance.y);
+		currentAbsorbance.z = pow(10, currentAbsorbance.z);
+
+		colorMultiplier *= currentAbsorbance;
 		#endif
 
 		// get the diffuse color of the object we hit
@@ -704,9 +757,9 @@ void TraceRay (
 			rayDir = refract(rayToCameraDir, collisionInfo.m_surfaceNormal, material->m_refractionIndex);
 			
 			if (collisionInfo.m_fromInside)
-				colorAbsorption -= material->m_absorptionColor;
+				absorbance -= material->m_absorbance;
 			else
-				colorAbsorption += material->m_absorptionColor;
+				absorbance += material->m_absorbance;
 
 			colorMultiplier *= material->m_refractionAmount;
 		}
@@ -719,15 +772,15 @@ void TraceRay (
 __kernel void clrt (
 	__write_only image2d_t texOut, 
 	__read_only image3d_t tex3dIn,
-	__constant struct SSharedDataRootHostToKernel *dataRoot,
-	__constant struct SPointLight *lights,
-	__constant struct SSphere *spheres,
-	__constant struct SModelTriangle *triangles,
-	__constant struct SModelObject *objects,
-	__constant struct SModelInstance *models,
-	__constant struct SSector *sectors,
-	__constant struct SMaterial *materials,
-	__constant struct SPortal *portals
+	__global struct SSharedDataRootHostToKernel *dataRoot,
+	__global struct SPointLight *lights,
+	__global struct SSphere *spheres,
+	__global struct SModelTriangle *triangles,
+	__global struct SModelObject *objects,
+	__global struct SModelInstance *models,
+	__global struct SSector *sectors,
+	__global struct SMaterial *materials,
+	__global struct SPortal *portals
 	//__global struct SSharedDataRootKernelToHost *outDataRoot
 )
 {

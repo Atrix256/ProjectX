@@ -13,10 +13,10 @@ Math routines shared by both kernel and host code (actually host code doesnt lik
 inline void TransformPointByMatrix (
 	float3 *outPoint,
 	const float3 *inPoint,
-	const __constant cl_float4 *xAxis,
-	const __constant cl_float4 *yAxis,
-	const __constant cl_float4 *zAxis,
-	const __constant cl_float4 *wAxis)
+	const __global cl_float4 *xAxis,
+	const __global cl_float4 *yAxis,
+	const __global cl_float4 *zAxis,
+	const __global cl_float4 *wAxis)
 {
 	outPoint->x = inPoint->x * xAxis->x
 				+ inPoint->y * yAxis->x
@@ -37,9 +37,9 @@ inline void TransformPointByMatrix (
 inline void TransformVectorByMatrix (
 	float3 *outPoint,
 	const float3 *inPoint,
-	const __constant cl_float4 *xAxis,
-	const __constant cl_float4 *yAxis,
-	const __constant cl_float4 *zAxis)
+	const __global cl_float4 *xAxis,
+	const __global cl_float4 *yAxis,
+	const __global cl_float4 *zAxis)
 {
 	outPoint->x = inPoint->x * xAxis->x
 				+ inPoint->y * yAxis->x

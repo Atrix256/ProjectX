@@ -65,8 +65,11 @@ public:
 				oclCheckErrorEX(errorcode, CL_SUCCESS, NULL);
 			}
 
-			if (m_clData)
-				clEnqueueWriteBuffer(commandQueue, m_clData, CL_FALSE, 0, SizeInBytes(), m_data, 0, NULL, NULL);
+			if (m_clData) {
+				cl_int errorcode;
+				errorcode = clEnqueueWriteBuffer(commandQueue, m_clData, CL_FALSE, 0, SizeInBytes(), m_data, 0, NULL, NULL);
+				oclCheckErrorEX(errorcode, CL_SUCCESS, NULL);
+			}
 			m_clDataStale = false;
 		}
 		return m_clData;
@@ -74,6 +77,7 @@ public:
 
 	T& operator[] (unsigned int index)
 	{
+		Assert_(index < m_dataSize);
 		return m_data[index];
 	}
 

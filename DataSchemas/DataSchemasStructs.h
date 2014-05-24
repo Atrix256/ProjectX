@@ -34,16 +34,16 @@ namespace SData
 };
 
 // Define the structs
-#define SchemaBegin(name) struct SData_##name { \
+#define SchemaBegin(name, hint) struct SData_##name { \
 	SData_##name () { SetDefault(); }\
 	void SetDefault (); \
 	static const char *s_schemaName;
 #define SchemaEnd };
-#define Field(type, name, default)	type m_##name;
-#define Field_Schema(type, name, default) SData_##type m_##name;
-#define Field_Schema_Array(type, name) \
+#define Field(type, name, default, hint)	type m_##name;
+#define Field_Schema(type, name, default, hint) SData_##type m_##name;
+#define Field_Schema_Array(type, name, hint) \
 	std::vector<SData_##type> m_##name;
-#define Field_Value_Array(type) \
+#define Field_Value_Array(type, hint) \
 	std::vector<type> m_ValueArray;
 
 #include "DataSchemas.h"

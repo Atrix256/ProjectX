@@ -67,6 +67,8 @@ private:
 		const struct SData_Vec3 &bitangent
 	);
 
+	unsigned int AddMaterial (const struct SData_Material &materialSource, const char *path ="./");
+
 	void SortTrianglesByHalfSpace (SModelObject &object);
 
 	void LoadSectorSpheres (

@@ -19,7 +19,8 @@ SchemaBegin(face, "A face in an object is made up of an array of 3 vertices")
 SchemaEnd
 
 SchemaBegin(object, "An object in a model is made up of a mesh of faces")
-	Field_Schema_Array(face, face, "An array of faces in the model")
+	Field_Schema_Array(Material, material, "The materials of the object")
+	Field_Schema_Array(face, face, "An array of faces in the object")
 SchemaEnd
 
 SchemaBegin(XMDFILE, "Custom model file format")

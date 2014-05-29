@@ -34,3 +34,6 @@ builderrors.txt
 # recorded video stuff
 RecordedVideo/Frames/*.bmp
 RecordedVideo/*.mp4
+
+# python cache
+*.pyc

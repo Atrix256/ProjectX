@@ -123,6 +123,9 @@
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_XmdFile.h">
       <Filter>DataSchemas\Schemas</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\OS.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\tinyxml\tinyxml2.cpp">
@@ -160,6 +163,9 @@
     </ClCompile>
     <ClCompile Include="Game\CDaeModelLoader.cpp">
       <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\OS.cpp">
+      <Filter>Platform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

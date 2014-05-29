@@ -16,6 +16,7 @@ This class holds all information about the world
 #include "MatrixMath.h"
 #include "CDaeModelLoader.h"
 #include "CCamera.h"
+#include "Platform/OS.h"
 
 #include <algorithm>
 
@@ -156,7 +157,52 @@ void CWorld::AddTriangle (
 }
 
 //-----------------------------------------------------------------------------
-bool TriangleHalfSpaceSortFunc (const SModelTriangle &a, const SModelTriangle &b)
+unsigned int CWorld::AddMaterial (const struct SData_Material &materialSource, const char *path)
+{
+	SMaterial &material = m_materials.AddOne();
+	Copy(material.m_diffuseColor, materialSource.m_DiffuseColor);
+	Copy(material.m_specularColorAndPower, materialSource.m_SpecularColor, materialSource.m_SpecularPower);
+	Copy(material.m_emissiveColor, materialSource.m_EmissiveColor);
+	material.m_reflectionAmount = materialSource.m_ReflectionAmount;
+	material.m_refractionAmount = materialSource.m_RefractionAmount;
+	material.m_refractionIndex = materialSource.m_RefractionIndex;
+
+	Copy(material.m_absorbance, materialSource.m_Absorbance);
+
+	// convert absorbance from absorbance per centimeter to absorbance per world unit (meters)
+	material.m_absorbance[0] *= 100.0f;
+	material.m_absorbance[1] *= 100.0f;
+	material.m_absorbance[2] *= 100.0f;
+
+	material.m_diffuseTextureIndex = 0.0f;
+	if (materialSource.m_DiffuseTexture.length() > 0)
+	{
+		std::string texturePath = path;
+		texturePath += materialSource.m_DiffuseTexture.c_str();
+		material.m_diffuseTextureIndex = (float)CDirectX::TextureManager().GetOrLoad(texturePath.c_str());
+	}
+
+	material.m_normalTextureIndex = 0.0f;
+	if (materialSource.m_NormalTexture.length() > 0)
+	{
+		std::string texturePath = path;
+		texturePath += materialSource.m_NormalTexture.c_str();
+		material.m_normalTextureIndex = (float)CDirectX::TextureManager().GetOrLoad(texturePath.c_str());
+	}
+
+	material.m_emissiveTextureIndex = 0.0f;
+	if (materialSource.m_EmissiveTexture.length() > 0)
+	{
+		std::string texturePath = path;
+		texturePath += materialSource.m_EmissiveTexture.c_str();
+		material.m_emissiveTextureIndex = (float)CDirectX::TextureManager().GetOrLoad(texturePath.c_str());
+	}
+
+	return m_materials.Count() - 1;
+}
+
+//-----------------------------------------------------------------------------
+static bool TriangleHalfSpaceSortFunc (const SModelTriangle &a, const SModelTriangle &b)
 {
 	// sort order is e_halfSpaceNegY, then mixed, then e_halfSpacePosY
 	int orderA = 0;
@@ -295,6 +341,11 @@ void CWorld::LoadSectorModels (
 		SData_XMDFILE modelData;
 		if (DataSchemasXML::Load(modelData, model.m_FileName.c_str(), "model"))
 		{
+			// get the path that all textures etc are based on
+			std::string basePath;
+			bool result = OS::GetAbsolutePath(model.m_FileName.c_str(), basePath);
+			Assert_(result == true);
+
 			// calculate the bounding sphere
 			float3 boundingSphereCenter;
 			float boundingSphereRadius;
@@ -312,17 +363,26 @@ void CWorld::LoadSectorModels (
 			// create the objects and triangles and such
 			for (unsigned int objectIndex = 0, objectCount = modelData.m_object.size(); objectIndex < objectCount; ++objectIndex) {
 
+				// TODO: log error instead? what if there are zero and we try to index slot 0?
+				AssertI_(modelData.m_object[objectIndex].m_material.size() == 1, modelData.m_object[objectIndex].m_material.size());
+
 				// add an object
 				SModelObject &modelobject = m_modelObjects.AddOne();
 				modelobject.m_castsShadows = true;
-				modelobject.m_materialIndex = SData::GetEntryById(materials, model.m_Material.c_str());
+
+				// set the material of the object
+				if (model.m_MaterialOverride.length() > 0)
+					modelobject.m_materialIndex = SData::GetEntryById(materials, model.m_MaterialOverride.c_str());
+				else
+					modelobject.m_materialIndex = AddMaterial(modelData.m_object[objectIndex].m_material[0], basePath.c_str());
+
 				modelobject.m_portalIndex = SData::GetEntryById(portals, NULL);
 				modelobject.m_startTriangleIndex = m_modelTriangles.Count();
 
 				SData_object &object = modelData.m_object[objectIndex];
 				for (unsigned int faceIndex = 0, faceCount = object.m_face.size(); faceIndex < faceCount; ++faceIndex) {
 					SData_face &face = object.m_face[faceIndex];
-					Assert_(face.m_vert.size() == 3); // TODO: log error instead
+					AssertI_(face.m_vert.size() == 3, face.m_vert.size()); // TODO: log error instead?
 					AddTriangle(
 						face.m_vert[0].m_pos,
 						face.m_vert[1].m_pos,
@@ -823,36 +883,9 @@ bool CWorld::Load (const char *worldFileName)
 	}
 
 	// materials
-	m_materials.Resize(worldData.m_Material.size());
+	m_materials.Presize(worldData.m_Material.size());
 	for (unsigned int index = 0, count = worldData.m_Material.size(); index < count; ++index)
-	{
-		Copy(m_materials[index].m_diffuseColor, worldData.m_Material[index].m_DiffuseColor);
-		Copy(m_materials[index].m_specularColorAndPower, worldData.m_Material[index].m_SpecularColor, worldData.m_Material[index].m_SpecularPower);
-		Copy(m_materials[index].m_emissiveColor, worldData.m_Material[index].m_EmissiveColor);
-		m_materials[index].m_reflectionAmount = worldData.m_Material[index].m_ReflectionAmount;
-		m_materials[index].m_refractionAmount = worldData.m_Material[index].m_RefractionAmount;
-		m_materials[index].m_refractionIndex = worldData.m_Material[index].m_RefractionIndex;
-
-		Copy(m_materials[index].m_absorbance, worldData.m_Material[index].m_Absorbance);
-
-		// convert absorbance from absorbance per centimeter to absorbance per world unit (meters)
-		m_materials[index].m_absorbance[0] *= 100.0f;
-		m_materials[index].m_absorbance[1] *= 100.0f;
-		m_materials[index].m_absorbance[2] *= 100.0f;
-
-		m_materials[index].m_diffuseTextureIndex = 0.0f;
-		if (worldData.m_Material[index].m_DiffuseTexture.length() > 0)
-			m_materials[index].m_diffuseTextureIndex = (float)CDirectX::TextureManager().GetOrLoad(worldData.m_Material[index].m_DiffuseTexture.c_str());
-
-		m_materials[index].m_normalTextureIndex = 0.0f;
-		if (worldData.m_Material[index].m_NormalTexture.length() > 0)
-			m_materials[index].m_normalTextureIndex = (float)CDirectX::TextureManager().GetOrLoad(worldData.m_Material[index].m_NormalTexture.c_str());
-
-		m_materials[index].m_emissiveTextureIndex = 0.0f;
-		if (worldData.m_Material[index].m_EmissiveTexture.length() > 0)
-			m_materials[index].m_emissiveTextureIndex = (float)CDirectX::TextureManager().GetOrLoad(worldData.m_Material[index].m_EmissiveTexture.c_str());
-
-	}
+		AddMaterial(worldData.m_Material[index]);
 
 	// sectors
 	m_sectors.Resize(worldData.m_Sector.size());
@@ -860,7 +893,7 @@ bool CWorld::Load (const char *worldFileName)
 		LoadSector(m_sectors[sectorIndex], worldData.m_Sector[sectorIndex], worldData.m_Material, worldData.m_Portal);
 
 	// calculate the texture indices of our textures
-	for (unsigned int index = 0, count = worldData.m_Material.size(); index < count; ++index)
+	for (unsigned int index = 0, count = m_materials.Count(); index < count; ++index)
 	{
 		const float add = -0.5f / ((float)CDirectX::TextureManager().NumTextures());
 

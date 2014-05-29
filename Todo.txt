@@ -1,17 +1,33 @@
 
 NEXT
 
-* import materials
+* fix up other maps now that boxes are gone
+
+* cast shadows should be a property of the material maybe instead of the object? not sure. it's hard coded to "true" on models.
+ * maybe we don't need to be abel to turn off shadows for objects?
+ * If removing it, put a note in the rendering section that we can add it back in if needed
+
+* make fatal assert vs regular assert vs log vs verify / validate
+ * regular assert brings up a dialog "continue, break, ignore"
+ * fatal assert does a divide by zero
+ * log relevant info for both assert types
+ * give the code a treatment pass for this stuff
+
+
+? make renderer and material data more conformant to blender? (sucks, but what else can be done?)
+ * get rid of emissive stuff (and put note in --RENDERING that we can do emissive again if needed). or use emissive texture only or something?
+ * change how reflection works, so that it reflects a specific color?
+ * could use other textures available from blender if we wanted
 
 * the space ship texture coordinates aren't importing/exporting right ):
+ ? are any models importing texture coordinates correctly?
 
 * only allow uniform scaling
  * This way we don't need to keep track of farthest point from origin, just farthest distance
  * Also, max collision time can be scaled by radius, instead of doing some crazy thing to convert max time?
 
-* it looks like the normals in the game for models are reversed, investigate
-
 * a mode to show model bounding spheres for debugging?
+ * maybe have a "additive color" field in the collision info that is added into the final color at the end?  that way you can visualize all sorts of stuff.
 
 * in the cpu only side model data, keep knowledge of the farthest point from the origin, so that we can apply scale to it to get a better bounding sphere radius
  * keep point farthest from origin in CPu side model data.  Apply scaling to it, then get length, for circle radius.
@@ -21,7 +37,7 @@ NEXT
  * rotation
  * scaling (non uniform?)
 
-* reuse model data instead of making new model data for the same model
+* reuse model data instead of making new model data for the same model file name
 
 * is the sector's "CastShadows" flag even used? probably should get rid of it i think?
 
@@ -59,8 +75,6 @@ NEXT
 
 ? could try "hard coding" stuff for perf so long as it's ok that things aren't destroyed.  for instance, the number of models in a specific sector.
 
-* replace <box> usages with models? at least in level.xml.  then maybe delete other maps?
-
 * specify translation when loading models
 * specify rotation when loading models
 * specify scale when loading models!
@@ -79,16 +93,11 @@ NEXT
 * texture name when loading models, and other material stuff like shadow casting
 * just create a new material per material in the model? if it matters, can try to share them later
 
-* exporter for levels!
+* exporter for levels! from unity perhaps?
 
 * investigate the other editors in blender -> such as node editor and graph editor
 
-* wrap triangles in bounding spheres for a quicker early out test
-* load models, put them in bounding spheres
 * allow models to be moved around and instanced
-* fix triangle u and v axis calculation! get it from texture coordinates i think.
-* the normal for the triangle seems to be wrong when viewed from one side.
-
 
 * ECS model with built in threading scheduling.  Entity, Component, System
 
@@ -111,19 +120,11 @@ NEXT
  * how is "max brightness" going to work with interlaced mode? like if the bottom of the screen is super bright but the top isnt
 
 * if hdr exposure time adjustments are part of gameplay, need to make it dependant on the frame rate as little as possible
-
-* before checking in... did fps go down?? download the zip from git from last checkin and compare
- * yes it went, down, but why?!
- * it's the atomic max of the brightness! do it every X frames instead i think
+ * atomic max of brightness calculation hurts FPS a lot.  do it every x frames perhaps? or find a better way.  maybe DX api call to resize texture to 1 px and read that pixel?
 
 * at work, its red/green not red/blue when 3d is on.  need to somehow query surface format or something?!
 
 * gfx setting to limit frame rate to a reasonable amount (on by default)
-
-* load models
- * break models into convex objects, represent them with a bunch of planes, wrap them in a sphere early out test?
- * need orientation for models (x,y,z,w axis? that would also let scale and translation happen if doing it that way)
- * maybe yaw pitch and roll instead
 
 * integrate lua
  * interact with objects by id
@@ -137,26 +138,34 @@ NEXT
 * make sector walls be able to cast shadows
 * make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
 * if making shadows traverse sectors make shadows more expensive, could have a shadow quality setting: off, low (current), high (traverses sectors)
+ * and another high level for transparent shadows
 * maybe need to think about this a bit more.
  * It could be done by just instancing the objects, or by considering neighboring sectors explicitly.
  * this is kind of what we want to do for lighting anyways.
  * maybe need some kind of "cross sector awareness" solution besides traversal?
 
 * make floor / cieling portals work (gravity won't let you fall through yet)
+ * hopefully fixed when going to component system
 * make it so jumping isn't frame rate dependant
 * better physics for player (and eventually other moving entities)
  * collision detection: walk on boxes, under objects, can't walk through walls?
+ s* hopefully fixed when going to component system
 * somehow make portals contain dynamic geometry, or do some other dynamic geometry solution
 * only traverse portal if you walk through portal window.
 
-* really need to sort out shading equations...
+* really need to sort out shading equations to make sure ambient isnt getting applied too many times etc
 
  
 --MAP & GAME CONCEPTS
 * at the lowest elevation point in the game, have a crack or hole in the ground or something where you can see the place supported by turtles, all the way down into infinity (maybe do some raymarching against the turtle shape or something)
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
+* could do something like you step through a mirror into a sector that is a reflection of the sector you came from, but leads to different sectors.
+* could have underwater stuff i think with swimming.
+* could mess with camera view to have trippy effects.  Both simple stuff like changing fov, but also more complex stuff like sine wave offsets of primary ray directions
 
 --RENDERING
+* try interpolating normals across a triangle?
+* don't need to really store m_halfSpaceFlags permanently on triangles, that is just used for sorting.
 * did some "half space flags" to try and cull triangles from tests, didn't seem to help. made it slower in fact!  i had 6 flags for whether the triangle / segment was in posx, negx, y, z, and & the flags together as an early out for the triangle
  * try just vertical axis separation in the future, sorting the triangles so it's a different starting / stopping index instead of a per triangle test
 
@@ -505,8 +514,18 @@ TO "SHIP" TO TEAM
 * give people access to the git repository and instructions on how to use it
 * get people to try the exe
 
+? could just load obj files to avoid dealing with exporter complexity, and tying us to blender
+ * obj doesn't do skeletal animations
+ * i don't want to deal with other formats :/
 
 =====DONE=====
+
+--5/29/14
+* made models load materials from their model files.
+* allow a material override for models in the level when specifying a model to load
+
+--5/27/14
+* fixed the "flipped normals" problem w/ models looks like.  i swapped Y and Z in export matrix, but needed to negate the new Z to make it a proper rotation
 
 --5/24/14
 * fixed a problem where 2nd ship specified in level data wasn't getting rendered problery (probly with sorting the triangles, was starting at index 0!!)

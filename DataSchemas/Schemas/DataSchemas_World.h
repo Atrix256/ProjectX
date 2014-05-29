@@ -101,7 +101,7 @@ SchemaEnd
 SchemaBegin(Model, "Information about a mesh model")
 	Field(std::string, id, "", "the id (unique name) of the model")
 	Field(std::string, FileName, "", "the filename of the .xmd model file")
-	Field(std::string, Material, "", "The id (unique name) of the material to use") // temp! get material from model data in the future
+	Field(std::string, MaterialOverride, "", "The id (unique name) of the material to override any materials on the model with.")
 	Field_Schema(Vec3, Position, "0,0,0", "The position of the model")
 SchemaEnd
 

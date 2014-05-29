@@ -94,6 +94,28 @@ public:
 		m_dataSize = 0;
 	}
 
+	// ensures there is enough space allocated for at least this many elements but doesn't
+	// change how many elements there are.
+	void Presize (unsigned int newSize)
+	{
+		// if we already have enough space, bail out
+		if (newSize <= m_allocatedSize)
+			return;
+
+		// allocate a new buffer and copy the existing data over
+		T* newData = new T[newSize];
+		if (m_dataSize > 0 && newSize > 0)
+			memcpy(newData, m_data, m_dataSize * sizeof(T));
+
+		// free the old data and set the pointer to the new data
+		delete[] m_data;
+		m_data = newData;
+
+		// set the allocated data size
+		m_allocatedSize = newSize;
+	}
+
+	// sets the array size to the specified size
 	void Resize (unsigned int newSize)
 	{
 		// our data is stale when we resize

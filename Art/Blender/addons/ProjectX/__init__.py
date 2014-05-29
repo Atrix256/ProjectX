@@ -11,9 +11,13 @@ bl_info = {
 import bpy
 from bpy_extras.io_utils import ExportHelper
 
+import bpy_extras.io_utils
+
+import os
+
 from mathutils import Matrix, Vector
 
-GLOBAL_EXPORT_MATRIX = Matrix([[1, 0, 0, 0],[0, 0, 1, 0],[0, 1, 0, 0],[0, 0, 0, 1]])
+GLOBAL_EXPORT_MATRIX = Matrix([[1, 0, 0, 0],[0, 0, 1, 0],[0, -1, 0, 0],[0, 0, 0, 1]])
 
 def mesh_triangulate(me):
     import bmesh
@@ -50,6 +54,79 @@ class ExportModel(bpy.types.Operator, ExportHelper):
 			data.calc_tangents();
 
 			out.write('\t<object>\n')
+
+			source_dir = os.path.dirname(bpy.data.filepath)
+			dest_dir = os.path.dirname(bpy.data.filepath)
+
+			if len(data.materials) == 0:
+				out.write('\t\t<material/>\n')
+
+			# write materials for this object
+			for mat_num, mat in enumerate(data.materials):
+				out.write('\t\t<material>\n')
+
+				# todo: EmissiveColor
+				# todo: ReflectionAmount
+				# todo: Absorbance
+
+				out.write('\t\t\t<DiffuseColor Value="%f,%f,%f"/>\n' % (mat.diffuse_intensity * mat.diffuse_color)[:])
+
+				# write images
+				image_map = {}
+				# backwards so topmost are highest priority
+				for mtex in reversed(mat.texture_slots):
+					if mtex and mtex.texture and mtex.texture.type == 'IMAGE':
+						image = mtex.texture.image
+						if image:
+							# texface overrides others
+							if      (mtex.use_map_color_diffuse and
+									(mtex.use_map_warp is False) and
+									(mtex.texture_coords != 'REFLECTION')):
+								image_map["DiffuseTexture"] = image
+							if mtex.use_map_ambient:
+								image_map["AmbientTexture_Unused"] = image
+							# this is the Spec intensity channel but Ks stands for specular Color
+							'''
+							if mtex.use_map_specular:
+								image_map["SpecularTexture_Unused"] = image
+							'''
+							if mtex.use_map_color_spec:  # specular color
+								image_map["SpecularTexture_Unused"] = image
+							if mtex.use_map_hardness:  # specular hardness/glossiness
+								image_map["HardnessTexture_Unused"] = image
+							if mtex.use_map_alpha:
+								image_map["AlphaTexture_Unused"] = image
+							if mtex.use_map_translucency:
+								image_map["TranslucencyTexture_Unused"] = image
+							if mtex.use_map_normal and (mtex.texture.use_normal_map is True):
+								image_map["BumpTexture_Unused"] = image
+							if mtex.use_map_normal and (mtex.texture.use_normal_map is False):
+								image_map["NormalTexture"] = image                      
+							if mtex.use_map_color_diffuse and (mtex.texture_coords == 'REFLECTION'):
+								image_map["ReflectionTexture_Unused"] = image
+							if mtex.use_map_emit:
+								image_map["EmissiveTexture"] = image
+
+				for key, image in image_map.items():
+					out.write('\t\t\t<%s Value="%s"/>\n' % (key, repr(image.filepath)[1:-1]))
+
+				out.write('\t\t\t<SpecularColor Value="%f,%f,%f"/>\n' % (mat.specular_intensity * mat.specular_color)[:])
+
+				# convert from blenders spec to 0 - 1000 range.
+				if mat.specular_shader == 'WARDISO':
+					tspec = (0.4 - mat.specular_slope) / 0.0004
+				else:
+					tspec = (mat.specular_hardness - 1) * 1.9607843137254901
+				out.write('\t\t\t<SpecularPower Value="%f"/>\n' % tspec)
+
+				if hasattr(mat, "ior"):
+					out.write('\t\t\t<RefractionIndex Value="%f"/>\n' % mat.ior)
+
+				out.write('\t\t\t<RefractionAmount Value="%f"/>\n' % (1.0 - mat.alpha))
+
+				out.write('\t\t</material>\n')
+
+			# write polygons
 			for face_num, face in enumerate(data.polygons):
 				out.write('\t\t<face>\n')
 

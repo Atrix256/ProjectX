@@ -237,6 +237,7 @@
     <ClInclude Include="Platform\CTextureManager.h" />
     <ClInclude Include="Platform\float3.h" />
     <ClInclude Include="Platform\oclUtils.h" />
+    <ClInclude Include="Platform\OS.h" />
     <ClInclude Include="Platform\SharedArray.h" />
     <ClInclude Include="Platform\SharedObject.h" />
     <ClInclude Include="Platform\STexture2D.h" />
@@ -254,6 +255,7 @@
     <ClCompile Include="Platform\CDirectx.cpp" />
     <ClCompile Include="Platform\CTextureManager.cpp" />
     <ClCompile Include="Platform\oclUtils.cpp" />
+    <ClCompile Include="Platform\OS.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CLNotes.txt" />

@@ -69,6 +69,8 @@ private:
 
 	unsigned int AddMaterial (const struct SData_Material &materialSource, const char *path ="./");
 
+	void AddModel (const struct SData_Model &modelSource);
+
 	void SortTrianglesByHalfSpace (SModelObject &object);
 
 	void LoadSectorSpheres (
@@ -92,10 +94,9 @@ private:
 		std::vector<struct SData_Portal> &portals
 	);
 
-	void CalculateModelBoundingSphere (
+	void CalculateModelFarthestPoint (
 		const struct SData_XMDFILE &modelData,
-		float3 &center,
-		float &radius
+		float3 &point
 	);
 
 	void HandleSectorConnectTos (
@@ -141,6 +142,15 @@ private:
 		float &maxY
 	);
 
+	// used to store the models loaded in the root section of a level
+	struct SNamedModel
+	{
+		std::string	m_id;
+		cl_uint		m_startObjectIndex;
+		cl_uint		m_stopObjectIndex;
+		float3		m_farthestPointFromOrigin;
+	};
+
 	CSharedArray<SPointLight>		m_pointLights;
 	CSharedArray<SSphere>			m_spheres;
 	CSharedArray<SModelTriangle>	m_modelTriangles;	// a face
@@ -149,6 +159,9 @@ private:
 	CSharedArray<SSector>			m_sectors;
 	CSharedArray<SMaterial>			m_materials;
 	CSharedArray<SPortal>			m_portals;
+
+	// the models specified in the level file
+	std::vector<SNamedModel>		m_namedModels;
 
 	unsigned int m_nextObjectId;
 };

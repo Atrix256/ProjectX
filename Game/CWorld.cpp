@@ -150,7 +150,6 @@ void CWorld::AddTriangle (
 
 	// calculate the quadrant flags by noting which half spaces this triangle exists in
 	triangle.m_halfSpaceFlags = 0;
-
 	triangle.m_halfSpaceFlags |= sa.m_y > 0.0f ? e_halfSpacePosY : e_halfSpaceNegY;
 	triangle.m_halfSpaceFlags |= sb.m_y > 0.0f ? e_halfSpacePosY : e_halfSpaceNegY;
 	triangle.m_halfSpaceFlags |= sc.m_y > 0.0f ? e_halfSpacePosY : e_halfSpaceNegY;
@@ -199,6 +198,74 @@ unsigned int CWorld::AddMaterial (const struct SData_Material &materialSource, c
 	}
 
 	return m_materials.Count() - 1;
+}
+
+//-----------------------------------------------------------------------------
+void CWorld::AddModel (const struct SData_Model &modelSource)
+{
+	SNamedModel namedModel;
+
+	// set the starting object index and copy the id
+	namedModel.m_startObjectIndex = m_modelObjects.Count();
+	namedModel.m_id = modelSource.m_id;
+		
+	// init bounding sphere data
+	namedModel.m_farthestPointFromOrigin[0] = 0.0f;
+	namedModel.m_farthestPointFromOrigin[1] = 0.0f;
+	namedModel.m_farthestPointFromOrigin[2] = 0.0f;
+
+	SData_XMDFILE modelData;
+	if (DataSchemasXML::Load(modelData, modelSource.m_FileName.c_str(), "model"))
+	{
+		// get the path that all textures etc are based on
+		std::string basePath;
+		bool result = OS::GetAbsolutePath(modelSource.m_FileName.c_str(), basePath);
+		Assert_(result == true);
+
+		// remember which vertex is farthest from the origin
+		CalculateModelFarthestPoint(modelData, namedModel.m_farthestPointFromOrigin);
+
+		// create the objects and triangles and such
+		for (unsigned int objectIndex = 0, objectCount = modelData.m_object.size(); objectIndex < objectCount; ++objectIndex) {
+
+			// TODO: log error instead? what if there are zero and we try to index slot 0?
+			AssertI_(modelData.m_object[objectIndex].m_material.size() == 1, modelData.m_object[objectIndex].m_material.size());
+
+			// add an object
+			SModelObject &modelobject = m_modelObjects.AddOne();
+			modelobject.m_castsShadows = modelData.m_object[objectIndex].m_CastShadows;
+			modelobject.m_materialIndex = AddMaterial(modelData.m_object[objectIndex].m_material[0], basePath.c_str());
+			modelobject.m_portalIndex = -1;
+			modelobject.m_startTriangleIndex = m_modelTriangles.Count();
+
+			SData_object &object = modelData.m_object[objectIndex];
+			for (unsigned int faceIndex = 0, faceCount = object.m_face.size(); faceIndex < faceCount; ++faceIndex) {
+				SData_face &face = object.m_face[faceIndex];
+				AssertI_(face.m_vert.size() == 3, face.m_vert.size()); // TODO: log error instead?
+				AddTriangle(
+					face.m_vert[0].m_pos,
+					face.m_vert[1].m_pos,
+					face.m_vert[2].m_pos,
+					face.m_vert[0].m_uv,
+					face.m_vert[1].m_uv,
+					face.m_vert[2].m_uv,
+					face.m_vert[0].m_tangent,
+					face.m_vert[0].m_bitangent
+				);
+			}
+
+			modelobject.m_stopTriangleIndex = m_modelTriangles.Count();
+
+			// sort the triangles from m_startTriangleIndex to m_stopTriangleIndex, based on their 
+			// y axis (negative only, mixed, positive only) so that we can set the mix start and mix end
+			// indices.  This way, when rendering, if the line segment is only in pos, or only in neg,
+			// we can limit the triangles we test.
+			SortTrianglesByHalfSpace(modelobject);
+		}
+
+		namedModel.m_stopObjectIndex = m_modelObjects.Count();
+		m_namedModels.push_back(namedModel);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -326,104 +393,46 @@ void CWorld::LoadSectorModels (
 ) {
 	sector.m_staticModelStartIndex = m_modelInstances.Count();
 
-	for (unsigned int index = 0, count = sectorSource.m_Model.size(); index < count; ++index)
+	for (unsigned int index = 0, count = sectorSource.m_ModelInstance.size(); index < count; ++index)
 	{
-		SModelInstance &modelInstance = m_modelInstances.AddOne();
-		modelInstance.m_startObjectIndex = m_modelObjects.Count();
-		
-		// init bounding sphere data
-		modelInstance.m_boundingSphere.s[0] = 0.0f;
-		modelInstance.m_boundingSphere.s[1] = 0.0f;
-		modelInstance.m_boundingSphere.s[2] = 0.0f;
-		modelInstance.m_boundingSphere.s[3] = 0.0f;
-
-		SData_Model &model = sectorSource.m_Model[index];
-		SData_XMDFILE modelData;
-		if (DataSchemasXML::Load(modelData, model.m_FileName.c_str(), "model"))
+		SData_ModelInstance &model = sectorSource.m_ModelInstance[index];
+		unsigned int modelIndex = SData::GetEntryById(m_namedModels, model.m_ModelId);
+		if (modelIndex != -1)
 		{
-			// get the path that all textures etc are based on
-			std::string basePath;
-			bool result = OS::GetAbsolutePath(model.m_FileName.c_str(), basePath);
-			Assert_(result == true);
+			const SNamedModel &namedModel = m_namedModels[modelIndex];
+			SModelInstance &modelInstance = m_modelInstances.AddOne();
 
-			// calculate the bounding sphere
-			float3 boundingSphereCenter;
-			float boundingSphereRadius;
-			CalculateModelBoundingSphere(modelData, boundingSphereCenter, boundingSphereRadius);
-			modelInstance.m_boundingSphere.s[0] = boundingSphereCenter[0];
-			modelInstance.m_boundingSphere.s[1] = boundingSphereCenter[1];
-			modelInstance.m_boundingSphere.s[2] = boundingSphereCenter[2];
-			modelInstance.m_boundingSphere.s[3] = boundingSphereRadius;
+			// copy the start and stop object index
+			modelInstance.m_startObjectIndex = namedModel.m_startObjectIndex;
+			modelInstance.m_stopObjectIndex = namedModel.m_stopObjectIndex;
 
+			// calculate the bounding sphere of this instance
 			// TEMP - until there is a World2Local and Local2World matrix
 			modelInstance.m_boundingSphere.s[0] = model.m_Position.m_x;
 			modelInstance.m_boundingSphere.s[1] = model.m_Position.m_y;
 			modelInstance.m_boundingSphere.s[2] = model.m_Position.m_z;
+			modelInstance.m_boundingSphere.s[3] = sqrtf(lengthsq(namedModel.m_farthestPointFromOrigin));
 
-			// create the objects and triangles and such
-			for (unsigned int objectIndex = 0, objectCount = modelData.m_object.size(); objectIndex < objectCount; ++objectIndex) {
-
-				// TODO: log error instead? what if there are zero and we try to index slot 0?
-				AssertI_(modelData.m_object[objectIndex].m_material.size() == 1, modelData.m_object[objectIndex].m_material.size());
-
-				// add an object
-				SModelObject &modelobject = m_modelObjects.AddOne();
-				modelobject.m_castsShadows = modelData.m_object[objectIndex].m_CastShadows;
-
-				// set the material of the object
-				if (model.m_MaterialOverride.length() > 0)
-					modelobject.m_materialIndex = SData::GetEntryById(materials, model.m_MaterialOverride.c_str());
-				else
-					modelobject.m_materialIndex = AddMaterial(modelData.m_object[objectIndex].m_material[0], basePath.c_str());
-
-				modelobject.m_portalIndex = SData::GetEntryById(portals, NULL);
-				modelobject.m_startTriangleIndex = m_modelTriangles.Count();
-
-				SData_object &object = modelData.m_object[objectIndex];
-				for (unsigned int faceIndex = 0, faceCount = object.m_face.size(); faceIndex < faceCount; ++faceIndex) {
-					SData_face &face = object.m_face[faceIndex];
-					AssertI_(face.m_vert.size() == 3, face.m_vert.size()); // TODO: log error instead?
-					AddTriangle(
-						face.m_vert[0].m_pos,
-						face.m_vert[1].m_pos,
-						face.m_vert[2].m_pos,
-						face.m_vert[0].m_uv,
-						face.m_vert[1].m_uv,
-						face.m_vert[2].m_uv,
-						face.m_vert[0].m_tangent,
-						face.m_vert[0].m_bitangent
-					);
-				}
-
-				modelobject.m_stopTriangleIndex = m_modelTriangles.Count();
-
-				// sort the triangles from m_startTriangleIndex to m_stopTriangleIndex, based on their 
-				// y axis (negative only, mixed, positive only) so that we can set the mix start and mix end
-				// indices.  This way, when rendering, if the line segment is only in pos, or only in neg,
-				// we can limit the triangles we test.
-				SortTrianglesByHalfSpace(modelobject);
-			}
+			// set material override if there is one
+			modelInstance.m_materialOverride = SData::GetEntryById(materials, model.m_MaterialOverride);
 		}
-
-		modelInstance.m_stopObjectIndex = m_modelObjects.Count();
 	}
 
 	sector.m_staticModelStopIndex = m_modelInstances.Count();
 }
 
 //-----------------------------------------------------------------------------
-void CWorld::CalculateModelBoundingSphere (
+void CWorld::CalculateModelFarthestPoint (
 	const struct SData_XMDFILE &modelData,
-	float3 &center,
-	float &radius
-) {
-	center[0] = 0.0f;
-	center[1] = 0.0f;
-	center[2] = 0.0f;
-	radius = 0.0f;
+	float3 &point
+)
+{
+	point[0] = 0.0f;
+	point[1] = 0.0f;
+	point[2] = 0.0f;
+	float radiusSq = 0.0f;
 
-	// find the maximum squared distance any point has from 0,0,0
-	// TODO: calculate a tighter bounding sphere later, this assumes center point of 0,0,0
+	// find the point that is farthest from the origin (0,0,0)
 	for (unsigned int objectIndex = 0, objectCount = modelData.m_object.size(); objectIndex < objectCount; ++objectIndex)
 	{
 		const SData_object &object = modelData.m_object[objectIndex];
@@ -435,14 +444,14 @@ void CWorld::CalculateModelBoundingSphere (
 				float3 pos;
 				Copy(pos, face.m_vert[vertIndex].m_pos);
 				float posRadius = lengthsq(pos);
-				if (posRadius > radius)
-					radius = posRadius;
+				if (posRadius > radiusSq)
+				{
+					point = pos;
+					radiusSq = posRadius;
+				}
 			}
 		}
 	}
-
-	// take the square root since we were working with squared radii
-	radius = sqrtf(radius);
 }
 
 //-----------------------------------------------------------------------------
@@ -886,6 +895,11 @@ bool CWorld::Load (const char *worldFileName)
 	m_materials.Presize(worldData.m_Material.size());
 	for (unsigned int index = 0, count = worldData.m_Material.size(); index < count; ++index)
 		AddMaterial(worldData.m_Material[index]);
+
+	// models
+	m_namedModels.reserve(worldData.m_Model.size());
+	for (unsigned int index = 0, count = worldData.m_Model.size(); index < count; ++index)
+		AddModel(worldData.m_Model[index]);
 
 	// sectors
 	m_sectors.Resize(worldData.m_Sector.size());

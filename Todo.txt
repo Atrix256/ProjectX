@@ -1,6 +1,10 @@
 
 NEXT
 
+* assert that a model can be loaded & can be found when instanced from ID
+
+* make a constant for the invalid portal index (and invalid material index?)
+
 * the space ship texture coordinates aren't importing/exporting right ):
  ? are any models importing texture coordinates correctly?
 
@@ -22,15 +26,16 @@ NEXT
 * specify tinting (etc) when loading models
 
 
-* reuse model data instead of making new model data for the same model file name
-
 
 * can we make a debug visualization for...
  * time taken to render a pixel
  * number of object (triangle?) tests per pixel
 
+* we could have actual debugging metrics for the ray that is under the mouse cursor if we want
 
-* fix up or delete other maps now that boxes are gone
+* make models able to specify portals?? or can portals be specified on the material or something maybe?
+
+* fix up or delete other maps now that boxes are gone and things have changed so much
 
 * make fatal assert vs regular assert vs log vs verify / validate
  * regular assert brings up a dialog "continue, break, ignore"
@@ -56,7 +61,7 @@ NEXT
 
 * "packed files" for faster loading.  with a local compile cache or something
 
-* don't do shadow ray if dot product is negative?
+* don't do shadow ray if dot product is negative? (and backface culling is on)
 
 
 * skeletal animation: loading and runtime
@@ -77,7 +82,7 @@ NEXT
 
 * allow models to be moved around and instanced
 
-* ECS model with built in threading scheduling.  Entity, Component, System
+* ECS (entity component system) model with built in threading scheduling.  Entity, Component, System
 
 * bezier clipping and polygon rendering for speed comparisons
 
@@ -366,6 +371,7 @@ NEXT
 * make the game spit out documentation for the schema files (put hint text into schema and field definitions)
  * maybe done via generic xslt script or something, so other things can tie into it too?
 * data parenting support.  "my parent is this, so use everything from him, and over-ride with these values i specify!"
+* include file support - so levels can include common files for areas / the entire game
 
 --KERNEL CODE
 * instead of kernel code checking for indices being in range, going to make it the responsibility of the CPU to not pass bad data. more dangerous but less kernel code & memory usage etc
@@ -514,6 +520,10 @@ TO "SHIP" TO TEAM
  * try better bounding sphere calculations? (find the smallest bounding sphere) Probly not worth it, expensive to find for animated meshes?
 
 =====DONE=====
+
+--5/30/14
+* models are now instanced correctly - they share triangles even when in different locations.
+* material override works for instances
 
 --5/29/14
 * made models load materials from their model files.

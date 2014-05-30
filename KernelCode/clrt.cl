@@ -1,9 +1,9 @@
 /*==================================================================================================
-
+  
 clrt.cl
- 
-The kernel code 
- 
+
+The kernel code
+
 ==================================================================================================*/
 
 #include "Shared/SSharedDataRoot.h"
@@ -206,6 +206,12 @@ inline bool RayIntersectTriangle (__global const struct SModelTriangle *triangle
 
 	// texture coordinates - get from texture coordinates on triangle
 	info->m_textureCoordinates = triangle->m_textureA * u + triangle->m_textureB * v + triangle->m_textureC * w;
+
+	//info->m_textureCoordinates = (float2)(1.0f,1.0f) - info->m_textureCoordinates;
+
+	// barycentric coordinates debugging
+	//const float factor = 0.25f;
+	//info->m_debugAdditiveColor += (float3)(u*factor,v*factor,w*factor);
 
 	// we found a hit!
 	info->m_objectHit = triangle->m_objectId;
@@ -427,7 +433,8 @@ inline bool PointCanSeePoint(
 			for (int objectIndex = model->m_startObjectIndex; objectIndex < model->m_stopObjectIndex; ++objectIndex)
 			{
 				__global struct SModelObject *object = &objects[objectIndex];
-				bool backFaceCulling = !IsRefractive(&materials[object->m_materialIndex]);
+				unsigned int materialIndex = model->m_materialOverride == -1 ? object->m_materialIndex : model->m_materialOverride;
+				bool backFaceCulling = !IsRefractive(&materials[materialIndex]);
 				if (object->m_castsShadows)
 				{
 					// figure out the triangle start and stop index to test against.
@@ -601,7 +608,9 @@ void TraceRay (
 				{
 					__global struct SModelObject *object = &objects[objectIndex];
 					// allow back face culling if the triangle isn't refractive (transparent)
-					bool backFaceCulling = !IsRefractive(&materials[object->m_materialIndex]);
+
+					unsigned int materialIndex = model->m_materialOverride == -1 ? object->m_materialIndex : model->m_materialOverride;
+					bool backFaceCulling = !IsRefractive(&materials[materialIndex]);
 
 					// figure out the triangle start and stop index to test against.
 					// if the segment we are testing is in only the positive y half space or only the negative y half space, we can cut out triangles
@@ -618,7 +627,7 @@ void TraceRay (
 
 					for (; triangleIndex < triangleStopIndex; ++triangleIndex)
 					{
-						bool intersected = RayIntersectTriangle(&triangles[triangleIndex], &collisionInfo, rayPosLocal, rayDirLocal, lastHitPrimitiveId, backFaceCulling, object->m_materialIndex, object->m_portalIndex);
+						bool intersected = RayIntersectTriangle(&triangles[triangleIndex], &collisionInfo, rayPosLocal, rayDirLocal, lastHitPrimitiveId, backFaceCulling, materialIndex, object->m_portalIndex);
 
 						// TODO: better local to world, handle other fields like normal, u axis, v axis etc
 						if (intersected)

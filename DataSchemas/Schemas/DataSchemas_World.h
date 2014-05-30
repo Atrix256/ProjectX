@@ -98,9 +98,9 @@ SchemaBegin(SectorPlane, "Information about a sector wall (there are 6 sector wa
 	Field_Schema(Vec3, ConnectToPosition, "0,0,0", "a U,V space X,Y offset to add to the source connection point.")
 SchemaEnd
 
-SchemaBegin(Model, "Information about a mesh model")
-	Field(std::string, id, "", "the id (unique name) of the model")
-	Field(std::string, FileName, "", "the filename of the .xmd model file")
+SchemaBegin(ModelInstance, "Information about a mesh model")
+	Field(std::string, id, "", "the id (unique name) of the model instance")
+	Field(std::string, ModelId, "", "the id (unique name) of the model you want to create an instance of")
 	Field(std::string, MaterialOverride, "", "The id (unique name) of the material to override any materials on the model with.")
 	Field_Schema(Vec3, Position, "0,0,0", "The position of the model")
 SchemaEnd
@@ -109,7 +109,7 @@ SchemaBegin(Sector, "Information about a sector.  A sector is a single room in t
 	Field_Schema(Vec3, AmbientLight, "0,0,0", "The ambient light for the sector")
 	Field_Schema_Array(PointLight, PointLight, "The point lights in the sector")
 	Field_Schema_Array(Sphere, Sphere, "The spheres in the sector")
-	Field_Schema_Array(Model, Model, "The models in the sector")
+	Field_Schema_Array(ModelInstance, ModelInstance, "The models in the sector")
 	Field(std::string, id, "", "The id (unique name) of the sector")
 	Field_Schema(Vec3, Dimensions, "1,1,1", "The width, height and depth of the sector's AABB")
 	Field_Schema_Array(SectorPlane, SectorPlane, "Information about each wall of the sector")
@@ -128,10 +128,16 @@ SchemaBegin(Connect)
 SchemaEnd
 */
 
+SchemaBegin(Model, "A model to load")
+	Field(std::string, id, "", "The id (unique name) of the model")
+	Field(std::string, FileName, "", "the filename of the .xmd model file to load")
+SchemaEnd
+
 SchemaBegin(World, "The definition of the world")
 	Field(std::string, StartSector, "", "The id of sector the player starts in")
 	Field_Schema(Vec3, StartPoint,  "0,0,0", "The location the player starts at within the StartSector")
 	Field_Schema(Vec3, StartFacing, "1,0,0", "The vector describing the initial rotation of the camera")
+	Field_Schema_Array(Model, Model, "The models that can be used in this level")
 	Field_Schema_Array(Material, Material, "Definitions for the materials used in the world")
 	Field_Schema_Array(Portal, Portal, "Definitions for the portals used in the world")
 	Field_Schema_Array(Sector, Sector, "Definitions for the sectors used in the world")

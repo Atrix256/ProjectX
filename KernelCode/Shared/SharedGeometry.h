@@ -98,7 +98,7 @@ struct SModelInstance
 {
 	cl_uint m_startObjectIndex;
 	cl_uint m_stopObjectIndex;
-	cl_uint m_pack1;
+	cl_uint m_materialOverride;
 	cl_uint m_pack2;
 
 	cl_float4 m_boundingSphere;

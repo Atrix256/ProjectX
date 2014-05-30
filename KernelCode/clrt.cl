@@ -2,7 +2,7 @@
 
 clrt.cl
  
-The kernel code
+The kernel code 
  
 ==================================================================================================*/
 
@@ -29,6 +29,7 @@ struct SCollisionInfo
 	float3				m_surfaceU;
 	float3				m_surfaceV;
 	float2				m_textureCoordinates;
+	float3				m_debugAdditiveColor; // for debugging!
 	unsigned int		m_materialIndex;
 	unsigned int		m_portalIndex;
 };
@@ -389,6 +390,7 @@ inline bool PointCanSeePoint(
 		{ 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f },
 		0,
 		0,
 	};
@@ -557,6 +559,11 @@ void TraceRay (
 			{ 0.0f, 0.0f, 0.0f },
 			{ 0.0f, 0.0f, 0.0f },
 			{ 0.0f, 0.0f },
+			#if DEBUG_RAY_BOUNCECOUNT
+			{ 1.0f / ((float)c_maxRayBounces), 1.0f / ((float)c_maxRayBounces), 1.0f / ((float)c_maxRayBounces) },
+			#else
+			{ 0.0f, 0.0f, 0.0f },
+			#endif
 			0,
 			0,
 		};
@@ -574,6 +581,10 @@ void TraceRay (
 			float3 hitStart, hitEnd;
 			if (RayHitsSphere(model->m_boundingSphere, rayPos, rayDir, &hitStart, &hitEnd))
 			{
+				#if DEBUG_MODEL_BOUNDING_SPHERE
+				collisionInfo.m_debugAdditiveColor += (float3)(0.2f,0.2f,0.2f);
+				#endif
+
 				// TODO: better world to local
 				float3 rayPosLocal = rayPos - model->m_boundingSphere.xyz;
 				float3 rayDirLocal = rayDir;
@@ -618,6 +629,9 @@ void TraceRay (
 		}
 
 		RayIntersectSector(sector, &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
+
+		// add the debug color in
+		*pixelColor += collisionInfo.m_debugAdditiveColor;
 
 		// if no hit, set pixel to ambient light and bail out
 		if (collisionInfo.m_objectHit == c_invalidObjectId)
@@ -711,6 +725,10 @@ void TraceRay (
 			float4 textureCoords = {collisionInfo.m_textureCoordinates.x, collisionInfo.m_textureCoordinates.y, material->m_emissiveTextureIndex, 0};
 			emissiveColor *= read_imagef(tex3dIn, g_textureSampler, textureCoords).xyz;
 		}
+
+		#if DEBUG_TEXTURE_UV
+		diffuseColorBase = (float3)(collisionInfo.m_textureCoordinates.xy, 0.0f);
+		#endif
 
 		// apply ambient lighting and emissive color
 		float3 diffuseColor = diffuseColorBase * ambientLight + emissiveColor;

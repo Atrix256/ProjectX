@@ -619,6 +619,14 @@ HRESULT CDirectX::CreateKernelProgram(
 	buildOptions.append(" -D SETTINGS_COLORABSORB=");
 	buildOptions.append(m_graphicsSettings.m_ColorAbsorption ? "1" : "0");
 
+	// debug options
+	buildOptions.append(" -D DEBUG_MODEL_BOUNDING_SPHERE=");
+	buildOptions.append(m_graphicsSettings.m_DebugModelBoundingSphere ? "1" : "0");
+	buildOptions.append(" -D DEBUG_TEXTURE_UV=");
+	buildOptions.append(m_graphicsSettings.m_DebugTextureUV ? "1" : "0");
+	buildOptions.append(" -D DEBUG_RAY_BOUNCECOUNT=");
+	buildOptions.append(m_graphicsSettings.m_DebugRayBounceCount ? "1" : "0");
+
 	// if this setting is on, turn on the optimizations that prefer speed over accuracy and safety
 	if (m_graphicsSettings.m_FastestMath) {
 		buildOptions.append(" -cl-single-precision-constant");

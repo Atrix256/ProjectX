@@ -368,7 +368,7 @@ void CWorld::LoadSectorModels (
 
 				// add an object
 				SModelObject &modelobject = m_modelObjects.AddOne();
-				modelobject.m_castsShadows = true;
+				modelobject.m_castsShadows = modelData.m_object[objectIndex].m_CastShadows;
 
 				// set the material of the object
 				if (model.m_MaterialOverride.length() > 0)

@@ -1,33 +1,12 @@
 
 NEXT
 
-* fix up other maps now that boxes are gone
-
-* cast shadows should be a property of the material maybe instead of the object? not sure. it's hard coded to "true" on models.
- * maybe we don't need to be abel to turn off shadows for objects?
- * If removing it, put a note in the rendering section that we can add it back in if needed
-
-* make fatal assert vs regular assert vs log vs verify / validate
- * regular assert brings up a dialog "continue, break, ignore"
- * fatal assert does a divide by zero
- * log relevant info for both assert types
- * give the code a treatment pass for this stuff
-
-
-? make renderer and material data more conformant to blender? (sucks, but what else can be done?)
- * get rid of emissive stuff (and put note in --RENDERING that we can do emissive again if needed). or use emissive texture only or something?
- * change how reflection works, so that it reflects a specific color?
- * could use other textures available from blender if we wanted
-
 * the space ship texture coordinates aren't importing/exporting right ):
  ? are any models importing texture coordinates correctly?
 
 * only allow uniform scaling
  * This way we don't need to keep track of farthest point from origin, just farthest distance
  * Also, max collision time can be scaled by radius, instead of doing some crazy thing to convert max time?
-
-* a mode to show model bounding spheres for debugging?
- * maybe have a "additive color" field in the collision info that is added into the final color at the end?  that way you can visualize all sorts of stuff.
 
 * in the cpu only side model data, keep knowledge of the farthest point from the origin, so that we can apply scale to it to get a better bounding sphere radius
  * keep point farthest from origin in CPu side model data.  Apply scaling to it, then get length, for circle radius.
@@ -37,26 +16,41 @@ NEXT
  * rotation
  * scaling (non uniform?)
 
+* specify translation when loading models
+* specify rotation when loading models
+* specify scale when loading models!
+* specify tinting (etc) when loading models
+
+
 * reuse model data instead of making new model data for the same model file name
 
-* is the sector's "CastShadows" flag even used? probably should get rid of it i think?
 
-* try simpler, quicker geometry tests for shadow tests
- * not usable by transparent shadows though ):
+* can we make a debug visualization for...
+ * time taken to render a pixel
+ * number of object (triangle?) tests per pixel
 
-* transparent shadows
+
+* fix up or delete other maps now that boxes are gone
+
+* make fatal assert vs regular assert vs log vs verify / validate
+ * regular assert brings up a dialog "continue, break, ignore"
+ * fatal assert does a divide by zero
+ * log relevant info for both assert types
+ * give the code a treatment pass for this stuff
+
+
+
+
+
+
 
 * is the refraction index correct in my data input? i think it's actually 1.0 less than reality.  need to investigate and update hint text and/or fix up the math on load.
 
 * verify hint comment that triangle points are assumed to be in clockwise order
 
-* move portal and shadow information off of triangle, onto the model object?
-
 * ConnectToSectorOffset, ConnectToPosition -> better explaination hint text
 
-* try better bounding sphere calculations? (find the smallest bounding sphere) Probly not worth it, expensive to find for animated meshes?
 
-* try billboarded models that orient themselves based on the incoming ray orientation? (or camera orientation perhaps... dunno.  what happens for reflections)
 
 * version number in MDX files
 
@@ -64,9 +58,9 @@ NEXT
 
 * don't do shadow ray if dot product is negative?
 
-* there are cracks in meshes.  watch a icosphere in front of a back background, and you'll see a couple bright dots poke out as you move around
 
-* try softmax for melding shapes?
+* skeletal animation: loading and runtime
+
 
 * make hints generate into a file somewhere or something...
 * add hints to everything
@@ -75,23 +69,7 @@ NEXT
 
 ? could try "hard coding" stuff for perf so long as it's ok that things aren't destroyed.  for instance, the number of models in a specific sector.
 
-* specify translation when loading models
-* specify rotation when loading models
-* specify scale when loading models!
-* specify tinting (etc) when loading models
-
-* triangle buffer: a list of triangles in the precomputed format that im using, along with texture coordinates.  like current format
-* object buffer: a start/stop index into the triangle buffer describing all the triangles in one object.  material info and bounding sphere?
-* model buffer: a start/stop index into the object buffer describing all the objects in the model.  bounding sphere of all objects?
-* list models in a special global place in the level file where each one gets an id.  load them up at load time
-* model instances are defined in sectors.  specify a name as well as a position and rotation.
-
 * how does bitangent sign work? data in blender
-
-* ditch the useless primitive types.  leave sphere and model i think. get rid of plane, triangle and box.  Update or replace existing test maps?
-
-* texture name when loading models, and other material stuff like shadow casting
-* just create a new material per material in the model? if it matters, can try to share them later
 
 * exporter for levels! from unity perhaps?
 
@@ -163,7 +141,19 @@ NEXT
 * could have underwater stuff i think with swimming.
 * could mess with camera view to have trippy effects.  Both simple stuff like changing fov, but also more complex stuff like sine wave offsets of primary ray directions
 
+--MODELS
+* blender has other textures available that we could use if we want: ambient texture (?), specular map, hardness map (?), reflection map, alpha map, translucency map (?), bump map
+* models need to be able to export / load reflection and absorption
+* need to make blender exporter export the casts shadows flag that is exposed (somewhere) in blender
+
 --RENDERING
+* is the sector's "CastShadows" flag even used? probably should get rid of it i think? maybe it could be used... but how?
+* try simpler, quicker geometry tests for shadow tests
+ * not usable by transparent shadows though ):
+* try softmax for melding shapes?
+* there are cracks in meshes.  watch a icosphere in front of a back background, and you'll see a couple bright dots poke out as you move around
+* try billboarded models that orient themselves based on the incoming ray orientation? (or camera orientation perhaps... dunno.  what happens for reflections)
+* transparent shadows
 * try interpolating normals across a triangle?
 * don't need to really store m_halfSpaceFlags permanently on triangles, that is just used for sorting.
 * did some "half space flags" to try and cull triangles from tests, didn't seem to help. made it slower in fact!  i had 6 flags for whether the triangle / segment was in posx, negx, y, z, and & the flags together as an early out for the triangle
@@ -518,11 +508,21 @@ TO "SHIP" TO TEAM
  * obj doesn't do skeletal animations
  * i don't want to deal with other formats :/
 
+* move portal and shadow information off of triangle, onto the model object?
+ * actually maybe not.  it's quicker access (memory cache friendly) to have it on the object
+
+ * try better bounding sphere calculations? (find the smallest bounding sphere) Probly not worth it, expensive to find for animated meshes?
+
 =====DONE=====
 
 --5/29/14
 * made models load materials from their model files.
 * allow a material override for models in the level when specifying a model to load
+* added a m_debugAdditiveColor to collision info to aid in debugging things visually
+ * added some gfx settings for debugging visually:
+  * texture coordinates
+  * ray bounce per pixel
+  * bounding spheres of models
 
 --5/27/14
 * fixed the "flipped normals" problem w/ models looks like.  i swapped Y and Z in export matrix, but needed to negate the new Z to make it a proper rotation

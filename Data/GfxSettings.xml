@@ -14,4 +14,7 @@
   <FastestMath Value="true"/>
   <Brightness Value="1.0"/>
   <ColorAbsorption Value="true"/>
+  <DebugRayBounceCount Value="false"/>
+  <DebugModelBoundingSphere Value="false"/>
+  <DebugTextureUV Value="false"/>
 </GfxSettings>

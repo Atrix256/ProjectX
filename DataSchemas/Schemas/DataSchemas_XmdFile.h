@@ -21,6 +21,7 @@ SchemaEnd
 SchemaBegin(object, "An object in a model is made up of a mesh of faces")
 	Field_Schema_Array(Material, material, "The materials of the object")
 	Field_Schema_Array(face, face, "An array of faces in the object")
+	Field(bool, CastShadows, true, "Whether or not this object casts a shadow")
 SchemaEnd
 
 SchemaBegin(XMDFILE, "Custom model file format")

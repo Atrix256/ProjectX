@@ -22,4 +22,7 @@ SchemaBegin(GfxSettings, "Graphics Settings")
 	Field(bool, FastestMath, true, "If true, the fastest (and least precise) math will be used")
 	Field(float, Brightness, 1.0f, "Used to adjust brightness")
 	Field(bool, ColorAbsorption, true, "If false, color absorption will be off for transparent objects")
+	Field(bool, DebugRayBounceCount, false, "If true, will make pixels lighter the more ray bounces were required.  When hitting RayBounces (max) it will add white to the pixel.")
+	Field(bool, DebugModelBoundingSphere, false, "If true, will visualize where the bounding spheres of models are - showing which rays tested against which meshes.")
+	Field(bool, DebugTextureUV, false, "If true, shows the U,V texture coordinates as Red,Green diffuse color instead of doing a texture lookup")
 SchemaEnd

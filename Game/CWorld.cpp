@@ -407,7 +407,6 @@ void CWorld::LoadSectorModelInstances (
 			modelInstance.m_stopObjectIndex = namedModel.m_stopObjectIndex;
 
 			// calculate the bounding sphere of this instance
-			// TEMP - until there is a World2Local and Local2World matrix
 			modelInstance.m_boundingSphere.s[0] = model.m_Position.m_x;
 			modelInstance.m_boundingSphere.s[1] = model.m_Position.m_y;
 			modelInstance.m_boundingSphere.s[2] = model.m_Position.m_z;
@@ -419,7 +418,7 @@ void CWorld::LoadSectorModelInstances (
 
 			// TODO: make and factor in the rotation matrix
 
-			// calculate model to world - translate, scale
+			// calculate model to world - translate, scale, rotate
 			{
 				MatrixIdentity(modelInstance.m_modelToWorldX, modelInstance.m_modelToWorldY, modelInstance.m_modelToWorldZ, modelInstance.m_modelToWorldW);
 
@@ -438,6 +437,27 @@ void CWorld::LoadSectorModelInstances (
 				cl_float4 scaleZ;
 				cl_float4 scaleW;
 				MatrixScale(scaleX, scaleY, scaleZ, scaleW, model.m_Scale);
+
+				// make the rotation matrix
+				cl_float4 rotX;
+				cl_float4 rotY;
+				cl_float4 rotZ;
+				cl_float4 rotW;
+				MatrixRotation(rotX, rotY, rotZ, rotW,
+					DegreesToRadians(model.m_Rotation.m_x),
+					DegreesToRadians(model.m_Rotation.m_y),
+					DegreesToRadians(model.m_Rotation.m_z));
+
+				TransformMatrixByMatrix(
+					modelInstance.m_modelToWorldX,
+					modelInstance.m_modelToWorldY,
+					modelInstance.m_modelToWorldZ,
+					modelInstance.m_modelToWorldW,
+					rotX,
+					rotY,
+					rotZ,
+					rotW
+				);
 
 				TransformMatrixByMatrix(
 					modelInstance.m_modelToWorldX,
@@ -462,7 +482,7 @@ void CWorld::LoadSectorModelInstances (
 				);
 			}
 
-			// calculate world to model - scale, translate
+			// calculate world to model - rotate, scale, translate
 			{
 				MatrixIdentity(modelInstance.m_worldToModelX, modelInstance.m_worldToModelY, modelInstance.m_worldToModelZ, modelInstance.m_worldToModelW);
 
@@ -482,6 +502,16 @@ void CWorld::LoadSectorModelInstances (
 				cl_float4 scaleZ;
 				cl_float4 scaleW;
 				MatrixScale(scaleX, scaleY, scaleZ, scaleW, 1.0f / model.m_Scale);
+
+				// make the rotation matrix
+				cl_float4 rotX;
+				cl_float4 rotY;
+				cl_float4 rotZ;
+				cl_float4 rotW;
+				MatrixUnrotation(rotX, rotY, rotZ, rotW,
+					DegreesToRadians(model.m_Rotation.m_x),
+					DegreesToRadians(model.m_Rotation.m_y),
+					DegreesToRadians(model.m_Rotation.m_z));
 
 				TransformMatrixByMatrix(
 					modelInstance.m_worldToModelX,
@@ -503,6 +533,17 @@ void CWorld::LoadSectorModelInstances (
 					scaleY,
 					scaleZ,
 					scaleW
+				);
+
+				TransformMatrixByMatrix(
+					modelInstance.m_worldToModelX,
+					modelInstance.m_worldToModelY,
+					modelInstance.m_worldToModelZ,
+					modelInstance.m_worldToModelW,
+					rotX,
+					rotY,
+					rotZ,
+					rotW
 				);
 			}
 

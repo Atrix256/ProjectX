@@ -103,7 +103,7 @@ SchemaBegin(ModelInstance, "Information about a mesh model")
 	Field(std::string, ModelId, "", "the id (unique name) of the model you want to create an instance of")
 	Field(std::string, MaterialOverride, "", "The id (unique name) of the material to override any materials on the model with.")
 	Field_Schema(Vec3, Position, "0,0,0", "The position of the origin of the model")
-	Field_Schema(Vec3, Rotation, "0,0,0", "Yaw, Pitch and Roll of the object's rotation, in degrees.")
+	Field_Schema(Vec3, Rotation, "0,0,0", "Rotation around the X,Y,Z axis, in degrees. It applies X axis rotation, then Y axis, then Z axis.")
 	Field(float, Scale, 1.0f, "The scale of the model")
 SchemaEnd
 

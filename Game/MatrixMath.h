@@ -11,6 +11,21 @@ Matrix math routines used by host code
 #include "Platform/float3.h"
 
 //-----------------------------------------------------------------------------
+// PROTOTYPES
+//-----------------------------------------------------------------------------
+inline void TransformMatrixByMatrix (
+	cl_float4 &xAxisA,
+	cl_float4 &yAxisA,
+	cl_float4 &zAxisA,
+	cl_float4 &wAxisA,
+	const cl_float4 &inXAxisB,
+	const cl_float4 &inYAxisB,
+	const cl_float4 &inZAxisB,
+	const cl_float4 &inWAxisB);
+
+//-----------------------------------------------------------------------------
+// FUNCTIONS
+//-----------------------------------------------------------------------------
 inline void MatrixIdentity (
 	cl_float4 &xAxis,
 	cl_float4 &yAxis,
@@ -94,6 +109,139 @@ inline void MatrixScale (
 	wAxis.s[1] = 0.0f;
 	wAxis.s[2] = 0.0f;
 	wAxis.s[3] = 1.0f;
+}
+
+//-----------------------------------------------------------------------------
+inline void MatrixRotationX (
+	cl_float4 &xAxis,
+	cl_float4 &yAxis,
+	cl_float4 &zAxis,
+	cl_float4 &wAxis,
+	const float rot)
+{
+	xAxis.s[0] = 1.0f;
+	xAxis.s[1] = 0.0f;
+	xAxis.s[2] = 0.0f;
+	xAxis.s[3] = 0.0f;
+
+	yAxis.s[0] = 0.0f;
+	yAxis.s[1] = cos(rot);
+	yAxis.s[2] = -sin(rot);
+	yAxis.s[3] = 0.0f;
+
+	zAxis.s[0] = 0.0f;
+	zAxis.s[1] = sin(rot);
+	zAxis.s[2] = cos(rot);
+	zAxis.s[3] = 0.0f;
+
+	wAxis.s[0] = 0.0f;
+	wAxis.s[1] = 0.0f;
+	wAxis.s[2] = 0.0f;
+	wAxis.s[3] = 1.0f;
+}
+
+//-----------------------------------------------------------------------------
+inline void MatrixRotationY (
+	cl_float4 &xAxis,
+	cl_float4 &yAxis,
+	cl_float4 &zAxis,
+	cl_float4 &wAxis,
+	const float rot)
+{
+	xAxis.s[0] = cos(rot);
+	xAxis.s[1] = 0.0f;
+	xAxis.s[2] = sin(rot);
+	xAxis.s[3] = 0.0f;
+
+	yAxis.s[0] = 0.0f;
+	yAxis.s[1] = 1.0f;
+	yAxis.s[2] = 0.0f;
+	yAxis.s[3] = 0.0f;
+
+	zAxis.s[0] = -sin(rot);
+	zAxis.s[1] = 0.0f;
+	zAxis.s[2] = cos(rot);
+	zAxis.s[3] = 0.0f;
+
+	wAxis.s[0] = 0.0f;
+	wAxis.s[1] = 0.0f;
+	wAxis.s[2] = 0.0f;
+	wAxis.s[3] = 1.0f;
+}
+
+//-----------------------------------------------------------------------------
+inline void MatrixRotationZ (
+	cl_float4 &xAxis,
+	cl_float4 &yAxis,
+	cl_float4 &zAxis,
+	cl_float4 &wAxis,
+	const float rot)
+{
+	xAxis.s[0] = cos(rot);
+	xAxis.s[1] = -sin(rot);
+	xAxis.s[2] = 0.0f;
+	xAxis.s[3] = 0.0f;
+
+	yAxis.s[0] = sin(rot);
+	yAxis.s[1] = cos(rot);
+	yAxis.s[2] = 0.0f;
+	yAxis.s[3] = 0.0f;
+
+	zAxis.s[0] = 0.0f;
+	zAxis.s[1] = 0.0f;
+	zAxis.s[2] = 1.0f;
+	zAxis.s[3] = 0.0f;
+
+	wAxis.s[0] = 0.0f;
+	wAxis.s[1] = 0.0f;
+	wAxis.s[2] = 0.0f;
+	wAxis.s[3] = 1.0f;
+}
+
+//-----------------------------------------------------------------------------
+inline void MatrixRotation (
+	cl_float4 &xAxis,
+	cl_float4 &yAxis,
+	cl_float4 &zAxis,
+	cl_float4 &wAxis,
+	const float rotX,
+	const float rotY,
+	const float rotZ)
+{
+	// make X axis rotation
+	MatrixRotationX(xAxis, yAxis, zAxis, wAxis, rotX);
+
+	// apply Y axis rotation
+	cl_float4 tempX, tempY, tempZ, tempW;
+	MatrixRotationY(tempX, tempY, tempZ, tempW, rotY);
+	TransformMatrixByMatrix(xAxis, yAxis, zAxis, wAxis, tempX, tempY, tempZ, tempW);
+
+	// apply Z axis rotation
+	MatrixRotationZ(tempX, tempY, tempZ, tempW, rotZ);
+	TransformMatrixByMatrix(xAxis, yAxis, zAxis, wAxis, tempX, tempY, tempZ, tempW);
+}
+
+//-----------------------------------------------------------------------------
+inline void MatrixUnrotation (
+	cl_float4 &xAxis,
+	cl_float4 &yAxis,
+	cl_float4 &zAxis,
+	cl_float4 &wAxis,
+	const float rotX,
+	const float rotY,
+	const float rotZ)
+{
+	// make negative Z axis rotation
+	MatrixRotationZ(xAxis, yAxis, zAxis, wAxis, -rotZ);
+
+	// apply negative Y axis rotation
+	cl_float4 tempX, tempY, tempZ, tempW;
+	MatrixRotationY(tempX, tempY, tempZ, tempW, -rotY);
+	TransformMatrixByMatrix(xAxis, yAxis, zAxis, wAxis, tempX, tempY, tempZ, tempW);
+
+	// apply negative X axis rotation
+	MatrixRotationX(tempX, tempY, tempZ, tempW, -rotX);
+	TransformMatrixByMatrix(xAxis, yAxis, zAxis, wAxis, tempX, tempY, tempZ, tempW);
 }
 
 //-----------------------------------------------------------------------------
@@ -337,4 +485,9 @@ inline void TransformMatrixByMatrix (
 	yAxisA = tempYAxis;
 	zAxisA = tempZAxis;
 	wAxisA = tempWAxis;
+}
+
+inline float DegreesToRadians(float degrees)
+{
+	return (degrees * 3.14159f) / 180.0f;
 }

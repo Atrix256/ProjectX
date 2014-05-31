@@ -34,6 +34,18 @@ inline void TransformPointByMatrix (
 				+		1.0f * wAxis->z;
 }
 
+inline void TransformPointByMatrixNoTemporary (
+	float3 *point,
+	const __global cl_float4 *xAxis,
+	const __global cl_float4 *yAxis,
+	const __global cl_float4 *zAxis,
+	const __global cl_float4 *wAxis)
+{
+	float3 transformedPoint;
+	TransformPointByMatrix(&transformedPoint, point, xAxis, yAxis, zAxis, wAxis);
+	*point = transformedPoint;
+}
+
 inline void TransformVectorByMatrix (
 	float3 *outPoint,
 	const float3 *inPoint,
@@ -55,6 +67,17 @@ inline void TransformVectorByMatrix (
 				+ inPoint->y * yAxis->z
 				+ inPoint->z * zAxis->z;
 				//+		0.0f * wAxis->z;
+}
+
+inline void TransformVectorByMatrixNoTemporary (
+	float3 *point,
+	const __global cl_float4 *xAxis,
+	const __global cl_float4 *yAxis,
+	const __global cl_float4 *zAxis)
+{
+	float3 transformedPoint;
+	TransformVectorByMatrix(&transformedPoint, point, xAxis, yAxis, zAxis);
+	*point = transformedPoint;
 }
 
 inline float3 reflect(float3 V, float3 N)

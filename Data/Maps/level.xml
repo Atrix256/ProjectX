@@ -34,7 +34,6 @@
   <Material id="SkyboxRight" DiffuseTexture="Art/Skybox/frozendusk_right.jpg" DiffuseColor="1.0, 1.0, 1.0"/>
 
   <Model id="IcoSphere" FileName="Art/Models/icosphere.xmd"/>
-  <Model id="IcoSphereSm" FileName="Art/Models/icosphere_sm.xmd"/>
   <Model id="Ship" FileName="Art/Models/ship.xmd"/>
   
   <!--===============================================================
@@ -154,16 +153,17 @@
     <Sphere Position="-5,-8,-18" Radius="1" Material="BumpySoapBubble" TextureScale="0.125,0.125" CastShadows="true"/>
 
     <ModelInstance ModelId="IcoSphere" MaterialOverride="Ruby" Position="-15,-7,-1"/>
-    <ModelInstance ModelId="IcoSphereSm" MaterialOverride="Ruby" Position="1,-7,-1"/>
+    <ModelInstance ModelId="IcoSphere" MaterialOverride="Ruby" Position="1,-7,-1" Scale ="0.25"/>
 
     <ModelInstance ModelId="IcoSphere" MaterialOverride="Grid" Position="10,-3,0"/>
     <ModelInstance ModelId="IcoSphere" MaterialOverride="Mirror" Position="5,-1,20"/>
     <ModelInstance ModelId="IcoSphere" MaterialOverride="RoughBrick" Position="-12,-4,18"/>
 
-    <ModelInstance ModelId="Ship" Position="8,-5,7"/>
-
-    <!--ModelInstance ModelId="Ship" MaterialOverride="Brick" Position="-3,-7,-1"/>
-    <ModelInstance ModelId="Ship" MaterialOverride="Brick" Position="6,-5,-1"/-->
+    <ModelInstance ModelId="Ship" Position="8,-7,4" Scale ="0.01"/>
+    <ModelInstance ModelId="Ship" Position="8,-7,5" Scale ="0.05"/>
+    <ModelInstance ModelId="Ship" Position="8,-7,6" Scale ="0.1"/>
+    <ModelInstance ModelId="Ship" Position="8,-7,8" Scale ="0.2"/>
+    <ModelInstance ModelId="Ship" Position="8,-7,10" Scale ="0.3"/>
 
     <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="Skybox" ConnectToSectorPlane="1" ConnectToSetPosition="true" ConnectToPosition="0,0,0"/>
     <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="Skybox" ConnectToSectorPlane="0" ConnectToSetPosition="true" ConnectToPosition="0,0,0"/>

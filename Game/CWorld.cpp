@@ -385,7 +385,7 @@ void CWorld::LoadSectorPointLights (
 }
 
 //-----------------------------------------------------------------------------
-void CWorld::LoadSectorModels (
+void CWorld::LoadSectorModelInstances (
 	SSector &sector,
 	struct SData_Sector &sectorSource,
 	std::vector<struct SData_Material> &materials,
@@ -411,10 +411,123 @@ void CWorld::LoadSectorModels (
 			modelInstance.m_boundingSphere.s[0] = model.m_Position.m_x;
 			modelInstance.m_boundingSphere.s[1] = model.m_Position.m_y;
 			modelInstance.m_boundingSphere.s[2] = model.m_Position.m_z;
-			modelInstance.m_boundingSphere.s[3] = sqrtf(lengthsq(namedModel.m_farthestPointFromOrigin));
+			modelInstance.m_boundingSphere.s[3] = sqrtf(lengthsq(namedModel.m_farthestPointFromOrigin)) * model.m_Scale;
+			modelInstance.m_scale = model.m_Scale;
 
 			// set material override if there is one
 			modelInstance.m_materialOverride = SData::GetEntryById(materials, model.m_MaterialOverride);
+
+			// TODO: make and factor in the rotation matrix
+
+			// calculate model to world - translate, scale
+			{
+				MatrixIdentity(modelInstance.m_modelToWorldX, modelInstance.m_modelToWorldY, modelInstance.m_modelToWorldZ, modelInstance.m_modelToWorldW);
+
+				// make the translation matrix
+				cl_float4 transX;
+				cl_float4 transY;
+				cl_float4 transZ;
+				cl_float4 transW;
+				float3 translation;
+				Copy(translation, model.m_Position);
+				MatrixTranslation(transX, transY, transZ, transW, translation);
+
+				// make the scale matrix
+				cl_float4 scaleX;
+				cl_float4 scaleY;
+				cl_float4 scaleZ;
+				cl_float4 scaleW;
+				MatrixScale(scaleX, scaleY, scaleZ, scaleW, model.m_Scale);
+
+				TransformMatrixByMatrix(
+					modelInstance.m_modelToWorldX,
+					modelInstance.m_modelToWorldY,
+					modelInstance.m_modelToWorldZ,
+					modelInstance.m_modelToWorldW,
+					scaleX,
+					scaleY,
+					scaleZ,
+					scaleW
+				);
+
+				TransformMatrixByMatrix(
+					modelInstance.m_modelToWorldX,
+					modelInstance.m_modelToWorldY,
+					modelInstance.m_modelToWorldZ,
+					modelInstance.m_modelToWorldW,
+					transX,
+					transY,
+					transZ,
+					transW
+				);
+			}
+
+			// calculate world to model - scale, translate
+			{
+				MatrixIdentity(modelInstance.m_worldToModelX, modelInstance.m_worldToModelY, modelInstance.m_worldToModelZ, modelInstance.m_worldToModelW);
+
+				// make the translation matrix
+				cl_float4 transX;
+				cl_float4 transY;
+				cl_float4 transZ;
+				cl_float4 transW;
+				float3 translation;
+				Copy(translation, model.m_Position);
+				translation *= -1.0f;
+				MatrixTranslation(transX, transY, transZ, transW, translation);
+
+				// make the scale matrix
+				cl_float4 scaleX;
+				cl_float4 scaleY;
+				cl_float4 scaleZ;
+				cl_float4 scaleW;
+				MatrixScale(scaleX, scaleY, scaleZ, scaleW, 1.0f / model.m_Scale);
+
+				TransformMatrixByMatrix(
+					modelInstance.m_worldToModelX,
+					modelInstance.m_worldToModelY,
+					modelInstance.m_worldToModelZ,
+					modelInstance.m_worldToModelW,
+					transX,
+					transY,
+					transZ,
+					transW
+				);
+
+				TransformMatrixByMatrix(
+					modelInstance.m_worldToModelX,
+					modelInstance.m_worldToModelY,
+					modelInstance.m_worldToModelZ,
+					modelInstance.m_worldToModelW,
+					scaleX,
+					scaleY,
+					scaleZ,
+					scaleW
+				);
+			}
+
+			// todo: remove, this is just for testing
+			cl_float4 testX;
+			cl_float4 testY;
+			cl_float4 testZ;
+			cl_float4 testW;
+
+			TransformMatrixByMatrix(
+				testX,
+				testY,
+				testZ,
+				testW,
+				modelInstance.m_modelToWorldX,
+				modelInstance.m_modelToWorldY,
+				modelInstance.m_modelToWorldZ,
+				modelInstance.m_modelToWorldW,
+				modelInstance.m_worldToModelX,
+				modelInstance.m_worldToModelY,
+				modelInstance.m_worldToModelZ,
+				modelInstance.m_worldToModelW
+			);
+
+			int ijkl = 0;
 		}
 	}
 
@@ -861,7 +974,7 @@ void CWorld::LoadSector (
 
 	LoadSectorPointLights(sector, sectorSource, materials, portals);
 	LoadSectorSpheres(sector, sectorSource, materials, portals);
-	LoadSectorModels(sector, sectorSource, materials, portals);
+	LoadSectorModelInstances(sector, sectorSource, materials, portals);
 }
 
 //-----------------------------------------------------------------------------

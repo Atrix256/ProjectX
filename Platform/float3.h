@@ -96,6 +96,14 @@ public:
 		return ret;
 	}
 
+	inline float3 operator*= (const float v)
+	{
+		(*this)[0] *= v;
+		(*this)[1] *= v;
+		(*this)[2] *= v;
+		return *this;
+	}
+
 	cl_float3 m_data;
 };
 

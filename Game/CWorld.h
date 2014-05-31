@@ -87,7 +87,7 @@ private:
 		std::vector<struct SData_Portal> &portals
 	);
 
-	void LoadSectorModels (
+	void LoadSectorModelInstances (
 		SSector &sector,
 		struct SData_Sector &sectorSource,
 		std::vector<struct SData_Material> &materials,

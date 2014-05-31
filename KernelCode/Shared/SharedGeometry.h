@@ -99,14 +99,19 @@ struct SModelInstance
 	cl_uint m_startObjectIndex;
 	cl_uint m_stopObjectIndex;
 	cl_uint m_materialOverride;
-	cl_uint m_pack2;
+	cl_float m_scale;
 
 	cl_float4 m_boundingSphere;
 
-	cl_float4 m_transform1;
-	cl_float4 m_transform2;
-	cl_float4 m_transform3;
-	cl_float4 m_transform4;
+	cl_float4 m_worldToModelX;
+	cl_float4 m_worldToModelY;
+	cl_float4 m_worldToModelZ;
+	cl_float4 m_worldToModelW;
+
+	cl_float4 m_modelToWorldX;
+	cl_float4 m_modelToWorldY;
+	cl_float4 m_modelToWorldZ;
+	cl_float4 m_modelToWorldW;
 };
 
 #define SSECTOR_NUMPLANES 6

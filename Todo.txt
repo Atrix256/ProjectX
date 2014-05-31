@@ -1,6 +1,14 @@
 
 NEXT
 
+* check out the "select" function thing for the DEBUG_MODEL_BOUNDING_SPHERE code
+
+* might be able to get around having to pass materials, num materials etc everywhere in kernel by having "private" space vars in program scope?
+
+* assert that model instance scale is not zero since we have to divide by it!
+
+* put the matrix math stuff into it's own namespace or something
+
 * assert that a model can be loaded & can be found when instanced from ID
 
 * make a constant for the invalid portal index (and invalid material index?)
@@ -152,6 +160,8 @@ NEXT
 * need to make blender exporter export the casts shadows flag that is exposed (somewhere) in blender
 
 --RENDERING
+* could try having scaling on sector/portal transforms
+* should we change 4x4 matrixs from four cl_float4's to one cl_float16?
 * is the sector's "CastShadows" flag even used? probably should get rid of it i think? maybe it could be used... but how?
 * try simpler, quicker geometry tests for shadow tests
  * not usable by transparent shadows though ):
@@ -524,6 +534,8 @@ TO "SHIP" TO TEAM
 --5/30/14
 * models are now instanced correctly - they share triangles even when in different locations.
 * material override works for instances
+* made it so you can scale model instances, cleaned up instance collision code.
+* gave treatment to shadows and regular rendering
 
 --5/29/14
 * made models load materials from their model files.

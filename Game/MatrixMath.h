@@ -11,6 +11,92 @@ Matrix math routines used by host code
 #include "Platform/float3.h"
 
 //-----------------------------------------------------------------------------
+inline void MatrixIdentity (
+	cl_float4 &xAxis,
+	cl_float4 &yAxis,
+	cl_float4 &zAxis,
+	cl_float4 &wAxis)
+{
+	xAxis.s[0] = 1.0f;
+	xAxis.s[1] = 0.0f;
+	xAxis.s[2] = 0.0f;
+	xAxis.s[3] = 0.0f;
+
+	yAxis.s[0] = 0.0f;
+	yAxis.s[1] = 1.0f;
+	yAxis.s[2] = 0.0f;
+	yAxis.s[3] = 0.0f;
+
+	zAxis.s[0] = 0.0f;
+	zAxis.s[1] = 0.0f;
+	zAxis.s[2] = 1.0f;
+	zAxis.s[3] = 0.0f;
+
+	wAxis.s[0] = 0.0f;
+	wAxis.s[1] = 0.0f;
+	wAxis.s[2] = 0.0f;
+	wAxis.s[3] = 1.0f;
+}
+
+//-----------------------------------------------------------------------------
+inline void MatrixTranslation (
+	cl_float4 &xAxis,
+	cl_float4 &yAxis,
+	cl_float4 &zAxis,
+	cl_float4 &wAxis,
+	const float3 &translation)
+{
+	xAxis.s[0] = 1.0f;
+	xAxis.s[1] = 0.0f;
+	xAxis.s[2] = 0.0f;
+	xAxis.s[3] = 0.0f;
+
+	yAxis.s[0] = 0.0f;
+	yAxis.s[1] = 1.0f;
+	yAxis.s[2] = 0.0f;
+	yAxis.s[3] = 0.0f;
+
+	zAxis.s[0] = 0.0f;
+	zAxis.s[1] = 0.0f;
+	zAxis.s[2] = 1.0f;
+	zAxis.s[3] = 0.0f;
+
+	wAxis.s[0] = translation[0];
+	wAxis.s[1] = translation[1];
+	wAxis.s[2] = translation[2];
+	wAxis.s[3] = 1.0f;
+}
+
+//-----------------------------------------------------------------------------
+inline void MatrixScale (
+	cl_float4 &xAxis,
+	cl_float4 &yAxis,
+	cl_float4 &zAxis,
+	cl_float4 &wAxis,
+	const float scale)
+{
+	xAxis.s[0] = scale;
+	xAxis.s[1] = 0.0f;
+	xAxis.s[2] = 0.0f;
+	xAxis.s[3] = 0.0f;
+
+	yAxis.s[0] = 0.0f;
+	yAxis.s[1] = scale;
+	yAxis.s[2] = 0.0f;
+	yAxis.s[3] = 0.0f;
+
+	zAxis.s[0] = 0.0f;
+	zAxis.s[1] = 0.0f;
+	zAxis.s[2] = scale;
+	zAxis.s[3] = 0.0f;
+
+	wAxis.s[0] = 0.0f;
+	wAxis.s[1] = 0.0f;
+	wAxis.s[2] = 0.0f;
+	wAxis.s[3] = 1.0f;
+}
+
+//-----------------------------------------------------------------------------
 inline void TransformPointByMatrix (
 	float3 &outPoint,
 	const float3 &inPoint,
@@ -33,6 +119,19 @@ inline void TransformPointByMatrix (
 				+ inPoint[1] * yAxis.s[2]
 				+ inPoint[2] * zAxis.s[2]
 				+		1.0f * wAxis.s[2];
+}
+
+//-----------------------------------------------------------------------------
+inline void TransformPointByMatrix (
+	float3 &point,
+	const cl_float4 &xAxis,
+	const cl_float4 &yAxis,
+	const cl_float4 &zAxis,
+	const cl_float4 &wAxis)
+{
+	float3 transformedPoint;
+	TransformPointByMatrix(transformedPoint, point, xAxis, yAxis, zAxis, wAxis);
+	point = transformedPoint;
 }
 
 //-----------------------------------------------------------------------------

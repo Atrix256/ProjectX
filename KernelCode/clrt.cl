@@ -1,5 +1,5 @@
 /*==================================================================================================
-  
+
 clrt.cl
 
 The kernel code
@@ -418,12 +418,37 @@ inline bool PointCanSeePoint(
 		float3 hitStart, hitEnd;
 		if (RayHitsSphere(model->m_boundingSphere, startPos, rayDir, &hitStart, &hitEnd))
 		{
-			// TODO: better world to local
-			float3 startPosLocal = startPos - model->m_boundingSphere.xyz;
-			float3 rayDirLocal = rayDir;
+			struct SCollisionInfo collisionInfoLocal = 
+			{
+				c_invalidObjectId,
+				false,
+				{ 0.0f, 0.0f, 0.0f },
+				c_maxRayLength,
+				{ 0.0f, 0.0f, 0.0f },
+				{ 0.0f, 0.0f, 0.0f },
+				{ 0.0f, 0.0f, 0.0f },
+				{ 0.0f, 0.0f },
+				collisionInfo.m_debugAdditiveColor,
+				0,
+				0,
+			};
 
-			float3 hitStartLocal = hitStart - model->m_boundingSphere.xyz;
-			float3 hitEndLocal = hitEnd - model->m_boundingSphere.xyz;
+			// convert max intersection time from world to local space
+			if (collisionInfo.m_objectHit != c_invalidObjectId)
+				collisionInfoLocal.m_intersectionTime = collisionInfo.m_intersectionTime / model->m_scale;
+
+			// convert the ray from world space to model space, making sure the ray direction is normalized to account for scaling or rounding errors
+			float3 startPosLocal;
+			float3 rayDirLocal;
+			TransformPointByMatrix(&startPosLocal, &startPos, &model->m_worldToModelX, &model->m_worldToModelY, &model->m_worldToModelZ, &model->m_worldToModelW);
+			TransformVectorByMatrix(&rayDirLocal, &rayDir, &model->m_worldToModelX, &model->m_worldToModelY, &model->m_worldToModelZ);
+			rayDirLocal = normalize(rayDirLocal);
+
+			// convert the bounding sphere hit locations from world space to model space
+			float3 hitStartLocal;
+			float3 hitEndLocal;
+			TransformPointByMatrix(&hitStartLocal, &hitStart, &model->m_worldToModelX, &model->m_worldToModelY, &model->m_worldToModelZ, &model->m_worldToModelW);
+			TransformPointByMatrix(&hitEndLocal, &hitEnd, &model->m_worldToModelX, &model->m_worldToModelY, &model->m_worldToModelZ, &model->m_worldToModelW);
 
 			// calculate which y half spaces this segment goes through
 			cl_uint halfSpaceFlags = 0;
@@ -445,7 +470,7 @@ inline bool PointCanSeePoint(
 
 					for (; triangleIndex < triangleStopIndex; ++triangleIndex)
 					{
-						if (RayIntersectTriangle(&triangles[triangleIndex], &collisionInfo, startPosLocal, rayDirLocal, ignorePrimitiveId, backFaceCulling, object->m_materialIndex, object->m_portalIndex))
+						if (RayIntersectTriangle(&triangles[triangleIndex], &collisionInfoLocal, startPosLocal, rayDirLocal, ignorePrimitiveId, backFaceCulling, object->m_materialIndex, object->m_portalIndex))
 							return false;
 					}
 				}
@@ -588,16 +613,37 @@ void TraceRay (
 			float3 hitStart, hitEnd;
 			if (RayHitsSphere(model->m_boundingSphere, rayPos, rayDir, &hitStart, &hitEnd))
 			{
-				#if DEBUG_MODEL_BOUNDING_SPHERE
-				collisionInfo.m_debugAdditiveColor += (float3)(0.2f,0.2f,0.2f);
-				#endif
+				struct SCollisionInfo collisionInfoLocal = 
+				{
+					c_invalidObjectId,
+					false,
+					{ 0.0f, 0.0f, 0.0f },
+					c_maxRayLength,
+					{ 0.0f, 0.0f, 0.0f },
+					{ 0.0f, 0.0f, 0.0f },
+					{ 0.0f, 0.0f, 0.0f },
+					{ 0.0f, 0.0f },
+					collisionInfo.m_debugAdditiveColor,
+					0,
+					0,
+				};
 
-				// TODO: better world to local
-				float3 rayPosLocal = rayPos - model->m_boundingSphere.xyz;
-				float3 rayDirLocal = rayDir;
+				// convert max intersection time from world to local space
+				if (collisionInfo.m_objectHit != c_invalidObjectId)
+					collisionInfoLocal.m_intersectionTime = collisionInfo.m_intersectionTime / model->m_scale;
 
-				float3 hitStartLocal = hitStart - model->m_boundingSphere.xyz;
-				float3 hitEndLocal = hitEnd - model->m_boundingSphere.xyz;
+				// convert the ray from world space to model space, making sure the ray direction is normalized to account for scaling or rounding errors
+				float3 rayPosLocal;
+				float3 rayDirLocal;
+				TransformPointByMatrix(&rayPosLocal, &rayPos, &model->m_worldToModelX, &model->m_worldToModelY, &model->m_worldToModelZ, &model->m_worldToModelW);
+				TransformVectorByMatrix(&rayDirLocal, &rayDir, &model->m_worldToModelX, &model->m_worldToModelY, &model->m_worldToModelZ);
+				rayDirLocal = normalize(rayDirLocal);
+
+				// convert the bounding sphere hit locations from world space to model space
+				float3 hitStartLocal;
+				float3 hitEndLocal;
+				TransformPointByMatrix(&hitStartLocal, &hitStart, &model->m_worldToModelX, &model->m_worldToModelY, &model->m_worldToModelZ, &model->m_worldToModelW);
+				TransformPointByMatrix(&hitEndLocal, &hitEnd, &model->m_worldToModelX, &model->m_worldToModelY, &model->m_worldToModelZ, &model->m_worldToModelW);
 
 				// calculate which y half spaces this segment goes through
 				cl_uint halfSpaceFlags = 0;
@@ -607,33 +653,45 @@ void TraceRay (
 				for (int objectIndex = model->m_startObjectIndex; objectIndex < model->m_stopObjectIndex; ++objectIndex)
 				{
 					__global struct SModelObject *object = &objects[objectIndex];
-					// allow back face culling if the triangle isn't refractive (transparent)
 
+					// allow back face culling if the triangle isn't refractive (transparent)
 					unsigned int materialIndex = model->m_materialOverride == -1 ? object->m_materialIndex : model->m_materialOverride;
 					bool backFaceCulling = !IsRefractive(&materials[materialIndex]);
 
 					// figure out the triangle start and stop index to test against.
 					// if the segment we are testing is in only the positive y half space or only the negative y half space, we can cut out triangles
 					// that are completely in the other y half space.  If it has both, we need to test all unfortunately.
-					#if 1
-						unsigned int triangleIndex = (halfSpaceFlags & e_halfSpaceNegY) ? object->m_startTriangleIndex : object->m_mixStartTriangleIndex;
-						unsigned int triangleStopIndex = (halfSpaceFlags & e_halfSpacePosY) ? object->m_stopTriangleIndex : object->m_mixStopTriangleIndex;
-					#else
-						//unsigned int triangleIndex = object->m_startTriangleIndex;
-						//unsigned int triangleStopIndex = object->m_stopTriangleIndex;
-						unsigned int triangleIndex = object->m_mixStartTriangleIndex;
-						unsigned int triangleStopIndex = object->m_stopTriangleIndex;
-					#endif
+					unsigned int triangleIndex = (halfSpaceFlags & e_halfSpaceNegY) ? object->m_startTriangleIndex : object->m_mixStartTriangleIndex;
+					unsigned int triangleStopIndex = (halfSpaceFlags & e_halfSpacePosY) ? object->m_stopTriangleIndex : object->m_mixStopTriangleIndex;
 
 					for (; triangleIndex < triangleStopIndex; ++triangleIndex)
-					{
-						bool intersected = RayIntersectTriangle(&triangles[triangleIndex], &collisionInfo, rayPosLocal, rayDirLocal, lastHitPrimitiveId, backFaceCulling, materialIndex, object->m_portalIndex);
-
-						// TODO: better local to world, handle other fields like normal, u axis, v axis etc
-						if (intersected)
-							collisionInfo.m_intersectionPoint += model->m_boundingSphere.xyz;
-					}
+						RayIntersectTriangle(&triangles[triangleIndex], &collisionInfoLocal, rayPosLocal, rayDirLocal, lastHitPrimitiveId, backFaceCulling, materialIndex, object->m_portalIndex);
 				}
+
+				// if we hit something in local space, we need to convert the local space hit information back into world space
+				if (collisionInfoLocal.m_objectHit != c_invalidObjectId)
+				{
+					// copy everything over
+					collisionInfo = collisionInfoLocal;
+
+					// convert collision info from model space to world space
+					TransformPointByMatrixNoTemporary(&collisionInfo.m_intersectionPoint, &model->m_modelToWorldX, &model->m_modelToWorldY, &model->m_modelToWorldZ, &model->m_modelToWorldW);
+					TransformVectorByMatrixNoTemporary(&collisionInfo.m_surfaceNormal, &model->m_modelToWorldX, &model->m_modelToWorldY, &model->m_modelToWorldZ);
+					TransformVectorByMatrixNoTemporary(&collisionInfo.m_surfaceU, &model->m_modelToWorldX, &model->m_modelToWorldY, &model->m_modelToWorldZ);
+					TransformVectorByMatrixNoTemporary(&collisionInfo.m_surfaceV, &model->m_modelToWorldX, &model->m_modelToWorldY, &model->m_modelToWorldZ);
+					collisionInfo.m_intersectionTime *= model->m_scale;
+
+					// make sure things are normalized as is appropriate (to account for scaling and rounding errors)
+					collisionInfo.m_surfaceNormal = normalize(collisionInfo.m_surfaceNormal);
+					collisionInfo.m_surfaceU = normalize(collisionInfo.m_surfaceU);
+					collisionInfo.m_surfaceV = normalize(collisionInfo.m_surfaceV);
+				}
+
+				#if DEBUG_MODEL_BOUNDING_SPHERE
+				collisionInfo.m_debugAdditiveColor += (halfSpaceFlags == e_halfSpacePosY) ? (float3)(0.0f,0.2f,0.0f) : (float3)(0.0f,0.0f,0.0f);
+				collisionInfo.m_debugAdditiveColor += (halfSpaceFlags == e_halfSpaceNegY) ? (float3)(0.2f,0.0f,0.0f) : (float3)(0.0f,0.0f,0.0f);
+				collisionInfo.m_debugAdditiveColor += (halfSpaceFlags == (e_halfSpaceNegY | e_halfSpacePosY)) ? (float3)(0.2f,0.2f,0.2f) : (float3)(0.0f,0.0f,0.0f);
+				#endif
 			}
 		}
 

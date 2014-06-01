@@ -1,6 +1,10 @@
 
 NEXT
 
+* fog - both distance, and height based fog (where you fog things based on their y axis value!)
+
+* record a video of some animated objects (moving / expanding contracting, rotating, etc) and absorption objects etc.  fog and moving lights
+
 * check out the "select" function thing for the DEBUG_MODEL_BOUNDING_SPHERE code
 
 * might be able to get around having to pass materials, num materials etc everywhere in kernel by having "private" space vars in program scope?
@@ -12,28 +16,6 @@ NEXT
 * assert that a model can be loaded & can be found when instanced from ID
 
 * make a constant for the invalid portal index (and invalid material index?)
-
-* the space ship texture coordinates aren't importing/exporting right ):
- ? are any models importing texture coordinates correctly?
-
-* only allow uniform scaling
- * This way we don't need to keep track of farthest point from origin, just farthest distance
- * Also, max collision time can be scaled by radius, instead of doing some crazy thing to convert max time?
-
-* in the cpu only side model data, keep knowledge of the farthest point from the origin, so that we can apply scale to it to get a better bounding sphere radius
- * keep point farthest from origin in CPu side model data.  Apply scaling to it, then get length, for circle radius.
-
-* make model instance transforms work.  make a world2local and local2world (inverse) matrix 
- * translation
- * rotation
- * scaling (non uniform?)
-
-* specify translation when loading models
-* specify rotation when loading models
-* specify scale when loading models!
-* specify tinting (etc) when loading models
-
-
 
 * can we make a debug visualization for...
  * time taken to render a pixel
@@ -158,6 +140,7 @@ NEXT
 * blender has other textures available that we could use if we want: ambient texture (?), specular map, hardness map (?), reflection map, alpha map, translucency map (?), bump map
 * models need to be able to export / load reflection and absorption
 * need to make blender exporter export the casts shadows flag that is exposed (somewhere) in blender
+* are there too many duplicate materials being created?
 
 --RENDERING
 * could try having scaling on sector/portal transforms
@@ -530,6 +513,10 @@ TO "SHIP" TO TEAM
  * try better bounding sphere calculations? (find the smallest bounding sphere) Probly not worth it, expensive to find for animated meshes?
 
 =====DONE=====
+
+--5/31/14
+* fixed u,v texture export / importing!
+* made a triangle debug visualization gfx setting
 
 --5/30/14
 * models are now instanced correctly - they share triangles even when in different locations.

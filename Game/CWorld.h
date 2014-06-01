@@ -63,6 +63,7 @@ private:
 		const struct SData_Vec2 &ta,
 		const struct SData_Vec2 &tb,
 		const struct SData_Vec2 &tc,
+		const struct SData_Vec3 &normal,
 		const struct SData_Vec3 &tangent,
 		const struct SData_Vec3 &bitangent
 	);

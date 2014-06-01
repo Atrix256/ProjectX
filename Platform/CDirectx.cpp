@@ -626,6 +626,8 @@ HRESULT CDirectX::CreateKernelProgram(
 	buildOptions.append(m_graphicsSettings.m_DebugTextureUV ? "1" : "0");
 	buildOptions.append(" -D DEBUG_RAY_BOUNCECOUNT=");
 	buildOptions.append(m_graphicsSettings.m_DebugRayBounceCount ? "1" : "0");
+	buildOptions.append(" -D DEBUG_TRIANGLES=");
+	buildOptions.append(m_graphicsSettings.m_DebugTriangles ? "1" : "0");
 
 	// if this setting is on, turn on the optimizations that prefer speed over accuracy and safety
 	if (m_graphicsSettings.m_FastestMath) {

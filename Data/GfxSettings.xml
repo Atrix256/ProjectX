@@ -17,4 +17,5 @@
   <DebugRayBounceCount Value="false"/>
   <DebugModelBoundingSphere Value="false"/>
   <DebugTextureUV Value="false"/>
+  <DebugTriangles Value="false"/>
 </GfxSettings>

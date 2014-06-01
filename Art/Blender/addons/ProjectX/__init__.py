@@ -17,7 +17,8 @@ import os
 
 from mathutils import Matrix, Vector
 
-GLOBAL_EXPORT_MATRIX = Matrix([[1, 0, 0, 0],[0, 0, 1, 0],[0, -1, 0, 0],[0, 0, 0, 1]])
+# flip Y and Z axis, since blender has +Z as up, and we have +Y as up
+GLOBAL_EXPORT_MATRIX = Matrix([[1, 0, 0, 0],[0, 0, 1, 0],[0, 1, 0, 0],[0, 0, 0, 1]])
 
 def mesh_triangulate(me):
     import bmesh
@@ -138,7 +139,7 @@ class ExportModel(bpy.types.Operator, ExportHelper):
 					out.write('\t\t\t\t<tangent Value="%f,%f,%f"/>\n' % (data.loops[loopIndex].tangent[:]));
 					out.write('\t\t\t\t<bitangent Value="%f,%f,%f"/>\n' % (data.loops[loopIndex].bitangent[:]));
 					if data.uv_layers.active != None:
-						out.write('\t\t\t\t<uv Value="%f,%f"/>\n' % (data.uv_layers.active.data[loopIndex].uv[:]));
+						out.write('\t\t\t\t<uv Value="%f,%f"/>\n' % (data.uv_layers.active.data[loopIndex].uv.x, 1.0 - data.uv_layers.active.data[loopIndex].uv.y));
 					out.write('\t\t\t</vert>\n');
 
 				out.write('\t\t</face>\n')

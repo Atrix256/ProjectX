@@ -207,7 +207,14 @@ inline bool RayIntersectTriangle (__global const struct SModelTriangle *triangle
 	// texture coordinates - get from texture coordinates on triangle
 	info->m_textureCoordinates = triangle->m_textureA * u + triangle->m_textureB * v + triangle->m_textureC * w;
 
-	//info->m_textureCoordinates = (float2)(1.0f,1.0f) - info->m_textureCoordinates;
+	#if DEBUG_TRIANGLES
+	if (u < 0.025f)
+		info->m_debugAdditiveColor += (float3)(0.3f,0.0f,0.0f);
+	if (v < 0.025f)
+		info->m_debugAdditiveColor += (float3)(0.0f,0.3f,0.0f);
+	if (w < 0.025f)
+		info->m_debugAdditiveColor += (float3)(0.0f,0.0f,0.3f);
+	#endif
 
 	// barycentric coordinates debugging
 	//const float factor = 0.25f;

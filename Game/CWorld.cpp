@@ -111,6 +111,7 @@ void CWorld::AddTriangle (
 	const SData_Vec2 &ta,
 	const SData_Vec2 &tb,
 	const SData_Vec2 &tc,
+	const struct SData_Vec3 &normal,
 	const struct SData_Vec3 &tangent,
 	const struct SData_Vec3 &bitangent
 ) {
@@ -122,14 +123,16 @@ void CWorld::AddTriangle (
 	Copy(a, sa);
 	Copy(b, sb);
 	Copy(c, sc);
-		
-	float3 normal      = cross(b-a, c-a);
-	triangle.m_plane   = plane(normalize(normal), a);
-	triangle.m_planeBC = plane(normalize(cross(normal, c-b)), b);
-	triangle.m_planeCA = plane(normalize(cross(normal, a-c)), c);
 
-	float bc = 1.0f / (dot(a, normalize(cross(normal, c-b))) - triangle.m_planeBC.s[3]);
-	float ca = 1.0f / (dot(b, normalize(cross(normal, a-c))) - triangle.m_planeCA.s[3]);
+	float3 norm;
+	Copy(norm, normal);
+	norm = normalize(norm);
+	triangle.m_plane   = plane(normalize(norm), a);
+	triangle.m_planeBC = plane(normalize(cross(norm, c-b)), b);
+	triangle.m_planeCA = plane(normalize(cross(norm, a-c)), c);
+
+	float bc = 1.0f / (dot(a, normalize(cross(norm, c-b))) - triangle.m_planeBC.s[3]);
+	float ca = 1.0f / (dot(b, normalize(cross(norm, a-c))) - triangle.m_planeCA.s[3]);
 
 	triangle.m_planeBC.s[0] *= bc;
 	triangle.m_planeBC.s[1] *= bc;
@@ -249,6 +252,7 @@ void CWorld::AddModel (const struct SData_Model &modelSource)
 					face.m_vert[0].m_uv,
 					face.m_vert[1].m_uv,
 					face.m_vert[2].m_uv,
+					face.m_vert[0].m_normal,
 					face.m_vert[0].m_tangent,
 					face.m_vert[0].m_bitangent
 				);

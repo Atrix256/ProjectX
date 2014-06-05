@@ -4,11 +4,11 @@
   <StartFacing Value="0,0,1"/>
 
   <Material id="Brick" DiffuseTexture="Art/oildrum_Diffuse.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50"/>
-  <Material id="RoughBrick" DiffuseTexture="Art/oildrum_Diffuse.png" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="RoughBrick" DiffuseTexture="Art/oildrum_Diffuse.png" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0"/>
 
-  <Material id="BumpyGrid" DiffuseTexture="Art/grid.png" DiffuseColor="1,0,0" SpecularColor="0.1,0.1,0.02" ReflectionAmount="0.15" RefractionIndex="0.8" RefractionAmount="0"/>
+  <Material id="BumpyGrid" DiffuseTexture="Art/grid.png" DiffuseColor="1,0,0" SpecularColor="0.1,0.1,0.02" ReflectionColor="0.15,0.15,0.15"/>
 
-  <Material id="Grid" DiffuseTexture="Art/grid.png" NormalTexture="Art/cells.png" DiffuseColor="1,1,1" SpecularColor="1,1,1" SpecularPower="50" ReflectionAmount="0" RefractionIndex="1" RefractionAmount="0"/>
+  <Material id="Grid" DiffuseTexture="Art/grid.png" NormalTexture="Art/cells.png" DiffuseColor="1,1,1" SpecularColor="1,1,1" SpecularPower="50"/>
   
   <Material id="WhiteLight" EmissiveColor="1,1,1" DiffuseColor="0,0,0" SpecularColor="0,0,0"/>
 
@@ -17,15 +17,15 @@
   <Material id="Green"  DiffuseColor="0.1,1,0.1" SpecularColor="0,0,0"/>
   <Material id="Blue"   DiffuseColor="0.1,0.1,1" SpecularColor="0,0,0"/>
 
-  <Material id="Mirror" DiffuseColor="0,0.1,0" SpecularColor="0,0,0" ReflectionAmount="0.9"/>
-  <Material id="BumpyMirror" NormalTexture="Art/simplenormal.png" DiffuseColor="0,0.1,0" SpecularColor="0,0,0" ReflectionAmount="0.9"/>
+  <Material id="Mirror" DiffuseColor="0,0,0" SpecularColor="0,0,0" ReflectionColor="0.9,1,0.9"/>
+  <Material id="BumpyMirror" NormalTexture="Art/simplenormal.png" SpecularColor="0,0,0" ReflectionColor="0.9,1,0.9"/>
 
-  <Material id="Ruby" DiffuseColor="0,0,0" SpecularColor="1,0.6,0.6" SpecularPower="1" RefractionIndex="0.75" RefractionAmount="1" Absorbance="0.0,0.002,0.002"/>
+  <Material id="Ruby" DiffuseColor="0,0,0" SpecularColor="1,0.6,0.6" SpecularPower="1" RefractionIndex="0.90" RefractionColor="1,1,1" Absorbance="0.0,0.002,0.002"/>
 
-  <Material id="Ruby2" DiffuseColor="0,0,0" SpecularColor="0,0,0" RefractionIndex="0.9" RefractionAmount="1" Absorbance="0.0,0.002,0.002"/>
+  <Material id="Ruby2" DiffuseColor="0,0,0" SpecularColor="0,0,0" RefractionIndex="0.9" RefractionColor="1,1,1" Absorbance="0.0,0.002,0.002"/>
 
-  <Material id="SoapBubble" DiffuseColor="0.1,0.02,0.1" SpecularColor="0.5,0.1,0.5" SpecularPower="5" RefractionIndex="0.75" RefractionAmount="1"/>
-  <Material id="BumpySoapBubble" NormalTexture="Art/cells.png" DiffuseColor="0.1,0.02,0.1" SpecularColor="0.5,0.1,0.5" SpecularPower="5" RefractionIndex="0.95" RefractionAmount="1"/>
+  <Material id="SoapBubble" DiffuseColor="0.1,0.02,0.1" SpecularColor="0.5,0.1,0.5" SpecularPower="5" RefractionIndex="0.75" RefractionColor="1,1,1"/>
+  <Material id="BumpySoapBubble" NormalTexture="Art/cells.png" DiffuseColor="0.1,0.02,0.1" SpecularColor="0.5,0.1,0.5" SpecularPower="5" RefractionIndex="0.95" RefractionColor="1,1,1"/>
 
   <Material id="SkyboxTop" DiffuseTexture="Art/Skybox/frozendusk_top.jpg" DiffuseColor="1.0, 1.0, 1.0"/>
   <Material id="SkyboxFront" DiffuseTexture="Art/Skybox/frozendusk_front.jpg" DiffuseColor="1.0, 1.0, 1.0"/>
@@ -39,7 +39,7 @@
   <!--===============================================================
   StartRoom
   ================================================================-->
-  <Sector id="StartRoom" Dimensions="20,10,10" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector FogColor="0,0,1" FogFactor="0.014" id="StartRoom" Dimensions="40,10,10" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
     <Sphere Position="4,5,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="4,5,0" Color="1,1,0.8" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
     
@@ -59,7 +59,7 @@
   <!--===============================================================
   HallwayToDarkRoom
   ================================================================-->
-  <Sector id="HallwayToDarkRoom" Dimensions="10,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector FogColor="0,1,0" FogFactor="0.014" id="HallwayToDarkRoom" Dimensions="10,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
 
     <Sphere Position="0,3.5,-15" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="0,3.5,-15" Color="1,1,0.8" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
@@ -83,7 +83,7 @@
   <!--===============================================================
   DarkRoom
   ================================================================-->
-  <Sector id="DarkRoom" Dimensions="40,10,40" CastShadows="false" AmbientLight="0.01, 0.01, 0.01">
+  <Sector FogColor="1,0,0" FogFactor="0.014" id="DarkRoom" Dimensions="40,10,40" CastShadows="false" AmbientLight="0.01, 0.01, 0.01">
     <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25"/>
 
@@ -97,7 +97,7 @@
   <!--===============================================================
   Hallway
   ================================================================-->
-  <Sector id="Hallway" Dimensions="7,7,20" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector FogColor="0,1,1" FogFactor="0.014" id="Hallway" Dimensions="7,7,20" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
 
     <Sphere Position="0,3.5,5" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="0,3.5, 5" Color="1,0.8,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
@@ -118,7 +118,7 @@
   <!--===============================================================
   Outside
   ================================================================-->
-  <Sector id="Outside" Dimensions="40,20,80" CastShadows="false" AmbientLight="0.2, 0.2, 0.2">
+  <Sector FogColor="1,0,1" FogFactor="0.014" id="Outside" Dimensions="40,20,80" CastShadows="false" AmbientLight="0.2, 0.2, 0.2">
 
     <Sphere Position="-27,5,69" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="-27,5,69" Color="1,1,0.2" AttenuationConstant="1" AttenuationDistance="0.0025" />
@@ -178,7 +178,7 @@
   <!--===============================================================
   Skybox
   ================================================================-->
-  <Sector id="Skybox" Dimensions="512,512,512" CastShadows="false" AmbientLight="1,1,1">
+  <Sector FogColor="1,1,0" FogFactor="0.002" id="Skybox" Dimensions="512,512,512" CastShadows="false" AmbientLight="1,1,1">
     <SectorPlane UAxis="0,0, 1" Material="SkyboxRight" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>
     <SectorPlane UAxis="0,0,-1" Material="SkyboxLeft" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>
 

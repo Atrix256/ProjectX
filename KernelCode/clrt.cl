@@ -34,14 +34,21 @@ struct SCollisionInfo
 	unsigned int		m_portalIndex;
 };
 
+struct SColorStackItem
+{
+	float3		m_filterColor;
+	float3		m_addColor;
+	cl_float4	m_fogColorAndAmount;
+};
+
 inline bool IsReflective (__global const struct SMaterial *material)
 {
-	return material->m_reflectionAmount > 0.0f;
+	return material->m_rayInteraction ==  e_rayInteractionReflect;
 }
 
 inline bool IsRefractive (__global const struct SMaterial *material)
 {
-	return !IsReflective(material) && material->m_refractionAmount > 0.0f;
+	return material->m_rayInteraction ==  e_rayInteractionRefract;
 }
 
 inline bool RayHitsSphere(const float4 sphere, const float3 rayPos, const float3 rayDir, float3 *sphereStartPoint, float3 *sphereEndPoint)
@@ -497,7 +504,6 @@ void ApplyPointLight (
 	__global const struct SSector *sector,
 	__global const struct SMaterial *material,
 	__global const struct SPointLight *light,
-	const float3 colorMultiplier,
 	const float3 rayDir,
 	__global struct SSphere *spheres,
 	__global struct SModelTriangle *triangles,
@@ -550,16 +556,29 @@ void ApplyPointLight (
 	// diffuse
 	float dp = dot(collisionInfo->m_surfaceNormal, hitToLight);
 	if(dp > 0.0)
-		*pixelColor += diffuseColor * dp * light->m_color * colorMultiplier * attenuation;
+		*pixelColor += diffuseColor * dp * light->m_color * attenuation;
 				
 	// specular
 	float3 reflection = reflect(hitToLight, collisionInfo->m_surfaceNormal);
 	dp = dot(rayDir, reflection);
 	if (dp > 0.0)
-		*pixelColor += material->m_specularColorAndPower.xyz * pow(dp, material->m_specularColorAndPower.w) * light->m_color * colorMultiplier * attenuation;
+		*pixelColor += material->m_specularColorAndPower.xyz * pow(dp, material->m_specularColorAndPower.w) * light->m_color * attenuation;
 }
 
-//
+inline void AddColorStackItem (struct SColorStackItem *colorStack, unsigned int *colorStackDepth, const float3 *filterColor, const float3 *addColor, const cl_float4 *fogColorAndAmount)
+{
+	// get the color stack item
+	struct SColorStackItem *item = &colorStack[*colorStackDepth];
+
+	// mark that we've taken that item
+	++colorStackDepth[0];
+
+	// set the item of the data
+	item->m_filterColor = *filterColor;
+	item->m_addColor = *addColor;
+	item->m_fogColorAndAmount = *fogColorAndAmount;
+}
+
 void TraceRay (
 	__global struct SSharedDataRootHostToKernel *dataRoot,
 	__read_only image3d_t tex3dIn,
@@ -576,13 +595,12 @@ void TraceRay (
 	__global struct SPortal *portals
 )
 {
+	struct SColorStackItem colorStack[c_maxRayBounces];
+	unsigned int colorStackDepth = 0;
+
 	TObjectId lastHitPrimitiveId = c_invalidObjectId;
 
-	float3 colorMultiplier = {1.0f, 1.0f, 1.0f};
-
 	float3 absorbance = {0.0f, 0.0f, 0.0f};
-
-	float3 rayToCameraDir = rayDir;
 
 	unsigned int currentSector = dataRoot->m_camera.m_sector;
 
@@ -704,14 +722,17 @@ void TraceRay (
 
 		RayIntersectSector(sector, &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
 
-		// add the debug color in
-		*pixelColor += collisionInfo.m_debugAdditiveColor;
+		cl_float4 fogColorAndAmount;
+		fogColorAndAmount.xyz = sector->m_fogColorAndFactor.xyz;
+		fogColorAndAmount.w = Saturate(sector->m_fogColorAndFactor.w * collisionInfo.m_intersectionTime);
 
 		// if no hit, set pixel to ambient light and bail out
 		if (collisionInfo.m_objectHit == c_invalidObjectId)
 		{
-			*pixelColor += ambientLight * colorMultiplier;
-			return;
+			const float3 white = (float3)(1.0f);
+			const float3 missColor = ambientLight + collisionInfo.m_debugAdditiveColor;
+			AddColorStackItem(colorStack, &colorStackDepth, &white, &missColor, &fogColorAndAmount);
+			break;
 		}
 
 		// if we hit a portal, change our sector, transform the ray and bail out of this loop.
@@ -748,13 +769,22 @@ void TraceRay (
 			rayDir = normalize(transformedDir);
 			currentSector = portals[collisionInfo.m_portalIndex].m_sector;
 			lastHitPrimitiveId = collisionInfo.m_objectHit;
+
+			// add a color stack item for portal traversal, just for the sake of handling fog
+			const float3 white = (float3)(1.0f);
+			float3 black = collisionInfo.m_debugAdditiveColor;
+			AddColorStackItem(colorStack, &colorStackDepth, &white, &black, &fogColorAndAmount);
 			continue;
 		}
 
 		__global const struct SMaterial *material = &materials[collisionInfo.m_materialIndex];
 
+		// if we hit an object from the inside, flip it's normal, and also make sure no fog is used
 		if (collisionInfo.m_fromInside)
+		{
 			collisionInfo.m_surfaceNormal *= -1.0f;
+			fogColorAndAmount = (cl_float4)(0.0f);
+		}
 
 		// handle normal mapping if there is any
 		#if SETTINGS_NORMALMAP == 1
@@ -780,8 +810,6 @@ void TraceRay (
 		currentAbsorbance.x = pow(10, currentAbsorbance.x);
 		currentAbsorbance.y = pow(10, currentAbsorbance.y);
 		currentAbsorbance.z = pow(10, currentAbsorbance.z);
-
-		colorMultiplier *= currentAbsorbance;
 		#endif
 
 		// get the diffuse color of the object we hit
@@ -804,8 +832,8 @@ void TraceRay (
 		diffuseColorBase = (float3)(collisionInfo.m_textureCoordinates.xy, 0.0f);
 		#endif
 
-		// apply ambient lighting and emissive color
-		float3 diffuseColor = diffuseColorBase * ambientLight + emissiveColor;
+		// apply ambient lighting, emissive color and the debug additive color
+		float3 diffuseColor = diffuseColorBase * ambientLight + emissiveColor + collisionInfo.m_debugAdditiveColor;
 
 		// apply diffuse / specular from a point light
 		for (int index = sector->m_staticLightStartIndex; index < sector->m_staticLightStopIndex; ++index)
@@ -815,7 +843,6 @@ void TraceRay (
 				sector,
 				material,
 				&lights[index],
-				colorMultiplier,
 				rayDir,
 				spheres,
 				triangles,
@@ -825,39 +852,57 @@ void TraceRay (
 				diffuseColorBase
 			);
 
-		// add the diffuse color in
-		*pixelColor += diffuseColor * colorMultiplier;
-
 		// if reflective, set up the reflected ray
-		if (material->m_reflectionAmount > 0.0f)
+		if (IsReflective(material))
 		{
+			// reflect the ray
 			rayPos = collisionInfo.m_intersectionPoint;
 			rayDir = reflect(rayDir, collisionInfo.m_surfaceNormal);
 
+			// remember that we hit this object so we don't look for another collision with it
 			lastHitPrimitiveId = collisionInfo.m_objectHit;
-			colorMultiplier *= material->m_reflectionAmount;
+
+			// add this calculated color to the stack, tinting all future colors by the reflection color
+			const float3 filterColor = material->m_reflectionColor * currentAbsorbance;
+			AddColorStackItem(colorStack, &colorStackDepth, &filterColor, &diffuseColor, &fogColorAndAmount);
 		}
 		// if refractive, set up the refracted ray
-		else if (material->m_refractionAmount > 0.0f)
+		else if (IsRefractive(material))
 		{				
+			// refract the ray
+			rayPos = collisionInfo.m_intersectionPoint + rayDir * 0.001f;
+			rayDir = refract(rayDir, collisionInfo.m_surfaceNormal, material->m_refractionIndex);
+
 			// if we are entering a refractive object, we can't ignore it since we need to go out the back
 			// side possibly.  Since we can't ignore it, we need to push a little bit past the point of
 			// intersection so we don't intersect it again.
 			lastHitPrimitiveId = 0;				
-			rayPos = collisionInfo.m_intersectionPoint + rayDir * 0.001f;
-				
-			rayDir = refract(rayToCameraDir, collisionInfo.m_surfaceNormal, material->m_refractionIndex);
 			
 			if (collisionInfo.m_fromInside)
 				absorbance -= material->m_absorbance;
 			else
 				absorbance += material->m_absorbance;
 
-			colorMultiplier *= material->m_refractionAmount;
+			// add this calculated color to the stack, tinting all future colors by the refraction color
+			const float3 filterColor = material->m_refractionColor * currentAbsorbance;
+			AddColorStackItem(colorStack, &colorStackDepth, &filterColor, &diffuseColor, &fogColorAndAmount);
 		}
 		// else we are done
 		else
-			return;
+		{
+			// add this calculated color to the stack and bail out since it doesn't reflect or refract
+			const float3 white = (float3)(1.0f) * currentAbsorbance;
+			AddColorStackItem(colorStack, &colorStackDepth, &white, &diffuseColor, &fogColorAndAmount);
+			break;
+		}
+	}
+
+	*pixelColor = (float3)(0);
+	for (int index = colorStackDepth - 1; index >= 0; --index)
+	{
+		*pixelColor *= colorStack[index].m_filterColor;
+		*pixelColor += colorStack[index].m_addColor;
+		*pixelColor = mix(*pixelColor, colorStack[index].m_fogColorAndAmount.xyz, colorStack[index].m_fogColorAndAmount.w);
 	}
 }
 
@@ -915,7 +960,7 @@ __kernel void clrt (
 
 		// trace the ray for the other eye
 		float3 rightEyePos = dataRoot->m_camera.m_pos + dataRoot->m_camera.m_left * SETTINGS_REDBLUEWIDTH;
-		TraceRay(dataRoot, tex3dIn, rightEyePos, rayDir, &color, lights, spheres, triangles, objects, sectors, materials, portals);
+		TraceRay(dataRoot, tex3dIn, rightEyePos, rayDir, &color, lights, spheres, triangles, objects, models, sectors, materials, portals);
 		color *= dataRoot->m_camera.m_brightnessMultiplier;
 		float grayRight = ColorToGray(&color);
 

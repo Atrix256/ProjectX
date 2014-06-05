@@ -14,7 +14,6 @@ This class holds all information about the world
 
 #include "CGame.h"
 #include "MatrixMath.h"
-#include "CDaeModelLoader.h"
 #include "CCamera.h"
 #include "Platform/OS.h"
 
@@ -165,8 +164,12 @@ unsigned int CWorld::AddMaterial (const struct SData_Material &materialSource, c
 	Copy(material.m_diffuseColor, materialSource.m_DiffuseColor);
 	Copy(material.m_specularColorAndPower, materialSource.m_SpecularColor, materialSource.m_SpecularPower);
 	Copy(material.m_emissiveColor, materialSource.m_EmissiveColor);
-	material.m_reflectionAmount = materialSource.m_ReflectionAmount;
-	material.m_refractionAmount = materialSource.m_RefractionAmount;
+	Copy(material.m_reflectionColor, materialSource.m_ReflectionColor);
+	Copy(material.m_refractionColor, materialSource.m_RefractionColor);
+
+	material.m_rayInteraction =
+		lengthsq(material.m_reflectionColor) > 0 ? e_rayInteractionReflect : (lengthsq(material.m_refractionColor) > 0 ? e_rayInteractionRefract : e_rayInteractionNone );
+
 	material.m_refractionIndex = materialSource.m_RefractionIndex;
 
 	Copy(material.m_absorbance, materialSource.m_Absorbance);
@@ -989,6 +992,7 @@ void CWorld::LoadSector (
 
 	// load / set the sector data
 	Copy(sector.m_ambientLight, sectorSource.m_AmbientLight);
+	Copy(sector.m_fogColorAndFactor, sectorSource.m_FogColor, sectorSource.m_FogFactor);
 	Copy(sector.m_halfDims, sectorSource.m_Dimensions);
 	sector.m_halfDims /= 2.0f;
 	sector.m_castsShadows = sectorSource.m_CastShadows;

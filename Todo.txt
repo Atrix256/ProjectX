@@ -1,13 +1,43 @@
 
 NEXT
 
+* clean up code and check in
+
+* could try having a "fog bias" that is subtracted from fog distances so it has to be a minimum depth before applying fog
+
+! play w/ refraction indices now that you've fixed the equation!
+
+? can we do a switch statement instead of "if reflective, else if refractive, else"? might be more paralelizable
+
+* could unify the reflect/refract data a bit better.  data specifies "reflect", "refract" or "none".  one color stored for color parameter.
+
+? could have an index somehow (like reflection index) on reflective surfaces to control how the reflection beam reflects?? for funhouse mirrors and such i guess
+
+* try showing just the last color of the color stack for fun to see what it looks like
+
+* in kernel: invalid material index, still used to look up material blindly! need a debug material or something.
+
+? what is difference between fog and beers law absorpbance?
+
+? how does light interact with height fog & distance fog?
+
+* could have bias parameter to height fog saturation instead of making it linear
+
+* instead of height fog, could specify a fog plane and associated parameters
+ * put in rendering section if not doing
+
+* half space fog: https://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
+ * if not using, put in rendering section
+
+* skybox bottom has no material and so does odd things.
+
 * fog - both distance, and height based fog (where you fog things based on their y axis value!)
 
 * record a video of some animated objects (moving / expanding contracting, rotating, etc) and absorption objects etc.  fog and moving lights
 
 * check out the "select" function thing for the DEBUG_MODEL_BOUNDING_SPHERE code
 
-* might be able to get around having to pass materials, num materials etc everywhere in kernel by having "private" space vars in program scope?
+* could put all the commonly passed crap aruond into 1 struct (materials, sectors, spheres, etc)
 
 * assert that model instance scale is not zero since we have to divide by it!
 
@@ -143,6 +173,8 @@ NEXT
 * are there too many duplicate materials being created?
 
 --RENDERING
+* when hitting an object from the inside, we don't do fog.  that is good but not 100% correct.  we shouldn't do fog if we are INSIDE an object.  we should maybe have an "inside object" count that we inc / dec as we enter and leave objects, and do fog if the count is zero
+* IQ fog: http://iquilezles.org/www/articles/fog/fog.htm
 * could try having scaling on sector/portal transforms
 * should we change 4x4 matrixs from four cl_float4's to one cl_float16?
 * is the sector's "CastShadows" flag even used? probably should get rid of it i think? maybe it could be used... but how?
@@ -458,6 +490,11 @@ NEXT
 * turning shadows off helps a lot
 * complex models not having shadows
 
+=====RAYTRACING NOTES=====
+
+* Apparently in RT, high level of detail is ok, so long as it doesnt take up a lot of the screen.  AKA small or distance detailed objects are just fine, since not many rays have to calculate collison with them (?)
+* some simple/cheap effects in rasterization - like distance or height fog - are more challenging in RT.  Those particular fog features may have been made worse by how i'm iteratively rendering pixel color.
+
 =====OPENCL NOTES=====
 ? is there an instruction limit in opencl?
  * not really but you dont want to make it too large since the instruction cache is like 64KB usually.
@@ -512,7 +549,16 @@ TO "SHIP" TO TEAM
 
  * try better bounding sphere calculations? (find the smallest bounding sphere) Probly not worth it, expensive to find for animated meshes?
 
+* might be able to get around having to pass materials, num materials etc everywhere in kernel by having "private" space vars in program scope?
+ * looked into it, limitations to the language make it shitty (program scope vars must be __constant etc)
+
+
 =====DONE=====
+
+--6/2/14
+* fixed refraction
+* made a color stack in support of fog
+* implemented distance fog
 
 --5/31/14
 * fixed u,v texture export / importing!

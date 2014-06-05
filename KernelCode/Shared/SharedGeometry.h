@@ -13,22 +13,31 @@ Structs shared by both kernel and host code
 #define c_invalidObjectId 0
 typedef cl_uint TObjectId;
 
+enum ERayInteraction
+{
+	e_rayInteractionReflect,
+	e_rayInteractionRefract,
+	e_rayInteractionNone
+};
+
 struct SMaterial
 {
 	float3 m_diffuseColor;
 	cl_float4 m_specularColorAndPower;
 	float3 m_emissiveColor;
-	cl_float m_reflectionAmount;
-	cl_float m_refractionIndex;
-	cl_float m_refractionAmount;
-	cl_float m_diffuseTextureIndex;
+	float3 m_reflectionColor;
+	float3 m_refractionColor;
+	float3 m_absorbance;
 
+	cl_float m_refractionIndex;
+	cl_float m_diffuseTextureIndex;
 	cl_float m_normalTextureIndex;
 	cl_float m_emissiveTextureIndex;
+
+	cl_uint m_rayInteraction;
 	cl_float m_pad1;
 	cl_float m_pad2;
-
-	float3 m_absorbance;
+	cl_float m_pad3;
 };
 
 struct SPortal
@@ -135,16 +144,18 @@ struct SSector
 	float3 m_halfDims;
 
 	float3 m_ambientLight;
-	
+
+	cl_float4 m_fogColorAndFactor;
+
 	cl_uint m_castsShadows;
 	cl_uint m_staticSphereStartIndex;
 	cl_uint m_staticSphereStopIndex;
-	cl_uint m_pack1;
-
 	cl_uint m_staticLightStartIndex;
+
 	cl_uint m_staticLightStopIndex;
 	cl_uint m_staticModelStartIndex;
 	cl_uint m_staticModelStopIndex;
+	cl_uint m_pad1;
 };
 
 struct SPointLight

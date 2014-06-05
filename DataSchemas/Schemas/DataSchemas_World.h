@@ -45,9 +45,9 @@ SchemaBegin(Material, "Information about a surface material")
 	Field(float, SpecularPower, 1.0f, "Higher values make for a smaller, sharper specular highlight.  Lower values make for a larger, duller specular highlight")
 	Field_Schema(Vec3, EmissiveColor, "0,0,0", "The emissive color of the material aka the color that shows up when there is no light on the object. Color multiplier for the emissive texture as well, if one is applied.")
 	Field(std::string, EmissiveTexture, "", "the name of the image file to sue for the emissive color of the material.  Leave blank for no texture")
-	Field(float, ReflectionAmount, 0.0f, "How reflective the surface should be.  A value of 1 means it will reflect all light, a value of 0 means it will reflect none.  A value of 0.5 means it will reflect the light at half intensity. A material may be EITHER reflective OR refractive (transparent) but not both. If both are specified, the material will be reflective ONLY.")
+	Field_Schema(Vec3, ReflectionColor, "0,0,0", "How reflective the surface should be.  A value of 1 means it will reflect all light, a value of 0 means it will reflect none.  A value of 0.5 means it will reflect the light at half intensity. A material may be EITHER reflective OR refractive (transparent) but not both. If both are specified, the material will be reflective ONLY.")
+	Field_Schema(Vec3, RefractionColor, "0,0,0", "How refractive (transparent) the surface should be.  A value of 1 means it will let through all light, a value of 0 means it will let none through.  A value of 0.5 means it will let through all light at half intensity.  Refraction will not work unless there is no reflection since an object may be EITHER reflective OR refractive but not both.")
 	Field(float, RefractionIndex, 1.0f, "The index of refraction of the material, aka how much light is bent when it enters and exits the material.  a value of 1 means the light will not be bent at all. Refraction is not active unless refraction amount is also greater than 0 and the object is not reflective.")
-	Field(float, RefractionAmount, 0.0f, "How refractive (transparent) the surface should be.  A value of 1 means it will let through all light, a value of 0 means it will let none through.  A value of 0.5 means it will let through all light at half intensity.  Refraction will not work unless there is no reflection since an object may be EITHER reflective OR refractive but not both.")
 	Field_Schema(Vec3, Absorbance, "0,0,0", "Absorbance (A) per centimeter for each color channel (red, green blue). Transmission = 10^(A*cm traveled).")
 SchemaEnd
 
@@ -116,6 +116,8 @@ SchemaBegin(Sector, "Information about a sector.  A sector is a single room in t
 	Field_Schema(Vec3, Dimensions, "1,1,1", "The width, height and depth of the sector's AABB")
 	Field_Schema_Array(SectorPlane, SectorPlane, "Information about each wall of the sector")
 	Field(bool, CastShadows, true, "Whether or not the sector casts shadows. TODO: is this used?")
+	Field_Schema(Vec3, FogColor, "1,1,1", "The color of fog in the sector.")
+	Field(float, FogFactor, 0, "This much fog applied per world unit (meter) a ray travels.  1.0 = full fog at 1 unit.  0.25 = full fog at 4 units.")
 SchemaEnd
 
 /*

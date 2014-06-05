@@ -220,7 +220,6 @@
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_XmdFile.h" />
     <ClInclude Include="External\tinyxml\tinyxml2.h" />
     <ClInclude Include="Game\CCamera.h" />
-    <ClInclude Include="Game\CDaeModelLoader.h" />
     <ClInclude Include="Game\CInput.h" />
     <ClInclude Include="Game\CWorld.h" />
     <ClInclude Include="Game\CGame.h" />
@@ -246,7 +245,6 @@
     <ClCompile Include="DataSchemas\DataSchemasStructs.cpp" />
     <ClCompile Include="External\tinyxml\tinyxml2.cpp" />
     <ClCompile Include="Game\CCamera.cpp" />
-    <ClCompile Include="Game\CDaeModelLoader.cpp" />
     <ClCompile Include="Game\CInput.cpp" />
     <ClCompile Include="Game\CWorld.cpp" />
     <ClCompile Include="Game\CGame.cpp" />

@@ -117,9 +117,6 @@
     <ClInclude Include="Game\InputToggleList.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="Game\CDaeModelLoader.h">
-      <Filter>Game</Filter>
-    </ClInclude>
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_XmdFile.h">
       <Filter>DataSchemas\Schemas</Filter>
     </ClInclude>
@@ -160,9 +157,6 @@
     </ClCompile>
     <ClCompile Include="Platform\CTextureManager.cpp">
       <Filter>Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\CDaeModelLoader.cpp">
-      <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Platform\OS.cpp">
       <Filter>Platform</Filter>

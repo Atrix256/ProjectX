@@ -118,6 +118,7 @@ SchemaBegin(Sector, "Information about a sector.  A sector is a single room in t
 	Field(bool, CastShadows, true, "Whether or not the sector casts shadows. TODO: is this used?")
 	Field_Schema(Vec3, FogColor, "1,1,1", "The color of fog in the sector.")
 	Field(float, FogFactor, 0, "This much fog applied per world unit (meter) a ray travels.  1.0 = full fog at 1 unit.  0.25 = full fog at 4 units.")
+	Field_Schema(Vec4, FogPlane, "0,1,0,0", "The equation of the plane where fog begins.  The first 3 values is the normal of the plane, and the 4th plane is 'D'")
 SchemaEnd
 
 /*

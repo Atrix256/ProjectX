@@ -993,6 +993,8 @@ void CWorld::LoadSector (
 	// load / set the sector data
 	Copy(sector.m_ambientLight, sectorSource.m_AmbientLight);
 	Copy(sector.m_fogColorAndFactor, sectorSource.m_FogColor, sectorSource.m_FogFactor);
+	Copy(sector.m_fogPlane, sectorSource.m_FogPlane);
+	Normalize(sector.m_fogPlane);
 	Copy(sector.m_halfDims, sectorSource.m_Dimensions);
 	sector.m_halfDims /= 2.0f;
 	sector.m_castsShadows = sectorSource.m_CastShadows;

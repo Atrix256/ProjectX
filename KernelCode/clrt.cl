@@ -3,7 +3,7 @@
 clrt.cl
 
 The kernel code
-
+ 
 ==================================================================================================*/
 
 #include "Shared/SSharedDataRoot.h"
@@ -579,6 +579,21 @@ inline void AddColorStackItem (struct SColorStackItem *colorStack, unsigned int 
 	item->m_fogColorAndAmount = *fogColorAndAmount;
 }
 
+// adapted from https://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
+inline float LineSegmentTimeInHalfSpace (const float3 *c, const float3 *p, __global const float4 *plane)
+{
+	float k = dotVectorPlane(c, plane) <= 0.0f ? 1.0f : 0.0f;
+
+	float3 v = *p - *c;
+	float f_dot_v = dotVectorPlane(&v, plane);
+	float f_dot_p = dotPointPlane(p, plane);
+
+	float d = Saturate(k - (f_dot_p / abs(f_dot_v))); 
+	d *= length(v); 
+
+	return d;
+}
+
 void TraceRay (
 	__global struct SSharedDataRootHostToKernel *dataRoot,
 	__read_only image3d_t tex3dIn,
@@ -722,18 +737,21 @@ void TraceRay (
 
 		RayIntersectSector(sector, &collisionInfo, rayPos, rayDir, lastHitPrimitiveId);
 
-		cl_float4 fogColorAndAmount;
-		fogColorAndAmount.xyz = sector->m_fogColorAndFactor.xyz;
-		fogColorAndAmount.w = Saturate(sector->m_fogColorAndFactor.w * collisionInfo.m_intersectionTime);
-
 		// if no hit, set pixel to ambient light and bail out
 		if (collisionInfo.m_objectHit == c_invalidObjectId)
 		{
 			const float3 white = (float3)(1.0f);
 			const float3 missColor = ambientLight + collisionInfo.m_debugAdditiveColor;
-			AddColorStackItem(colorStack, &colorStackDepth, &white, &missColor, &fogColorAndAmount);
+			const float4 noFog = (float4)(0.0f);
+			AddColorStackItem(colorStack, &colorStackDepth, &white, &missColor, &noFog);
 			break;
 		}
+
+		// set the fog color and calculate how long the ray spent in the fog half space
+		cl_float4 fogColorAndAmount;
+		fogColorAndAmount.xyz = sector->m_fogColorAndFactor.xyz;
+		fogColorAndAmount.w = LineSegmentTimeInHalfSpace(&rayPos, &collisionInfo.m_intersectionPoint, &sector->m_fogPlane);
+		fogColorAndAmount.w *= sector->m_fogColorAndFactor.w;
 
 		// if we hit a portal, change our sector, transform the ray and bail out of this loop.
 		if (collisionInfo.m_portalIndex != -1)

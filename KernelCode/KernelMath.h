@@ -161,3 +161,25 @@ inline float Saturate (float x)
 {
 	return x < 0.0f ? 0.0f : (x > 1.0f ? 1.0f : x);
 }
+
+inline float __OVERLOADABLE__ abs (float x)
+{
+	return x < 0.0f ? x * -1.0f : x;
+}
+
+inline float dotVectorPlane (const float3 *vector, __global const float4 *plane)
+{
+	// for vectors, the w component is zero
+	return (vector->x * plane->x) +
+		(vector->y * plane->y) +
+		(vector->z * plane->z);
+}
+
+inline float dotPointPlane (const float3 *point, __global const float4 *plane)
+{
+	// for points, the w component is one
+	return (point->x * plane->x) +
+		(point->y * plane->y) +
+		(point->z * plane->z) +
+		(1.0f * plane->w);
+}

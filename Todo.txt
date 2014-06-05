@@ -1,6 +1,10 @@
 
 NEXT
 
+* try IQ's thing of doing ray vs camera-to-lightsource dot product, and colorize fog based on that value
+
+* need fogDensityBase and fogDensityFactor for fog density variation control based on fog plane penetration depth
+
 * clean up code and check in
 
 * could try having a "fog bias" that is subtracted from fog distances so it has to be a minimum depth before applying fog
@@ -173,6 +177,7 @@ NEXT
 * are there too many duplicate materials being created?
 
 --RENDERING
+* can use angled white fog as "god rays"?
 * when hitting an object from the inside, we don't do fog.  that is good but not 100% correct.  we shouldn't do fog if we are INSIDE an object.  we should maybe have an "inside object" count that we inc / dec as we enter and leave objects, and do fog if the count is zero
 * IQ fog: http://iquilezles.org/www/articles/fog/fog.htm
 * could try having scaling on sector/portal transforms
@@ -554,6 +559,9 @@ TO "SHIP" TO TEAM
 
 
 =====DONE=====
+
+--6/4/14
+* constant density fog plane implementation
 
 --6/2/14
 * fixed refraction

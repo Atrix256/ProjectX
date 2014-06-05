@@ -146,6 +146,7 @@ struct SSector
 	float3 m_ambientLight;
 
 	cl_float4 m_fogColorAndFactor;
+	cl_float4 m_fogPlane;
 
 	cl_uint m_castsShadows;
 	cl_uint m_staticSphereStartIndex;

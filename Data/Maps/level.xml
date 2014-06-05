@@ -39,7 +39,7 @@
   <!--===============================================================
   StartRoom
   ================================================================-->
-  <Sector FogColor="0,0,1" FogFactor="0.014" id="StartRoom" Dimensions="40,10,10" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector FogColor="0,0,1" FogFactor="0.05" FogPlane="0,1,1,0" id="StartRoom" Dimensions="40,10,10" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
     <Sphere Position="4,5,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="4,5,0" Color="1,1,0.8" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
     
@@ -97,13 +97,13 @@
   <!--===============================================================
   Hallway
   ================================================================-->
-  <Sector FogColor="0,1,1" FogFactor="0.014" id="Hallway" Dimensions="7,7,20" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector FogColor="0,1,1" FogFactor="0.014" id="Hallway" Dimensions="7,7,30" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
 
-    <Sphere Position="0,3.5,5" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
-    <PointLight Position="0,3.5, 5" Color="1,0.8,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+    <Sphere Position="0,3.5,8" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="0,3.5,8" Color="1,0.8,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
 
-    <Sphere Position="0,3.5,-5" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
-    <PointLight Position="0,3.5,-5" Color="0.8,1,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+    <Sphere Position="0,3.5,-8" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="0,3.5,-8" Color="0.8,1,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
 
     <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25"/>

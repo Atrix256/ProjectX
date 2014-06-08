@@ -3,7 +3,7 @@
 clrt.cl
 
 The kernel code
- 
+
 ==================================================================================================*/
 
 #include "Shared/SSharedDataRoot.h"
@@ -391,11 +391,11 @@ inline bool PointCanSeePoint(
 	const float3 targetPos,
 	const TObjectId ignorePrimitiveId,
 	__global const struct SSector *sector,
-	__global struct SSphere *spheres,
-	__global struct SModelTriangle *triangles,
-	__global struct SModelObject *objects,
-	__global struct SModelInstance *models,
-	__global struct SMaterial *materials
+	__global const struct SSphere *spheres,
+	__global const struct SModelTriangle *triangles,
+	__global const struct SModelObject *objects,
+	__global const struct SModelInstance *models,
+	__global const struct SMaterial *materials
 )
 {
 	#if SETTINGS_SHADOWS == 1
@@ -428,7 +428,7 @@ inline bool PointCanSeePoint(
 
 	for (int modelIndex = sector->m_staticModelStartIndex; modelIndex < sector->m_staticModelStopIndex; ++modelIndex)
 	{
-		__global struct SModelInstance *model = &models[modelIndex];
+		__global const struct SModelInstance *model = &models[modelIndex];
 		float3 hitStart, hitEnd;
 		if (RayHitsSphere(model->m_boundingSphere, startPos, rayDir, &hitStart, &hitEnd))
 		{
@@ -471,7 +471,7 @@ inline bool PointCanSeePoint(
 
 			for (int objectIndex = model->m_startObjectIndex; objectIndex < model->m_stopObjectIndex; ++objectIndex)
 			{
-				__global struct SModelObject *object = &objects[objectIndex];
+				__global const struct SModelObject *object = &objects[objectIndex];
 				unsigned int materialIndex = model->m_materialOverride == -1 ? object->m_materialIndex : model->m_materialOverride;
 				bool backFaceCulling = !IsRefractive(&materials[materialIndex]);
 				if (object->m_castsShadows)
@@ -484,7 +484,7 @@ inline bool PointCanSeePoint(
 
 					for (; triangleIndex < triangleStopIndex; ++triangleIndex)
 					{
-						if (RayIntersectTriangle(&triangles[triangleIndex], &collisionInfoLocal, startPosLocal, rayDirLocal, ignorePrimitiveId, backFaceCulling, object->m_materialIndex, object->m_portalIndex))
+						if (RayIntersectTriangle(&triangles[triangleIndex], &collisionInfoLocal, startPosLocal, rayDirLocal, ignorePrimitiveId, backFaceCulling, object->m_materialIndex, model->m_portalIndex))
 							return false;
 					}
 				}
@@ -505,11 +505,11 @@ void ApplyPointLight (
 	__global const struct SMaterial *material,
 	__global const struct SPointLight *light,
 	const float3 rayDir,
-	__global struct SSphere *spheres,
-	__global struct SModelTriangle *triangles,
-	__global struct SModelObject *objects,
-	__global struct SModelInstance *models,
-	__global struct SMaterial *materials,
+	__global const struct SSphere *spheres,
+	__global const struct SModelTriangle *triangles,
+	__global const struct SModelObject *objects,
+	__global const struct SModelInstance *models,
+	__global const struct SMaterial *materials,
 	float3 diffuseColor
 )
 {
@@ -579,35 +579,55 @@ inline void AddColorStackItem (struct SColorStackItem *colorStack, unsigned int 
 	item->m_fogColorAndAmount = *fogColorAndAmount;
 }
 
-// adapted from https://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
-inline float LineSegmentTimeInHalfSpace (const float3 *c, const float3 *p, __global const float4 *plane)
+// taken from https://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
+inline float LineSegmentFogAmount (const float3 *c, const float3 *p, __global const float4 *plane, const float fogDensityFactor, const float fogFactorMax, const cl_uint fogMode)
 {
-	float k = dotVectorPlane(c, plane) <= 0.0f ? 1.0f : 0.0f;
+	if (fogMode == e_fogNone)
+		return 0.0f;
 
-	float3 v = *p - *c;
-	float f_dot_v = dotVectorPlane(&v, plane);
-	float f_dot_p = dotPointPlane(p, plane);
+	const float k = dotPointPlane(c, plane) <= 0.0f ? 1.0f : 0.0f;
+	const float3 v = *p - *c;
+	const float f_dot_v = dotVectorPlane(&v, plane);
+	const float f_dot_p = dotPointPlane(p, plane);
 
-	float d = Saturate(k - (f_dot_p / abs(f_dot_v))); 
-	d *= length(v); 
+	// constant density
+	if (fogMode == e_fogConstantDensity)
+	{
+		float d = Saturate(k - (f_dot_p / abs(f_dot_v))); 
+		d *= length(v); 
 
-	return d;
+		return Saturate(min(d * fogDensityFactor, fogFactorMax));
+	}
+	// linear density
+	else
+	{
+		const float f_dot_c = dotPointPlane(c, plane);
+
+		const float a = fogDensityFactor;
+
+		const float3 aV = (a / 2.0f) * v;
+		const float c1 = k * (f_dot_p + f_dot_c);
+		const float c2 = min((1 - 2.0f * k) * f_dot_p, 0.0f);
+
+		// add an epsilon of 0.001f to keep from 0/0 situations which make visual problems
+		return Saturate(min(-length(aV) * (c1 - c2 * c2 / abs(f_dot_v + 0.001f)), fogFactorMax)); 
+	}
 }
 
 void TraceRay (
-	__global struct SSharedDataRootHostToKernel *dataRoot,
+	__global const struct SSharedDataRootHostToKernel *dataRoot,
 	__read_only image3d_t tex3dIn,
 	float3 rayPos,
 	float3 rayDir,
 	float3 *pixelColor,
-	__global struct SPointLight *lights,
-	__global struct SSphere *spheres,
-	__global struct SModelTriangle *triangles,
-	__global struct SModelObject *objects,
-	__global struct SModelInstance *models,
-	__global struct SSector *sectors,
-	__global struct SMaterial *materials,
-	__global struct SPortal *portals
+	__global const struct SPointLight *lights,
+	__global const struct SSphere *spheres,
+	__global const struct SModelTriangle *triangles,
+	__global const struct SModelObject *objects,
+	__global const struct SModelInstance *models,
+	__global const struct SSector *sectors,
+	__global const struct SMaterial *materials,
+	__global const struct SPortal *portals
 )
 {
 	struct SColorStackItem colorStack[c_maxRayBounces];
@@ -649,7 +669,7 @@ void TraceRay (
 
 		for (int modelIndex = sector->m_staticModelStartIndex; modelIndex < sector->m_staticModelStopIndex; ++modelIndex)
 		{
-			__global struct SModelInstance *model = &models[modelIndex];
+			__global const struct SModelInstance *model = &models[modelIndex];
 			float3 hitStart, hitEnd;
 			if (RayHitsSphere(model->m_boundingSphere, rayPos, rayDir, &hitStart, &hitEnd))
 			{
@@ -692,7 +712,7 @@ void TraceRay (
 
 				for (int objectIndex = model->m_startObjectIndex; objectIndex < model->m_stopObjectIndex; ++objectIndex)
 				{
-					__global struct SModelObject *object = &objects[objectIndex];
+					__global const struct SModelObject *object = &objects[objectIndex];
 
 					// allow back face culling if the triangle isn't refractive (transparent)
 					unsigned int materialIndex = model->m_materialOverride == -1 ? object->m_materialIndex : model->m_materialOverride;
@@ -705,7 +725,7 @@ void TraceRay (
 					unsigned int triangleStopIndex = (halfSpaceFlags & e_halfSpacePosY) ? object->m_stopTriangleIndex : object->m_mixStopTriangleIndex;
 
 					for (; triangleIndex < triangleStopIndex; ++triangleIndex)
-						RayIntersectTriangle(&triangles[triangleIndex], &collisionInfoLocal, rayPosLocal, rayDirLocal, lastHitPrimitiveId, backFaceCulling, materialIndex, object->m_portalIndex);
+						RayIntersectTriangle(&triangles[triangleIndex], &collisionInfoLocal, rayPosLocal, rayDirLocal, lastHitPrimitiveId, backFaceCulling, materialIndex, model->m_portalIndex);
 				}
 
 				// if we hit something in local space, we need to convert the local space hit information back into world space
@@ -750,8 +770,7 @@ void TraceRay (
 		// set the fog color and calculate how long the ray spent in the fog half space
 		cl_float4 fogColorAndAmount;
 		fogColorAndAmount.xyz = sector->m_fogColorAndFactor.xyz;
-		fogColorAndAmount.w = LineSegmentTimeInHalfSpace(&rayPos, &collisionInfo.m_intersectionPoint, &sector->m_fogPlane);
-		fogColorAndAmount.w *= sector->m_fogColorAndFactor.w;
+		fogColorAndAmount.w = LineSegmentFogAmount(&rayPos, &collisionInfo.m_intersectionPoint, &sector->m_fogPlane, sector->m_fogColorAndFactor.w, sector->m_fogFactorMax, sector->m_fogMode);
 
 		// if we hit a portal, change our sector, transform the ray and bail out of this loop.
 		if (collisionInfo.m_portalIndex != -1)
@@ -927,15 +946,15 @@ void TraceRay (
 __kernel void clrt (
 	__write_only image2d_t texOut, 
 	__read_only image3d_t tex3dIn,
-	__global struct SSharedDataRootHostToKernel *dataRoot,
-	__global struct SPointLight *lights,
-	__global struct SSphere *spheres,
-	__global struct SModelTriangle *triangles,
-	__global struct SModelObject *objects,
-	__global struct SModelInstance *models,
-	__global struct SSector *sectors,
-	__global struct SMaterial *materials,
-	__global struct SPortal *portals
+	__global const struct SSharedDataRootHostToKernel *dataRoot,
+	__global const struct SPointLight *lights,
+	__global const struct SSphere *spheres,
+	__global const struct SModelTriangle *triangles,
+	__global const struct SModelObject *objects,
+	__global const struct SModelInstance *models,
+	__global const struct SSector *sectors,
+	__global const struct SMaterial *materials,
+	__global const struct SPortal *portals
 	//__global struct SSharedDataRootKernelToHost *outDataRoot
 )
 {

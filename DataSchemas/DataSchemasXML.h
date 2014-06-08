@@ -53,7 +53,7 @@ namespace DataSchemasXML {
 		bool idsAreUnique = true;
 		for (unsigned int index = 0, count = data.size(); index < count; ++index)
 		{
-			if (data[index].m_id.c_str()[0] && SData::GetEntryById(data, data[index].m_id) != index)
+			if (data[index].m_id.c_str()[0] && SData::GetEntryById(data, data[index].m_id, -1) != index)
 			{
 				idsAreUnique = false;
 				XMLError(__FUNCTION__" failure: Schema '%s', field '%s', id '%s'", schemaName, fieldName, data[index].m_id.c_str());

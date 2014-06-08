@@ -99,8 +99,8 @@ struct SModelObject
 
 	cl_uint m_castsShadows;
 	cl_uint m_materialIndex;
-	cl_uint m_portalIndex;
-	cl_uint m_pack3;
+	cl_uint m_pack1;
+	cl_uint m_pack2;
 };
 
 struct SModelInstance
@@ -108,7 +108,12 @@ struct SModelInstance
 	cl_uint m_startObjectIndex;
 	cl_uint m_stopObjectIndex;
 	cl_uint m_materialOverride;
+	cl_uint m_portalIndex;
+
 	cl_float m_scale;
+	cl_float m_pad1;
+	cl_float m_pad2;
+	cl_float m_pad3;
 
 	cl_float4 m_boundingSphere;
 
@@ -137,6 +142,13 @@ struct SSectorPlane
 	cl_uint m_portalIndex;
 };
 
+enum EFogMode
+{
+	e_fogNone,
+	e_fogConstantDensity,
+	e_fogLinearDensity,
+};
+
 struct SSector
 {
 	struct SSectorPlane m_planes[SSECTOR_NUMPLANES];
@@ -145,18 +157,18 @@ struct SSector
 
 	float3 m_ambientLight;
 
-	cl_float4 m_fogColorAndFactor;
 	cl_float4 m_fogPlane;
+	cl_float4 m_fogColorAndFactor;
 
-	cl_uint m_castsShadows;
+	cl_float m_fogFactorMax;
+	cl_uint m_fogMode;
 	cl_uint m_staticSphereStartIndex;
 	cl_uint m_staticSphereStopIndex;
-	cl_uint m_staticLightStartIndex;
 
+	cl_uint m_staticLightStartIndex;
 	cl_uint m_staticLightStopIndex;
 	cl_uint m_staticModelStartIndex;
 	cl_uint m_staticModelStopIndex;
-	cl_uint m_pad1;
 };
 
 struct SPointLight

@@ -173,12 +173,6 @@
     <Xml Include="Data\GameData.xml">
       <Filter>Data</Filter>
     </Xml>
-    <Xml Include="Data\Maps\default.xml">
-      <Filter>Data\Maps</Filter>
-    </Xml>
-    <Xml Include="Data\Maps\testarea.xml">
-      <Filter>Data\Maps</Filter>
-    </Xml>
     <Xml Include="Data\Maps\level.xml">
       <Filter>Data\Maps</Filter>
     </Xml>

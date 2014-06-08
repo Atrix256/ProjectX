@@ -1,0 +1,2 @@
+* textures must be square
+ * they are all made into the same size (grown or shrinked), as specified in gfxsettings.xml

@@ -19,6 +19,11 @@ This class holds all information about the world
 
 #include <algorithm>
 
+static const unsigned int c_defaultMaterial = -1; // the default "error" material
+static const unsigned int c_defaultPortal = -1;
+static const unsigned int c_defaultModel = -1;
+static const unsigned int c_defaultSector = -1;
+
 //-----------------------------------------------------------------------------
 void Copy(cl_float2 &lhs, const SData_Vec2 &rhs)
 {
@@ -207,6 +212,18 @@ unsigned int CWorld::AddMaterial (const struct SData_Material &materialSource, c
 }
 
 //-----------------------------------------------------------------------------
+void CWorld::AddDebugMaterial ()
+{
+	SData_Material material;
+	material.SetDefault();
+	material.m_EmissiveColor.m_x = 1.0f;
+	material.m_EmissiveColor.m_y = 1.0f;
+	material.m_EmissiveColor.m_z = 1.0f;
+	material.m_EmissiveTexture="Art/error.png";
+	AddMaterial(material);
+}
+
+//-----------------------------------------------------------------------------
 void CWorld::AddModel (const struct SData_Model &modelSource)
 {
 	SNamedModel namedModel;
@@ -241,7 +258,6 @@ void CWorld::AddModel (const struct SData_Model &modelSource)
 			SModelObject &modelobject = m_modelObjects.AddOne();
 			modelobject.m_castsShadows = modelData.m_object[objectIndex].m_CastShadows;
 			modelobject.m_materialIndex = AddMaterial(modelData.m_object[objectIndex].m_material[0], basePath.c_str());
-			modelobject.m_portalIndex = -1;
 			modelobject.m_startTriangleIndex = m_modelTriangles.Count();
 
 			SData_object &object = modelData.m_object[objectIndex];
@@ -347,10 +363,10 @@ void CWorld::LoadSectorSpheres (
 		Copy(sphere.m_textureOffset, sphereSource.m_TextureOffset);
 
 		// set the material index
-		sphere.m_materialIndex = SData::GetEntryById(materials, sphereSource.m_Material);
+		sphere.m_materialIndex = SData::GetEntryById(materials, sphereSource.m_Material, c_defaultMaterial) + 1;
 
 		// set the portal index
-		sphere.m_portalIndex = SData::GetEntryById(portals, sphereSource.m_Portal);
+		sphere.m_portalIndex = SData::GetEntryById(portals, sphereSource.m_Portal, c_defaultPortal);
 	}
 	sector.m_staticSphereStopIndex = m_spheres.Count();
 }
@@ -403,7 +419,7 @@ void CWorld::LoadSectorModelInstances (
 	for (unsigned int index = 0, count = sectorSource.m_ModelInstance.size(); index < count; ++index)
 	{
 		SData_ModelInstance &model = sectorSource.m_ModelInstance[index];
-		unsigned int modelIndex = SData::GetEntryById(m_namedModels, model.m_ModelId);
+		unsigned int modelIndex = SData::GetEntryById(m_namedModels, model.m_ModelId, c_defaultModel);
 		if (modelIndex != -1)
 		{
 			const SNamedModel &namedModel = m_namedModels[modelIndex];
@@ -421,9 +437,13 @@ void CWorld::LoadSectorModelInstances (
 			modelInstance.m_scale = model.m_Scale;
 
 			// set material override if there is one
-			modelInstance.m_materialOverride = SData::GetEntryById(materials, model.m_MaterialOverride);
-
-			// TODO: make and factor in the rotation matrix
+			if (model.m_MaterialOverride.length() > 0)
+				modelInstance.m_materialOverride = SData::GetEntryById(materials, model.m_MaterialOverride, c_defaultMaterial) + 1;
+			else
+				modelInstance.m_materialOverride = -1;
+			
+			// set the portal if there is one
+			modelInstance.m_portalIndex = SData::GetEntryById(portals, model.m_Portal, c_defaultPortal);
 
 			// calculate model to world - translate, scale, rotate
 			{
@@ -627,7 +647,7 @@ void CWorld::HandleSectorConnectTos (
 		const SData_SectorPlane &sectorPlaneSource = sectorSource.m_SectorPlane[planeIndex];
 
 		// if no connect to sector specified, or none found, bail
-		unsigned int connectToSectorIndex = SData::GetEntryById(sectorsSource, sectorPlaneSource.m_ConnectToSector);
+		unsigned int connectToSectorIndex = SData::GetEntryById(sectorsSource, sectorPlaneSource.m_ConnectToSector, c_defaultSector);
 		if (connectToSectorIndex >= m_sectors.Count())
 			continue;
 
@@ -992,12 +1012,17 @@ void CWorld::LoadSector (
 
 	// load / set the sector data
 	Copy(sector.m_ambientLight, sectorSource.m_AmbientLight);
-	Copy(sector.m_fogColorAndFactor, sectorSource.m_FogColor, sectorSource.m_FogFactor);
+	Copy(sector.m_fogColorAndFactor, sectorSource.m_FogColor, sectorSource.m_FogDensityFactor);
+	sector.m_fogFactorMax = sectorSource.m_FogFactorMax;
 	Copy(sector.m_fogPlane, sectorSource.m_FogPlane);
 	Normalize(sector.m_fogPlane);
 	Copy(sector.m_halfDims, sectorSource.m_Dimensions);
 	sector.m_halfDims /= 2.0f;
-	sector.m_castsShadows = sectorSource.m_CastShadows;
+
+	if (sectorSource.m_FogConstantDensity)
+		sector.m_fogMode = sectorSource.m_FogFactorMax > 0.0f ? e_fogConstantDensity : e_fogNone;
+	else
+		sector.m_fogMode = (sectorSource.m_FogFactorMax > 0.0f && sectorSource.m_FogDensityFactor > 0.0f) ? e_fogLinearDensity : e_fogNone;
 
 	// load the sector planes data
 	for (unsigned int planeIndex = 0; planeIndex < SSECTOR_NUMPLANES; ++planeIndex)
@@ -1017,10 +1042,10 @@ void CWorld::LoadSector (
 		Normalize(plane.m_UAxis);
 
 		// set the material index
-		plane.m_materialIndex = SData::GetEntryById(materials, planeSource.m_Material);
+		plane.m_materialIndex = SData::GetEntryById(materials, planeSource.m_Material, c_defaultMaterial) + 1;
 
 		// set the portal index
-		plane.m_portalIndex = SData::GetEntryById(portals, planeSource.m_Portal);
+		plane.m_portalIndex = SData::GetEntryById(portals, planeSource.m_Portal, c_defaultPortal);
 	}
 
 	LoadSectorPointLights(sector, sectorSource, materials, portals);
@@ -1036,7 +1061,7 @@ bool CWorld::Load (const char *worldFileName)
 		worldData.SetDefault();
 
 	// Starting Sector, Position and facing etc.
-	SSharedDataRootHostToKernel::Camera().m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_StartSector);
+	SSharedDataRootHostToKernel::Camera().m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_StartSector, c_defaultSector);
 	CGame::SetPlayerPos(worldData.m_StartPoint.m_x, worldData.m_StartPoint.m_y, worldData.m_StartPoint.m_z);
 	CGame::SetPlayerFacing(worldData.m_StartFacing.m_x, worldData.m_StartFacing.m_y, worldData.m_StartFacing.m_z);
 	CCamera::Get().SetAutoAjustBrightness(worldData.m_AutoAdjustBrightness);
@@ -1045,7 +1070,7 @@ bool CWorld::Load (const char *worldFileName)
 	m_portals.Resize(worldData.m_Portal.size());
 	for (unsigned int index = 0, count = worldData.m_Portal.size(); index < count; ++index)
 	{
-		m_portals[index].m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_Portal[index].m_Sector);
+		m_portals[index].m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_Portal[index].m_Sector, c_defaultSector);
 		Copy(m_portals[index].m_xaxis, worldData.m_Portal[index].m_XAxis);
 		Copy(m_portals[index].m_yaxis, worldData.m_Portal[index].m_YAxis);
 		Copy(m_portals[index].m_zaxis, worldData.m_Portal[index].m_ZAxis);
@@ -1056,7 +1081,8 @@ bool CWorld::Load (const char *worldFileName)
 	}
 
 	// materials
-	m_materials.Presize(worldData.m_Material.size());
+	m_materials.Presize(worldData.m_Material.size() + 1);
+	AddDebugMaterial();
 	for (unsigned int index = 0, count = worldData.m_Material.size(); index < count; ++index)
 		AddMaterial(worldData.m_Material[index]);
 

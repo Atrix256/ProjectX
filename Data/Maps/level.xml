@@ -3,6 +3,7 @@
   <StartPoint Value="0,0,-4.5"/>
   <StartFacing Value="0,0,1"/>
 
+  <Material id="Black" DiffuseColor="0,0,0"/>
   <Material id="Brick" DiffuseTexture="Art/oildrum_Diffuse.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50"/>
   <Material id="RoughBrick" DiffuseTexture="Art/oildrum_Diffuse.png" NormalTexture="Art/oildrum_Normal.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50" EmissiveColor="0, 0, 0"/>
 
@@ -35,11 +36,13 @@
 
   <Model id="IcoSphere" FileName="Art/Models/icosphere.xmd"/>
   <Model id="Ship" FileName="Art/Models/ship.xmd"/>
-  
+
+  <Portal id="Scry" Sector="DarkRoom"  WAxis="0,5,0,1"/>
+
   <!--===============================================================
   StartRoom
   ================================================================-->
-  <Sector FogColor="0,0,1" FogFactor="0.05" FogPlane="0,1,1,0" id="StartRoom" Dimensions="40,10,10" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector id="StartRoom" FogConstantDensity="true" FogColor="0,0,1" FogPlane="0,1,0,-5" FogDensityFactor="0.03" FogFactorMax="0.8" Dimensions="40,10,10" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
     <Sphere Position="4,5,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="4,5,0" Color="1,1,0.8" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
     
@@ -59,7 +62,7 @@
   <!--===============================================================
   HallwayToDarkRoom
   ================================================================-->
-  <Sector FogColor="0,1,0" FogFactor="0.014" id="HallwayToDarkRoom" Dimensions="10,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector id="HallwayToDarkRoom" FogColor="0,1,0" FogPlane="0,1,0,1" FogDensityFactor="0.008"  Dimensions="10,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
 
     <Sphere Position="0,3.5,-15" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="0,3.5,-15" Color="1,1,0.8" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
@@ -77,13 +80,13 @@
     <SectorPlane UAxis="-1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
 
     <SectorPlane UAxis=" 1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
-    <SectorPlane UAxis="-1,0,0" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSectorz="DarkRoom" ConnectToSectorPlane="4"/>
+    <SectorPlane UAxis="-1,0,0" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="DarkRoom" ConnectToSectorPlane="4"/>
   </Sector>
 
   <!--===============================================================
   DarkRoom
   ================================================================-->
-  <Sector FogColor="1,0,0" FogFactor="0.014" id="DarkRoom" Dimensions="40,10,40" CastShadows="false" AmbientLight="0.01, 0.01, 0.01">
+  <Sector id="DarkRoom" FogConstantDensity="true" FogColor="1,0,0" FogPlane="0.1,1,0.05,3" FogDensityFactor="0.03" FogFactorMax="0.8" Dimensions="40,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
     <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25"/>
 
@@ -92,19 +95,34 @@
 
     <SectorPlane UAxis=" 1,0,0" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="HallwayToDarkRoom" ConnectToSectorPlane="5"/>
     <SectorPlane UAxis="-1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
+
+    <Sphere Position="5,5,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="5,5, 0" Color="1,0.8,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="-0.5,-1,0" ConeAngle="160" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+
+    <ModelInstance ModelId="Ship" Position="-15,-3,-15" Scale ="0.5" Rotation="0,33,0"/>
+
+    <ModelInstance ModelId="Ship" Position="10,-3,0" Scale ="0.5" Rotation="0,33,0"/>
   </Sector>
 
   <!--===============================================================
   Hallway
   ================================================================-->
-  <Sector FogColor="0,1,1" FogFactor="0.014" id="Hallway" Dimensions="7,7,30" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector id="Hallway" FogColor="1,1,1" FogPlane="0,1,0,2.5" FogConstantDensity="true" FogDensityFactor="0.4" FogFactorMax="1" Dimensions="7,7,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
 
-    <Sphere Position="0,3.5,8" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
-    <PointLight Position="0,3.5,8" Color="1,0.8,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+    <Sphere Position="0,3.5,10" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="0,3.5,10" Color="1,0.5,0.5" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="130" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
 
-    <Sphere Position="0,3.5,-8" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
-    <PointLight Position="0,3.5,-8" Color="0.8,1,1" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
+    <Sphere Position="0,3.5,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="0,3.5,0" Color="0.5,1.0,0.5" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="130" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>    
+    
+    <Sphere Position="0,3.5,-10" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
+    <PointLight Position="0,3.5,-10" Color="0.5,0.5,1.0" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="130" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
 
+    <ModelInstance ModelId="IcoSphere" MaterialOverride="Grid" Position="-2,-2.75,4" Scale="0.3"/>
+    <ModelInstance ModelId="IcoSphere" MaterialOverride="Grid" Position="1.5,-2.75,-4" Scale="0.3"/>
+    <ModelInstance ModelId="IcoSphere" MaterialOverride="Grid" Position="-1,-2.75,-16" Scale="0.3"/>
+    <ModelInstance ModelId="IcoSphere" MaterialOverride="Grid" Position="1.25,-2.75,16" Scale="0.3"/>
+    
     <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25"/>
 
@@ -118,27 +136,10 @@
   <!--===============================================================
   Outside
   ================================================================-->
-  <Sector FogColor="1,0,1" FogFactor="0.014" id="Outside" Dimensions="40,20,80" CastShadows="false" AmbientLight="0.2, 0.2, 0.2">
+  <Sector id="Outside" FogColor="1,0,1" FogPlane="0,1,0,7" FogDensityFactor="0.008" Dimensions="40,20,80" CastShadows="false" AmbientLight="0.2, 0.2, 0.2">
 
     <Sphere Position="-27,5,69" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="-27,5,69" Color="1,1,0.2" AttenuationConstant="1" AttenuationDistance="0.0025" />
-
-    <!--
-    <Box Position=" 1,-9, 1" Scale="3,2,2" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
-    <Box Position=" 1,-7,-1" Scale="2,2,3" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
-    <Box Position="-1,-5,-1" Scale="3,2,2" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
-    <Box Position="-1,-3, 1" Scale="2,2,3" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
-    <Box Position=" 1,-1, 1" Scale="3,2,2" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
-    <Box Position=" 1, 1,-1" Scale="2,2,3" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
-    <Box Position="-1, 3,-1" Scale="3,2,2" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
-    <Box Position="-1, 5, 1" Scale="2,2,3" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
-    <Box Position=" 1, 7, 1" Scale="3,2,2" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
-    <Box Position=" 1, 9,-1" Scale="2,2,3" Material="BumpyGrid" TextureScale="0.25,0.25" CastShadows="true"/>
-    -->
-
-    <Box Position="-19,-5,20" Scale="0.5,8,10" Material="Mirror" TextureScale="0.25,0.25" CastShadows="true"/>
-
-    <Box Position="-19,-5,10" Scale="0.5,8,10" Material="BumpyMirror" TextureScale="1,1" CastShadows="true"/>
 
     <Sphere Position="0,-10,25" Radius="5" Material="SoapBubble" TextureScale="0.5,0.5" CastShadows="true"/>
 
@@ -159,11 +160,13 @@
     <ModelInstance ModelId="IcoSphere" MaterialOverride="Mirror" Position="5,-1,20"/>
     <ModelInstance ModelId="IcoSphere" MaterialOverride="RoughBrick" Position="-12,-4,18"/>
 
-    <ModelInstance ModelId="Ship" Position="8,-7,4" Scale ="0.025" Rotation="0,40,160"/>
+    <ModelInstance ModelId="IcoSphere" Portal="Scry" Position="-5,-7,0" Scale="0.5"/>
+
+    <!--ModelInstance ModelId="Ship" Position="8,-7,4" Scale ="0.025" Rotation="0,40,160"/>
     <ModelInstance ModelId="Ship" Position="8,-7,6" Scale ="0.05" Rotation="0,40,120"/>
     <ModelInstance ModelId="Ship" Position="8,-7,8" Scale ="0.1" Rotation="0,40,80"/>
     <ModelInstance ModelId="Ship" Position="8,-7,10" Scale ="0.2" Rotation="0,40,40"/>
-    <ModelInstance ModelId="Ship" Position="8,-7,12" Scale ="0.3" Rotation="0,40,0"/>
+    <ModelInstance ModelId="Ship" Position="8,-7,12" Scale ="0.3" Rotation="0,40,0"/-->
 
     <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="Skybox" ConnectToSectorPlane="1" ConnectToSetPosition="true" ConnectToPosition="0,0,0"/>
     <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25" ConnectToSector="Skybox" ConnectToSectorPlane="0" ConnectToSetPosition="true" ConnectToPosition="0,0,0"/>
@@ -178,12 +181,12 @@
   <!--===============================================================
   Skybox
   ================================================================-->
-  <Sector FogColor="1,1,0" FogFactor="0.002" id="Skybox" Dimensions="512,512,512" CastShadows="false" AmbientLight="1,1,1">
+  <Sector id="Skybox" Dimensions="512,512,512" CastShadows="false" AmbientLight="1,1,1">
     <SectorPlane UAxis="0,0, 1" Material="SkyboxRight" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>
     <SectorPlane UAxis="0,0,-1" Material="SkyboxLeft" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>
 
     <SectorPlane UAxis=" 1,0,0" Material="SkyboxTop" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>
-    <SectorPlane UAxis=" 1,0,0"/>
+    <SectorPlane UAxis=" 1,0,0" Material="Black"/>
 
     <SectorPlane UAxis="-1,0,0" Material="SkyboxBack" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>
     <SectorPlane UAxis=" 1,0,0" Material="SkyboxFront" TextureScale="0.0019455252918288,0.0019455252918288" TextureOffset="0.5,0.5"/>    

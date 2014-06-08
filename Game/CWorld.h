@@ -69,6 +69,7 @@ private:
 	);
 
 	unsigned int AddMaterial (const struct SData_Material &materialSource, const char *path ="./");
+	void AddDebugMaterial ();
 
 	void AddModel (const struct SData_Model &modelSource);
 

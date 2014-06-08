@@ -334,7 +334,7 @@ void CDirectX::ToggleRecording ()
 
 	//encode our video!
 	char szBuffer[256];
-	sprintf(szBuffer,"RecordedVideo\\ffmpeg -r %i -b:v 1800 -i RecordedVideo/Frames/frame%%d.bmp %s",c_recordingFPS,szVideoFilename);
+	sprintf(szBuffer,"RecordedVideo\\ffmpeg -r %i -b:v 1800 -threads 0 -i RecordedVideo/Frames/frame%%d.bmp %s",c_recordingFPS,szVideoFilename);
 	system(szBuffer);
 }
 

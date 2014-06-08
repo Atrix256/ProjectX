@@ -32,7 +32,7 @@ builderrors.txt
 *.ptx
 
 # recorded video stuff
-RecordedVideo/Frames/*.bmp
+RecordedVideo/Frames/*.*
 RecordedVideo/*.mp4
 
 # python cache

@@ -1,135 +1,36 @@
 
 NEXT
 
-* try IQ's thing of doing ray vs camera-to-lightsource dot product, and colorize fog based on that value
 
-* need fogDensityBase and fogDensityFactor for fog density variation control based on fog plane penetration depth
+* ECS (entity component system) model with built in threading scheduling.  Entity, Component, System
 
-* clean up code and check in
+* organize the items below, a little at a time
 
-* could try having a "fog bias" that is subtracted from fog distances so it has to be a minimum depth before applying fog
 
-! play w/ refraction indices now that you've fixed the equation!
-
-? can we do a switch statement instead of "if reflective, else if refractive, else"? might be more paralelizable
-
-* could unify the reflect/refract data a bit better.  data specifies "reflect", "refract" or "none".  one color stored for color parameter.
-
-? could have an index somehow (like reflection index) on reflective surfaces to control how the reflection beam reflects?? for funhouse mirrors and such i guess
-
-* try showing just the last color of the color stack for fun to see what it looks like
-
-* in kernel: invalid material index, still used to look up material blindly! need a debug material or something.
-
-? what is difference between fog and beers law absorpbance?
-
-? how does light interact with height fog & distance fog?
-
-* could have bias parameter to height fog saturation instead of making it linear
-
-* instead of height fog, could specify a fog plane and associated parameters
- * put in rendering section if not doing
-
-* half space fog: https://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
- * if not using, put in rendering section
-
-* skybox bottom has no material and so does odd things.
-
-* fog - both distance, and height based fog (where you fog things based on their y axis value!)
 
 * record a video of some animated objects (moving / expanding contracting, rotating, etc) and absorption objects etc.  fog and moving lights
-
-* check out the "select" function thing for the DEBUG_MODEL_BOUNDING_SPHERE code
-
-* could put all the commonly passed crap aruond into 1 struct (materials, sectors, spheres, etc)
-
-* assert that model instance scale is not zero since we have to divide by it!
-
-* put the matrix math stuff into it's own namespace or something
-
-* assert that a model can be loaded & can be found when instanced from ID
-
-* make a constant for the invalid portal index (and invalid material index?)
-
-* can we make a debug visualization for...
- * time taken to render a pixel
- * number of object (triangle?) tests per pixel
-
-* we could have actual debugging metrics for the ray that is under the mouse cursor if we want
-
-* make models able to specify portals?? or can portals be specified on the material or something maybe?
-
-* fix up or delete other maps now that boxes are gone and things have changed so much
-
-* make fatal assert vs regular assert vs log vs verify / validate
- * regular assert brings up a dialog "continue, break, ignore"
- * fatal assert does a divide by zero
- * log relevant info for both assert types
- * give the code a treatment pass for this stuff
-
-
-
-
-
-
-
-* is the refraction index correct in my data input? i think it's actually 1.0 less than reality.  need to investigate and update hint text and/or fix up the math on load.
-
 * verify hint comment that triangle points are assumed to be in clockwise order
-
 * ConnectToSectorOffset, ConnectToPosition -> better explaination hint text
-
-
-
 * version number in MDX files
-
-* "packed files" for faster loading.  with a local compile cache or something
-
-* don't do shadow ray if dot product is negative? (and backface culling is on)
-
-
-* skeletal animation: loading and runtime
-
-
 * make hints generate into a file somewhere or something...
 * add hints to everything
 
-? when instancing model triangles, they share object id's.  is that what we want? might need to think about having a "base index" or something
+? when instancing model triangles, they share object id's.  is that what we want? might need to think about having a "base index" or something.
 
 ? could try "hard coding" stuff for perf so long as it's ok that things aren't destroyed.  for instance, the number of models in a specific sector.
 
-* how does bitangent sign work? data in blender
 
 * exporter for levels! from unity perhaps?
 
 * investigate the other editors in blender -> such as node editor and graph editor
 
-* allow models to be moved around and instanced
 
-* ECS (entity component system) model with built in threading scheduling.  Entity, Component, System
 
-* bezier clipping and polygon rendering for speed comparisons
 
-* beers law absorption - need to calculate on CPU side what the starting absorption color is based on what object the eye is in. otherwise it doesn't look right when you enter a shape
 
-* adjust FOV or whatever else needed when aspect ratio of resolution doesn't match the display when in full screen mode
+
 
 * hide the console window somehow?
-
-* exposure time (limiter for light! i think it will look bad ass!)
- * figure out how other games do exposure time
- * per level settings for "expore time adjustments"?  I want to turn it off sometimes, but it shouldn't be a graphics setting
- * max pixel isn't doing it... need to average or something
- * formalize a system (in the camera?) for brightness adjustment calculations
- * graphics setting for bloom or not
- * could do bloom blur with a single float precision buffer of "gray"s
- * how is bloom going to work with red/blue 3d and interlanced mode?
- * how is "max brightness" going to work with interlaced mode? like if the bottom of the screen is super bright but the top isnt
-
-* if hdr exposure time adjustments are part of gameplay, need to make it dependant on the frame rate as little as possible
- * atomic max of brightness calculation hurts FPS a lot.  do it every x frames perhaps? or find a better way.  maybe DX api call to resize texture to 1 px and read that pixel?
-
-* at work, its red/green not red/blue when 3d is on.  need to somehow query surface format or something?!
 
 * gfx setting to limit frame rate to a reasonable amount (on by default)
 
@@ -142,28 +43,22 @@ NEXT
 * make it so you can't get close enough to walls to see through them.
  * there is a distance from camera to the view plane, maybe we have the view plane be at zero, and move the camera back?
 
-* make sector walls be able to cast shadows
-* make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
-* if making shadows traverse sectors make shadows more expensive, could have a shadow quality setting: off, low (current), high (traverses sectors)
- * and another high level for transparent shadows
-* maybe need to think about this a bit more.
- * It could be done by just instancing the objects, or by considering neighboring sectors explicitly.
- * this is kind of what we want to do for lighting anyways.
- * maybe need some kind of "cross sector awareness" solution besides traversal?
 
 * make floor / cieling portals work (gravity won't let you fall through yet)
  * hopefully fixed when going to component system
 * make it so jumping isn't frame rate dependant
 * better physics for player (and eventually other moving entities)
  * collision detection: walk on boxes, under objects, can't walk through walls?
- s* hopefully fixed when going to component system
+ * hopefully fixed when going to component system
 * somehow make portals contain dynamic geometry, or do some other dynamic geometry solution
 * only traverse portal if you walk through portal window.
 
-* really need to sort out shading equations to make sure ambient isnt getting applied too many times etc
+
 
  
 --MAP & GAME CONCEPTS
+* can use blue fog for underwater look
+* can use white fog as "god rays"
 * at the lowest elevation point in the game, have a crack or hole in the ground or something where you can see the place supported by turtles, all the way down into infinity (maybe do some raymarching against the turtle shape or something)
 * at the start of the game, enter a small house or something.  that thing contains the entire map.  After you beat the boss, you have to escape (timed? or maybe not).  When you escape, the object crunches down into nothing.
 * could do something like you step through a mirror into a sector that is a reflection of the sector you came from, but leads to different sectors.
@@ -171,12 +66,60 @@ NEXT
 * could mess with camera view to have trippy effects.  Both simple stuff like changing fov, but also more complex stuff like sine wave offsets of primary ray directions
 
 --MODELS
+* can you split the triangles up by more than just +/- y? Can you do like 10 slices??
 * blender has other textures available that we could use if we want: ambient texture (?), specular map, hardness map (?), reflection map, alpha map, translucency map (?), bump map
 * models need to be able to export / load reflection and absorption
 * need to make blender exporter export the casts shadows flag that is exposed (somewhere) in blender
 * are there too many duplicate materials being created?
+* how does bitangent sign work? data in blender
+* make artist notes so artists can do work
 
 --RENDERING
+* maybe we need a thing where portals have a color multiplier applied to what they show.  maybe we need a "portal" mode to go along w/ reflection and refraction enum?
+* when we hit a triangle, is there a way we can put off filling out the bulk of the collision info things until we are done, so we do less redundant work? (if it would even be a win... need to profile)
+* mess with camera rays, to do effects like "underwater distortion" and such
+* could try testing models front to back based on bounding sphere collisions
+* subsurface scattering investigation - need depth penetration of light through object, which could be gotten as part of shadow calculation work
+* can blend between 2 textures easily (either animated in real time, or statically like multi texture) since it's 3d texture.  just use some texture coordinate between the 2 frames
+ * both for textures as well as normal maps!
+* should fog be affected by light somehow? like find out how much of the fog is in a light source and change fog color or something?
+* non uniform scaling
+* let fog be a material property so we can have objects that have fog in them
+* dominic said 256x256x256 is general an ok 3d texture size
+* look into -threads parameter of ffmpeg, and also see about writing all frames to a single file.
+* make a gfx setting for video path, so could write to a non os drive if wanted.
+* check out the "select" function thing for the DEBUG_MODEL_BOUNDING_SPHERE code
+* make sector walls be able to cast shadows (does that make sense?)
+* make shadows rays traverse sectors (PointCanSeePoint).  Currently just checks current sector
+* if making shadows traverse sectors make shadows more expensive, could have a shadow quality setting: off, low (current), high (traverses sectors)
+ * and another high level for transparent shadows
+* maybe need to think about this a bit more.
+ * It could be done by just instancing the objects, or by considering neighboring sectors explicitly.
+ * this is kind of what we want to do for lighting anyways.
+ * maybe need some kind of "cross sector awareness" solution besides traversal?
+* adjust FOV or whatever else needed when aspect ratio of resolution doesn't match the display when in full screen mode
+* exposure time (limiter for light! i think it will look bad ass!)
+ * figure out how other games do exposure time
+ * per level settings for "expore time adjustments"?  I want to turn it off sometimes, but it shouldn't be a graphics setting
+ * max pixel isn't doing it... need to average or something
+ * formalize a system (in the camera?) for brightness adjustment calculations
+ * graphics setting for bloom or not
+ * could do bloom blur with a single float precision buffer of "gray"s
+ * how is bloom going to work with red/blue 3d and interlanced mode?
+ * how is "max brightness" going to work with interlaced mode? like if the bottom of the screen is super bright but the top isnt
+* if hdr exposure time adjustments are part of gameplay, need to make it dependant on the frame rate as little as possible
+ * atomic max of brightness calculation hurts FPS a lot.  do it every x frames perhaps? or find a better way.  maybe DX api call to resize texture to 1 px and read that pixel?
+* at work, its red/green not red/blue when 3d is on.  need to somehow query surface format or something?!
+* beers law absorption - need to calculate on CPU side what the starting absorption color is based on what object the eye is in. otherwise it doesn't look right when you enter a shape
+* don't do shadow ray if dot product is negative? (and backface culling is on)
+* skeletal animation: loading and runtime
+* could have bias parameter to height fog saturation instead of making it linear
+* could try having light interact with fog
+* unify reflect, refract code if we can
+ * could unify the reflect/refract data a bit better.  data specifies "reflect", "refract" or "none".  one color stored for color parameter.
+* probably faster to get screenshots for making video from GDI, not dx
+? can we do a switch statement instead of "if reflective, else if refractive, else"? might be more paralelizable
+* try IQ's thing of doing ray vs camera-to-lightsource dot product, and colorize fog based on that value
 * can use angled white fog as "god rays"?
 * when hitting an object from the inside, we don't do fog.  that is good but not 100% correct.  we shouldn't do fog if we are INSIDE an object.  we should maybe have an "inside object" count that we inc / dec as we enter and leave objects, and do fog if the count is zero
 * IQ fog: http://iquilezles.org/www/articles/fog/fog.htm
@@ -393,7 +336,14 @@ NEXT
 * mouse sensitivity / invert mouse settings
 
 
+--DEBUGGING
+* can we make a debug visualization for...
+ * time taken to render a pixel
+ * number of object (triangle?) tests per pixel
+* we could have actual debugging metrics for the ray that is under the mouse cursor if we want
+
 --DATA SCHEMAS
+* "packed files" for faster loading.  with a local compile cache or something
 * make it error when an id is not found, that is referenced from data.
 * make a templated data link type class
 * make Field_Schema default work for more than just xml loading.
@@ -413,6 +363,20 @@ NEXT
 * could also tie this feature into video recording.
 
 --CODE
+* name the materials from models something deterministic like __<modelid><objectid> so they can be used outside of the models if wanted
+* don't let anything be loaded during the levels. When spawning models for instance use a model id.
+* be able to choose what format we save screenshots for video like bmp, png, jpg
+* write all screenshots for video to a single file like sc2 does? might help w/ disk i/o issues
+* maybe allow people to specify the path to save videos to, so that they can put it off their main drive?
+* assert that model instance scale is not zero since we have to divide by it!
+* assert that a model can be loaded & can be found when instanced from ID
+* make a constant for the invalid portal index (and invalid material index?) instead of using -1 in places
+* make fatal assert vs regular assert vs log vs verify / validate
+ * regular assert brings up a dialog "continue, break, ignore"
+ * fatal assert does a divide by zero
+ * log relevant info for both assert types
+ * give the code a treatment pass for this stuff
+* put the matrix math stuff into it's own namespace or something
 * texture manager likely doesn't need STexture2d struct since it doesn't use a lot of the fields
  * similar for cdirectx....
 * load images in another thread or something?
@@ -559,6 +523,14 @@ TO "SHIP" TO TEAM
 
 
 =====DONE=====
+
+--6/8/14
+* make kernel arguments be const pointers
+* made model instances be able to specify a portal index
+* started getting error material in.  works except ship model seems to have adopted it!
+
+--6/7/14 (ish)
+* got better fog implemented and checked in.
 
 --6/4/14
 * constant density fog plane implementation

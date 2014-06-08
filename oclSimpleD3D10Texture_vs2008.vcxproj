@@ -266,13 +266,7 @@
     <Xml Include="Data\GfxSettings.xml">
       <SubType>Designer</SubType>
     </Xml>
-    <Xml Include="Data\Maps\default.xml">
-      <SubType>Designer</SubType>
-    </Xml>
     <Xml Include="Data\Maps\level.xml">
-      <SubType>Designer</SubType>
-    </Xml>
-    <Xml Include="Data\Maps\testarea.xml">
       <SubType>Designer</SubType>
     </Xml>
   </ItemGroup>

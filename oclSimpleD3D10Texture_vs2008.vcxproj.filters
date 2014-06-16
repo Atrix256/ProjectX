@@ -34,6 +34,9 @@
     <Filter Include="Blender">
       <UniqueIdentifier>{21ee2e3d-0b2e-4ce9-a11e-c6de0494bc78}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ECS Code">
+      <UniqueIdentifier>{fefd6307-36ac-4bf0-92c0-0ef86e5871a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\tinyxml\tinyxml2.h">
@@ -123,6 +126,24 @@
     <ClInclude Include="Platform\OS.h">
       <Filter>Platform</Filter>
     </ClInclude>
+    <ClInclude Include="ECS\SystemList.h">
+      <Filter>ECS Code</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\Systems.h">
+      <Filter>ECS Code</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\ComponentList.h">
+      <Filter>ECS Code</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\Components.h">
+      <Filter>ECS Code</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\ECS.h">
+      <Filter>ECS Code</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\ECSEnums.h">
+      <Filter>ECS Code</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\tinyxml\tinyxml2.cpp">
@@ -160,6 +181,15 @@
     </ClCompile>
     <ClCompile Include="Platform\OS.cpp">
       <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS\Systems.cpp">
+      <Filter>ECS Code</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS\Components.cpp">
+      <Filter>ECS Code</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS\ECS.cpp">
+      <Filter>ECS Code</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

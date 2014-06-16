@@ -1,57 +1,105 @@
 
 NEXT
 
+* better error if a system can't get a component that it needs by ID.
+
+* make component get by id use binary search, or have some way of letting the system start from where it was last time when looking for the higher entity id.
+
+* do we need a way to order the updates of the systems, instead of them just being in the order they are defined? or is that ok?
+
+* get rid of CECSSystem, not needed
+
+* log an error if we can't create the player entity
+
+* look into enum classes for a templated flags class!
+
+* moev the player creation out of load game data, into something else. like init world or something? who knows
+
+* game data probably should be loaded before the world is loaded - and kept around all the time, as you go from level to level.
+
+* helper function for creating entities? just pass in entity ID.  perhaps should be in CGame
+
+* find another word for bearings.
+
+* convert camera to using component
+* convert input to using component
+* convert physics to using components
+
+* figure out a better way to automate more of the bearings and ECS hookup boilerplate code
+
+* take start position and related data out of level since it's specified in the player component?
+ * maybe we need to have level data override that though! it makes sense to be set per level :/
+
+? how does the camera system communicate with the rest of the game?
+ * maybe data storage fields are defined in the system list for the camera settings, and those are coppied by CCamera or whatever?
+ * maybe the system communicates directly with CCamera, so that script can do that as well later on?
+ * or maybe both.  if camera system is enabled (has an entity plugged into it), the main game loop takes data from the system and passes it onto CCamera
+   * if the system is not enabled, it doesn't. script would then be able to control it at this point
+
+* automate updating of the defined systems   
+
+* ECS: enforce SYSTEM_SINGLE / SYSTEM_MANY in entity registration
+
+* Find a better place for the world object to live, than on the directx object!! maybe global singleton
+
+* for ECS systems, could have a way to specify if all entities and components are needed at once, or if it's ok to be passed them one at a time.
+ * if one at a time, could do across multiple threads.
+ * if all needed at once, need the caller to gather them all and send them over.
+
+* only one entity can use the camera system at once. can you add / remove entities from systems?
+
+* systems may need to specify "resources" they need access to, like input, camera, physics world... ::shrug::
+
+entity type:
+ * Systems that apply to it
+ * component list is implied by union of components needed by systems.
+  ? data or macros??
+  * components need initialising.
+  * systems probably also need some sort of data parameters or something
+
+ECS details
+* Entity types are defined in data and have an array of components they contain
+* Components are defined in code and belong to an entity
+* Systems are defined in code and specify what components are required to be processed by a specific system, and whether they want read only or read/write access
+* Other details:
+ * Systems are processed in the order that they are defined (or, could have a sequence number perhaps)
+ * Each system has a list of entities that it does work on.
+ * when an entity is created, it registers with the appropriate systems
+ * when an entity is destroyed, it removes itself from the appropriate systems
+ * need some kind of scheduler to run systems multithreaded in a safe way, in the prefered order
+ * maybe entities need to opt into systems? maybe components on an entity are defined by which systems it opts into?
 
 * ECS (entity component system) model with built in threading scheduling.  Entity, Component, System
 
-* organize the items below, a little at a time
-
-
-
-* record a video of some animated objects (moving / expanding contracting, rotating, etc) and absorption objects etc.  fog and moving lights
-* verify hint comment that triangle points are assumed to be in clockwise order
-* ConnectToSectorOffset, ConnectToPosition -> better explaination hint text
-* version number in MDX files
-* make hints generate into a file somewhere or something...
-* add hints to everything
-
-? when instancing model triangles, they share object id's.  is that what we want? might need to think about having a "base index" or something.
-
-? could try "hard coding" stuff for perf so long as it's ok that things aren't destroyed.  for instance, the number of models in a specific sector.
-
-
-* exporter for levels! from unity perhaps?
-
-* investigate the other editors in blender -> such as node editor and graph editor
-
-
-
-
-
-
-
-* hide the console window somehow?
-
-* gfx setting to limit frame rate to a reasonable amount (on by default)
-
-* integrate lua
- * interact with objects by id
- * change light params etc
-
-* find a way to make GetSectorPlaneNormal (and similar functions) only implemented in 1 place, instead of once in kernel and once in host
+* get rid of connect sector stuff? dont think it's going to be used
 
 * make it so you can't get close enough to walls to see through them.
  * there is a distance from camera to the view plane, maybe we have the view plane be at zero, and move the camera back?
 
-
 * make floor / cieling portals work (gravity won't let you fall through yet)
  * hopefully fixed when going to component system
+
 * make it so jumping isn't frame rate dependant
+
 * better physics for player (and eventually other moving entities)
  * collision detection: walk on boxes, under objects, can't walk through walls?
  * hopefully fixed when going to component system
-* somehow make portals contain dynamic geometry, or do some other dynamic geometry solution
+
 * only traverse portal if you walk through portal window.
+
+
+
+
+
+* integrate lua
+ * interact with objects by id
+ * change light params etc
+ * AI programming?
+ * ability to have threaded lua calls?
+
+* record a video of some animated objects (moving / expanding contracting, rotating, etc) and absorption objects etc.  fog and moving lights
+
+
 
 
 
@@ -66,6 +114,7 @@ NEXT
 * could mess with camera view to have trippy effects.  Both simple stuff like changing fov, but also more complex stuff like sine wave offsets of primary ray directions
 
 --MODELS
+* version number in MDX files
 * can you split the triangles up by more than just +/- y? Can you do like 10 slices??
 * blender has other textures available that we could use if we want: ambient texture (?), specular map, hardness map (?), reflection map, alpha map, translucency map (?), bump map
 * models need to be able to export / load reflection and absorption
@@ -73,8 +122,19 @@ NEXT
 * are there too many duplicate materials being created?
 * how does bitangent sign work? data in blender
 * make artist notes so artists can do work
+* could do both bounding sphere AND AABB test if that would help non spherical models :P
+* if splitting y axis more than into 2 sections, could instead do N slices, and keep track of where each slice ends index wise. then, find the min/max index of the ray and do the corresponding slices.
 
 --RENDERING
+* definite integral to find out fog amount of fog density defined by f(x,y,z) for 2 end points of a line segment A, B
+* if doing "varying fog densities" like with a perlin noise fog density function, "ray march" down the ray doing fog samples, making the step get progressively larger as distance increases (distance down ray? or distance from camera??)
+ * also could look at calculus and convolution stuff.
+ * maybe do it independantly per axis to simplify it and then add the results together?
+ * i wonder if sine waves might be able to do something special here because area under sine wave is cosine wave and such
+* somehow make portals contain dynamic geometry, or do some other dynamic geometry solution
+* gfx setting to limit frame rate to a reasonable amount (on by default)
+? when instancing model triangles, they share object id's.  is that what we want? might need to think about having a "base index" or something.
+? could try "hard coding" stuff for perf so long as it's ok that things aren't destroyed.  for instance, the number of models in a specific sector.
 * maybe we need a thing where portals have a color multiplier applied to what they show.  maybe we need a "portal" mode to go along w/ reflection and refraction enum?
 * when we hit a triangle, is there a way we can put off filling out the bulk of the collision info things until we are done, so we do less redundant work? (if it would even be a win... need to profile)
 * mess with camera rays, to do effects like "underwater distortion" and such
@@ -343,6 +403,10 @@ NEXT
 * we could have actual debugging metrics for the ray that is under the mouse cursor if we want
 
 --DATA SCHEMAS
+* make hints generate into a file somewhere or something...including systems!
+* add hints to everything
+* verify hint comment that triangle points are assumed to be in clockwise order
+* ConnectToSectorOffset, ConnectToPosition -> better explaination hint text
 * "packed files" for faster loading.  with a local compile cache or something
 * make it error when an id is not found, that is referenced from data.
 * make a templated data link type class
@@ -363,6 +427,10 @@ NEXT
 * could also tie this feature into video recording.
 
 --CODE
+* exporter for levels! from unity perhaps?
+* investigate the other editors in blender -> such as node editor and graph editor
+* hide the console window somehow?
+* find a way to make GetSectorPlaneNormal (and similar functions) only implemented in 1 place, instead of once in kernel and once in host
 * name the materials from models something deterministic like __<modelid><objectid> so they can be used outside of the models if wanted
 * don't let anything be loaded during the levels. When spawning models for instance use a model id.
 * be able to choose what format we save screenshots for video like bmp, png, jpg
@@ -523,6 +591,15 @@ TO "SHIP" TO TEAM
 
 
 =====DONE=====
+
+--6/15/14
+* ESC work -> a player entity, which is defined in data, is now created after game data loading.
+* proper components are created for it and it's registered with the appropriate systems.
+* the systems get update calls and end up calling update on the player entity, with the appropriate components passed in.
+
+--6/14/14
+* worked on fog on and off over the last couple days.
+* started working on ECS and started thinking about ECS
 
 --6/8/14
 * make kernel arguments be const pointers

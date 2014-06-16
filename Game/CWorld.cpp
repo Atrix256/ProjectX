@@ -17,6 +17,8 @@ This class holds all information about the world
 #include "CCamera.h"
 #include "Platform/OS.h"
 
+#include "Game\CGame.h"
+
 #include <algorithm>
 
 static const unsigned int c_defaultMaterial = -1; // the default "error" material
@@ -1002,6 +1004,12 @@ void CWorld::GetSectorPlaneDimenions (
 }
 
 //-----------------------------------------------------------------------------
+unsigned int CWorld::GetSectorIDByName (const char *sector) const
+{
+	return SData::GetEntryById(m_worldData.m_Sector, sector, c_defaultSector);
+}
+
+//-----------------------------------------------------------------------------
 void CWorld::LoadSector (
 	SSector &sector,
 	struct SData_Sector &sectorSource,
@@ -1056,45 +1064,44 @@ void CWorld::LoadSector (
 //-----------------------------------------------------------------------------
 bool CWorld::Load (const char *worldFileName)
 {
-	SData_World worldData;
-	if (!DataSchemasXML::Load(worldData, worldFileName, "World"))
-		worldData.SetDefault();
+	if (!DataSchemasXML::Load(m_worldData, worldFileName, "World"))
+		m_worldData.SetDefault();
 
 	// Starting Sector, Position and facing etc.
-	SSharedDataRootHostToKernel::Camera().m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_StartSector, c_defaultSector);
-	CGame::SetPlayerPos(worldData.m_StartPoint.m_x, worldData.m_StartPoint.m_y, worldData.m_StartPoint.m_z);
-	CGame::SetPlayerFacing(worldData.m_StartFacing.m_x, worldData.m_StartFacing.m_y, worldData.m_StartFacing.m_z);
-	CCamera::Get().SetAutoAjustBrightness(worldData.m_AutoAdjustBrightness);
+	SSharedDataRootHostToKernel::Camera().m_sector = SData::GetEntryById(m_worldData.m_Sector, m_worldData.m_StartSector, c_defaultSector);
+	CGame::SetPlayerPos(m_worldData.m_StartPoint.m_x, m_worldData.m_StartPoint.m_y, m_worldData.m_StartPoint.m_z);
+	CGame::SetPlayerFacing(m_worldData.m_StartFacing.m_x, m_worldData.m_StartFacing.m_y, m_worldData.m_StartFacing.m_z);
+	CCamera::Get().SetAutoAjustBrightness(m_worldData.m_AutoAdjustBrightness);
 
 	// portals
-	m_portals.Resize(worldData.m_Portal.size());
-	for (unsigned int index = 0, count = worldData.m_Portal.size(); index < count; ++index)
+	m_portals.Resize(m_worldData.m_Portal.size());
+	for (unsigned int index = 0, count = m_worldData.m_Portal.size(); index < count; ++index)
 	{
-		m_portals[index].m_sector = SData::GetEntryById(worldData.m_Sector, worldData.m_Portal[index].m_Sector, c_defaultSector);
-		Copy(m_portals[index].m_xaxis, worldData.m_Portal[index].m_XAxis);
-		Copy(m_portals[index].m_yaxis, worldData.m_Portal[index].m_YAxis);
-		Copy(m_portals[index].m_zaxis, worldData.m_Portal[index].m_ZAxis);
-		Copy(m_portals[index].m_waxis, worldData.m_Portal[index].m_WAxis);
+		m_portals[index].m_sector = SData::GetEntryById(m_worldData.m_Sector, m_worldData.m_Portal[index].m_Sector, c_defaultSector);
+		Copy(m_portals[index].m_xaxis, m_worldData.m_Portal[index].m_XAxis);
+		Copy(m_portals[index].m_yaxis, m_worldData.m_Portal[index].m_YAxis);
+		Copy(m_portals[index].m_zaxis, m_worldData.m_Portal[index].m_ZAxis);
+		Copy(m_portals[index].m_waxis, m_worldData.m_Portal[index].m_WAxis);
 
-		m_portals[index].m_setPosition = worldData.m_Portal[index].m_SetPosition;
-		Copy(m_portals[index].m_position, worldData.m_Portal[index].m_Position);
+		m_portals[index].m_setPosition = m_worldData.m_Portal[index].m_SetPosition;
+		Copy(m_portals[index].m_position, m_worldData.m_Portal[index].m_Position);
 	}
 
 	// materials
-	m_materials.Presize(worldData.m_Material.size() + 1);
+	m_materials.Presize(m_worldData.m_Material.size() + 1);
 	AddDebugMaterial();
-	for (unsigned int index = 0, count = worldData.m_Material.size(); index < count; ++index)
-		AddMaterial(worldData.m_Material[index]);
+	for (unsigned int index = 0, count = m_worldData.m_Material.size(); index < count; ++index)
+		AddMaterial(m_worldData.m_Material[index]);
 
 	// models
-	m_namedModels.reserve(worldData.m_Model.size());
-	for (unsigned int index = 0, count = worldData.m_Model.size(); index < count; ++index)
-		AddModel(worldData.m_Model[index]);
+	m_namedModels.reserve(m_worldData.m_Model.size());
+	for (unsigned int index = 0, count = m_worldData.m_Model.size(); index < count; ++index)
+		AddModel(m_worldData.m_Model[index]);
 
 	// sectors
-	m_sectors.Resize(worldData.m_Sector.size());
-	for (unsigned int sectorIndex = 0, sectorCount = worldData.m_Sector.size(); sectorIndex < sectorCount; ++sectorIndex)
-		LoadSector(m_sectors[sectorIndex], worldData.m_Sector[sectorIndex], worldData.m_Material, worldData.m_Portal);
+	m_sectors.Resize(m_worldData.m_Sector.size());
+	for (unsigned int sectorIndex = 0, sectorCount = m_worldData.m_Sector.size(); sectorIndex < sectorCount; ++sectorIndex)
+		LoadSector(m_sectors[sectorIndex], m_worldData.m_Sector[sectorIndex], m_worldData.m_Material, m_worldData.m_Portal);
 
 	// calculate the texture indices of our textures
 	for (unsigned int index = 0, count = m_materials.Count(); index < count; ++index)
@@ -1115,17 +1122,17 @@ bool CWorld::Load (const char *worldFileName)
 	CDirectX::TextureManager().FinalizeTextures();
 
 	// handle the sector ConnectToSector fields for automatic portal generation
-	for (unsigned int sectorIndex = 0, sectorCount = worldData.m_Sector.size(); sectorIndex < sectorCount; ++sectorIndex)
-		HandleSectorConnectTos(sectorIndex, worldData.m_Sector);
+	for (unsigned int sectorIndex = 0, sectorCount = m_worldData.m_Sector.size(); sectorIndex < sectorCount; ++sectorIndex)
+		HandleSectorConnectTos(sectorIndex, m_worldData.m_Sector);
 
 	/*
 	// handle the connect tags that connect sectors together
-	for (unsigned int connectIndex = 0, connectCount = worldData.m_Connect.size(); connectIndex < connectCount; ++connectIndex)
+	for (unsigned int connectIndex = 0, connectCount = m_worldData.m_Connect.size(); connectIndex < connectCount; ++connectIndex)
 	{
-		const SData_Connect &connect = worldData.m_Connect[connectIndex];
+		const SData_Connect &connect = m_worldData.m_Connect[connectIndex];
 		
-		unsigned int srcSector = SData::GetEntryById(worldData.m_Sector, connect.m_SrcSector);
-		unsigned int destSector = SData::GetEntryById(worldData.m_Sector, connect.m_DestSector);
+		unsigned int srcSector = SData::GetEntryById(m_worldData.m_Sector, connect.m_SrcSector);
+		unsigned int destSector = SData::GetEntryById(m_worldData.m_Sector, connect.m_DestSector);
 		cl_float2 offset;
 		Copy(offset, connect.m_Offset);
 		cl_float4 portalWindow;

@@ -11,6 +11,7 @@ This class holds all information about the world
 #include "Platform/SharedArray.h"
 #include "KernelCode/Shared/SharedGeometry.h"
 #include "KernelCode/Shared/SSharedDataRoot.h"
+#include "DataSchemas/DataSchemasStructs.h"
 #include <vector>
 
 class CWorld
@@ -44,6 +45,8 @@ public:
 		numPortals = m_portals.Count();
 		return m_portals.DataConst();
 	}
+
+	unsigned int GetSectorIDByName (const char *sector) const;
 
 private:
 	friend class CDirectX;
@@ -165,5 +168,9 @@ private:
 	// the models specified in the level file
 	std::vector<SNamedModel>		m_namedModels;
 
+	// the currently loaded world data
+	SData_World m_worldData;
+
+	// next OpenCL object ID
 	unsigned int m_nextObjectId;
 };

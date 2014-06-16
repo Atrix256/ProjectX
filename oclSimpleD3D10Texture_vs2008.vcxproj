@@ -218,6 +218,12 @@
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_GfxSettings.h" />
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_World.h" />
     <ClInclude Include="DataSchemas\Schemas\DataSchemas_XmdFile.h" />
+    <ClInclude Include="ECS\ComponentList.h" />
+    <ClInclude Include="ECS\Components.h" />
+    <ClInclude Include="ECS\ECS.h" />
+    <ClInclude Include="ECS\ECSEnums.h" />
+    <ClInclude Include="ECS\SystemList.h" />
+    <ClInclude Include="ECS\Systems.h" />
     <ClInclude Include="External\tinyxml\tinyxml2.h" />
     <ClInclude Include="Game\CCamera.h" />
     <ClInclude Include="Game\CInput.h" />
@@ -243,6 +249,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DataSchemas\DataSchemasStructs.cpp" />
+    <ClCompile Include="ECS\Components.cpp" />
+    <ClCompile Include="ECS\ECS.cpp" />
+    <ClCompile Include="ECS\Systems.cpp" />
     <ClCompile Include="External\tinyxml\tinyxml2.cpp" />
     <ClCompile Include="Game\CCamera.cpp" />
     <ClCompile Include="Game\CInput.cpp" />

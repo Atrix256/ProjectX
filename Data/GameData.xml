@@ -9,4 +9,19 @@
     <HDRBrightnessSamplingInterval Value="5"/>
     <HDRBrightnessDelta Value="0.05"/>
   </Gfx>
+
+  <!--========================================ECS Data========================================-->
+  <PlayerEntity Value="Player"/>
+  
+  <!--=======================================Components=======================================-->
+  <ComponentBearings id="Default"/>
+  
+  <!--========================================Entities========================================-->
+  <Entity id="Player">
+    <ComponentBearings Value="Default"/>
+    <SystemCamera Value="true"/>
+    <SystemPlayerController Value="true"/>
+    <SystemCreaturePhysics Value="true"/>
+  </Entity>
+  
 </GameData>

@@ -62,7 +62,7 @@
   <!--===============================================================
   HallwayToDarkRoom
   ================================================================-->
-  <Sector id="HallwayToDarkRoom" FogColor="0,1,0" FogPlane="0,1,0,1" FogDensityFactor="0.008"  Dimensions="10,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector id="HallwayToDarkRoom" FogConstantDensity="false" FogColor="0,1,0" FogPlane="0,1,0,1" FogDensityFactor="0.01"  Dimensions="10,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
 
     <Sphere Position="0,3.5,-15" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="0,3.5,-15" Color="1,1,0.8" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>

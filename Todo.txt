@@ -1,29 +1,23 @@
 
 NEXT
 
-* better error if a system can't get a component that it needs by ID.
-
-* make component get by id use binary search, or have some way of letting the system start from where it was last time when looking for the higher entity id.
-
-* do we need a way to order the updates of the systems, instead of them just being in the order they are defined? or is that ok?
-
-* get rid of CECSSystem, not needed
-
-* log an error if we can't create the player entity
-
-* look into enum classes for a templated flags class!
-
-* moev the player creation out of load game data, into something else. like init world or something? who knows
-
-* game data probably should be loaded before the world is loaded - and kept around all the time, as you go from level to level.
-
-* helper function for creating entities? just pass in entity ID.  perhaps should be in CGame
-
 * find another word for bearings.
 
 * convert camera to using component
 * convert input to using component
 * convert physics to using components
+
+* helper function for creating entities? just pass in entity ID.  perhaps should be in CGame
+
+* look into enum classes for a templated flags class!
+ * we may not actually need these flags / enums if we change where CreateEntity() lives
+
+* moev the player creation out of load game data, into something else. like init world or something? who knows
+
+* game data probably should be loaded before the world is loaded - and kept around all the time, as you go from level to level.
+
+
+
 
 * figure out a better way to automate more of the bearings and ECS hookup boilerplate code
 
@@ -103,6 +97,11 @@ ECS details
 
 
 
+--ECS Entity Component System
+* better error if a system can't get a component that it needs by ID.
+* make component get by id use binary search, or have some way of letting the system start from where it was last time when looking for the higher entity id.
+* do we need a way to order the updates of the systems, instead of them just being in the order they are defined? or is that ok?
+* log an error if we can't create the player entity
  
 --MAP & GAME CONCEPTS
 * can use blue fog for underwater look
@@ -137,7 +136,7 @@ ECS details
 ? could try "hard coding" stuff for perf so long as it's ok that things aren't destroyed.  for instance, the number of models in a specific sector.
 * maybe we need a thing where portals have a color multiplier applied to what they show.  maybe we need a "portal" mode to go along w/ reflection and refraction enum?
 * when we hit a triangle, is there a way we can put off filling out the bulk of the collision info things until we are done, so we do less redundant work? (if it would even be a win... need to profile)
-* mess with camera rays, to do effects like "underwater distortion" and such
+* mess with camera rays, to do effects like "underwater distortion" and such. cool underwater effect: https://www.shadertoy.com/view/4dXXzB
 * could try testing models front to back based on bounding sphere collisions
 * subsurface scattering investigation - need depth penetration of light through object, which could be gotten as part of shadow calculation work
 * can blend between 2 textures easily (either animated in real time, or statically like multi texture) since it's 3d texture.  just use some texture coordinate between the 2 frames
@@ -358,6 +357,7 @@ ECS details
  -long distance - ?? not sure if needed, but if we have a lot of sectors, A* across sectors may be too much
 
 --GAME DATA
+* mouse sensitivity needs to go into a setting somewhere
 * seperate the schemas a bit into their own includes, so that when you edit a schema, it doesnt make a massive recompile
 * put schemas into namespaces or something, to prevent name collision and reduce global namespace pollution!
 * log error if model load fails
@@ -591,6 +591,13 @@ TO "SHIP" TO TEAM
 
 
 =====DONE=====
+
+--6/23/14
+* made window be the correct size.
+* over last couple days learned about integrals and got analytic fog density shadertoy demos working.
+
+--6/18/14
+* gdi screen cap work real quick.
 
 --6/15/14
 * ESC work -> a player entity, which is defined in data, is now created after game data loading.

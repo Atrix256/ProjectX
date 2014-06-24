@@ -46,16 +46,18 @@ SystemComponent(type, access, hint) - specifies a component needed by the system
 
 //=================================================SYSTEM LIST=================================================================
 
-SystemBegin(Camera, SYSTEM_SINGLE, "This system controls the camera.  Only one entity can control the camera at a time.")
-	SystemComponent(Bearings, SYSTEM_READONLY, "The camera reads the entity bearings to determine it's own orientation.")
-SystemEnd
-
-SystemBegin(PlayerController, SYSTEM_SINGLE, "This system translates input into player movement.  Only one entity can use the player controller at a time.")
+SystemBegin(PlayerController, SYSTEM_SINGLE, "This system translates input into desired player movement.  Only one entity can use the player controller at a time.")
 	SystemComponent(Bearings, SYSTEM_READWRITE, "The player controller modifies entity bearings based on input state.")
 SystemEnd
 
 SystemBegin(CreaturePhysics, SYSTEM_MANY, "The physics system is what lets creatures walk around the world, and also handles projectile impacts.")
 	SystemComponent(Bearings, SYSTEM_READWRITE, "The physics system uses the physics world to resolve collisions and update creature bearings")
+SystemEnd
+
+// camera has it's own internal state and it gets set up by game data supposedly, then in response to mouse movement, it will yawright and pitchup
+// also, it does move delta stuff based on player input, and "attempts to move" so does some physics stuff
+SystemBegin(Camera, SYSTEM_SINGLE, "This system sets the camera to the orientation of an entity.  Only one entity can control the camera at a time.")
+	SystemComponent(Bearings, SYSTEM_READONLY, "The camera reads the entity bearings to determine it's own orientation.")
 SystemEnd
 
 //=============================================================================================================================

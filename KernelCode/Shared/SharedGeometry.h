@@ -37,7 +37,7 @@ struct SMaterial
 	cl_uint m_rayInteraction;
 	cl_float m_pad1;
 	cl_float m_pad2;
-	cl_float m_pad3;
+	cl_uint m_diffuseTextureIsDistanceField;
 };
 
 struct SPortal

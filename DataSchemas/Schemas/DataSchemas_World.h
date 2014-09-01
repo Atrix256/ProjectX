@@ -49,6 +49,7 @@ SchemaBegin(Material, "Information about a surface material")
 	Field_Schema(Vec3, RefractionColor, "0,0,0", "How refractive (transparent) the surface should be.  A value of 1 means it will let through all light, a value of 0 means it will let none through.  A value of 0.5 means it will let through all light at half intensity.  Refraction will not work unless there is no reflection since an object may be EITHER reflective OR refractive but not both.")
 	Field(float, RefractionIndex, 1.0f, "The index of refraction of the material, aka how much light is bent when it enters and exits the material.  a value of 1 means the light will not be bent at all. Refraction is not active unless refraction amount is also greater than 0 and the object is not reflective.")
 	Field_Schema(Vec3, Absorbance, "0,0,0", "Absorbance (A) per centimeter for each color channel (red, green blue). Transmission = 10^(A*cm traveled).")
+	Field(bool, DiffuseTextureIsDistanceField, false, "If true, the alpha channel of the diffuse texture will be treated as a distance field.")
 SchemaEnd
 
 SchemaBegin(Portal, "Information about a portal, which allows you to see, or travel, between sectors")
@@ -141,13 +142,9 @@ SchemaBegin(Model, "A model to load")
 SchemaEnd
 
 SchemaBegin(World, "The definition of the world")
-	Field(std::string, StartSector, "", "The id of sector the player starts in")
-	Field_Schema(Vec3, StartPoint,  "0,0,0", "The location the player starts at within the StartSector")
-	Field_Schema(Vec3, StartFacing, "1,0,0", "The vector describing the initial rotation of the camera")
 	Field_Schema_Array(Model, Model, "The models that can be used in this level")
 	Field_Schema_Array(Material, Material, "Definitions for the materials used in the world")
 	Field_Schema_Array(Portal, Portal, "Definitions for the portals used in the world")
 	Field_Schema_Array(Sector, Sector, "Definitions for the sectors used in the world")
-	Field(bool, AutoAdjustBrightness, false, "Whether or not to automatically adjust brightness in this world.  Work in progress.")
 	//Field_Schema_Array(Connect, Connect)
 SchemaEnd

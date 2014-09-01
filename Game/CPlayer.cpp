@@ -37,6 +37,7 @@ void CPlayer::Init ()
 //--------------------------------------------------------------------------------------------------
 void CPlayer::Update (float elapsed)
 {
+	/*
 	const SData_GameData& gameData = CGame::GameData();
 
 	float moveAmount = m_crouched ? gameData.m_WalkSpeedCrouching : gameData.m_WalkSpeedStanding;
@@ -107,20 +108,5 @@ void CPlayer::Update (float elapsed)
 	// collision detection.  So, get the position in case the camera changed it.
 	CCamera::Get().GetPosition(m_position);
 	m_position -= playerHeight;
-}
-
-//--------------------------------------------------------------------------------------------------
-void CPlayer::SetPosition(float X, float Y, float Z)
-{
-	m_onGround = false;
-	m_position[0] = X;
-	m_position[1] = Y;
-	m_position[2] = Z;
-	CCamera::Get().SetPosition(m_position);
-}
-
-//--------------------------------------------------------------------------------------------------
-void CPlayer::SetFacing(float X, float Y, float Z)
-{
-	CCamera::Get().SetFacing(X, Y, Z);
+	*/
 }

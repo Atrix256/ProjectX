@@ -79,8 +79,6 @@ void CCamera::AttemptMove (const float3 &delta)
 		float3 outPos;
 		TransformPointByMatrix(outPos, camera.m_pos, portal.m_xaxis, portal.m_yaxis, portal.m_zaxis, portal.m_waxis);
 		camera.m_pos = outPos;
-
-		TransformFacing(portal.m_xaxis, portal.m_yaxis, portal.m_zaxis);
 	}
 }
 
@@ -93,12 +91,4 @@ float CCamera::CurrentGroundHeight () const {
 		return -sectors[camera.m_sector].m_halfDims[1];
 
 	return 0.0f;
-}
-
-void CCamera::TransformFacing (const cl_float4& xAxis, const cl_float4& yAxis, const cl_float4& zAxis)
-{
-	// transform the basis vectors
-	SCamera &camera = SSharedDataRootHostToKernel::Camera();
-	TransformVectorByMatrix(camera.m_fwd , xAxis, yAxis, zAxis);
-	SetFacing(camera.m_fwd[0],camera.m_fwd[1], camera.m_fwd[2]);
 }

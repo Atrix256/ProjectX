@@ -41,6 +41,16 @@ struct SColorStackItem
 	cl_float4	m_fogColorAndAmount;
 };
 
+inline float3 LinearColorTosRGB (float3 f)
+{
+	return f * f;
+}
+
+inline float3 sRGBToLinearColor (float3 f)
+{
+	return sqrt(f);
+}
+
 inline bool IsReflective (__global const struct SMaterial *material)
 {
 	return material->m_rayInteraction ==  e_rayInteractionReflect;
@@ -828,6 +838,7 @@ void TraceRay (
 		if (material->m_normalTextureIndex >= 0)
 		{
 			float4 textureCoords = {collisionInfo.m_textureCoordinates.x, collisionInfo.m_textureCoordinates.y, material->m_normalTextureIndex, 0};
+			// do not convert to sRGB since this is a normal map!
 			float3 textureNormal = read_imagef(tex3dIn, g_textureSampler, textureCoords).xyz;
 
 			textureNormal = normalize(textureNormal * 2.0 - 1.0);
@@ -853,8 +864,31 @@ void TraceRay (
 		float3 diffuseColorBase = material->m_diffuseColor;
 		if (material->m_diffuseTextureIndex >= 0)
 		{
+			// make texture coordinates
 			float4 textureCoords = {collisionInfo.m_textureCoordinates.x, collisionInfo.m_textureCoordinates.y, material->m_diffuseTextureIndex, 0};
-			diffuseColorBase *= read_imagef(tex3dIn, g_textureSampler, textureCoords).xyz;
+
+			// if this is a distance field texture
+			if (material->m_diffuseTextureIsDistanceField)
+			{
+				#if 1
+					const float smoothing = 1.0/64.0;
+					// do not convert to sRGB since this is a distance texture
+					float distance = read_imagef(tex3dIn, g_textureSampler, textureCoords).w;
+					float alpha = Saturate(smoothstep(0.5 - smoothing, 0.5 + smoothing, distance));
+					diffuseColorBase *= (float3)(1.0f - alpha);
+				#else
+					// do not convert to sRGB since this is a distance texture
+					float alpha = read_imagef(tex3dIn, g_textureSampler, textureCoords).w;
+					if (alpha > 0.5f)
+						diffuseColorBase *= (float3)(0.0f);
+				#endif
+			}
+			// else it's a regular texture map
+			else
+			{
+				// convert to sRGB since this is a color
+				diffuseColorBase *= LinearColorTosRGB(read_imagef(tex3dIn, g_textureSampler, textureCoords).xyz);
+			}
 		}
 
 		// get the emissive color of the object we hit
@@ -862,7 +896,8 @@ void TraceRay (
 		if (material->m_emissiveTextureIndex >= 0)
 		{
 			float4 textureCoords = {collisionInfo.m_textureCoordinates.x, collisionInfo.m_textureCoordinates.y, material->m_emissiveTextureIndex, 0};
-			emissiveColor *= read_imagef(tex3dIn, g_textureSampler, textureCoords).xyz;
+			// convert to sRGB since this is a color
+			emissiveColor *= LinearColorTosRGB(read_imagef(tex3dIn, g_textureSampler, textureCoords).xyz);
 		}
 
 		#if DEBUG_TEXTURE_UV
@@ -1006,5 +1041,6 @@ __kernel void clrt (
 		color.z = grayRight;
 	#endif
 
-	write_imagef(texOut, coord, (float4)(color, 1.0)); 
+	// convert color from sRGB back to linear space
+	write_imagef(texOut, coord, (float4)(sRGBToLinearColor(color), 1.0)); 
 }

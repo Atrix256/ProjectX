@@ -58,6 +58,9 @@ public:
 	void SetWorld (const char *world) {m_worldFileName = world;}
 
 	void TakeScreenshot (const char *fileName);
+	void TakeScreenshot ();
+
+	void RequestScreenshot ();
 
 	void ToggleRecording ();
 
@@ -137,4 +140,5 @@ private:
 	unsigned int			m_height;
 	bool					m_recording;
 	unsigned int			m_recordingFrameNumber;
+	bool					m_wantsScreenshot;
 };

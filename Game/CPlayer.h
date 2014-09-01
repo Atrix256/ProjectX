@@ -18,8 +18,6 @@ public:
 	void Init ();
 
 	void Update (float elapsed);
-	void SetPosition (float X, float Y, float Z);
-	void SetFacing (float X, float Y, float Z);
 
 private:
 	float	m_playerHeight;

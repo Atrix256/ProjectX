@@ -17,7 +17,7 @@ class CECSSystem##name \
 private: \
 	CECSSystem##name (); /* don't allow instantiation, systems are static classes*/ \
 	static std::vector<unsigned int> s_registeredEntities; \
-	static void Update (float elapsedSeconds
+	static void UpdateEntity (float elapsedSeconds
 
 #define SYSTEM_READONLY const
 #define SYSTEM_READWRITE
@@ -27,8 +27,10 @@ private: \
 #define SystemEnd \
 	); \
 public: \
-	static void Update (float elapsedSeconds); \
+	static void UpdateSystem (float elapsedSeconds); \
 	static void Register (unsigned int entityId) {s_registeredEntities.push_back(entityId);} \
+	static unsigned int GetRegisteredEntityCount () { return s_registeredEntities.size(); } \
+	static unsigned int GetRegisteredEntity (unsigned int index) { return s_registeredEntities[index]; } \
 };
 
 #include "SystemList.h"

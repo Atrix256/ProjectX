@@ -16,9 +16,11 @@ systems to do work on entities.
 #define ComponentBegin(name, hint) \
 class CECSComponent##name \
 { \
+public: \
+	typedef std::vector<CECSComponent##name *> TList; \
 private: \
 	CECSComponent##name (unsigned int entityId, const struct SData_Component##name &data); \
-	static std::vector<CECSComponent##name *> s_components; \
+	static TList s_components; \
 public: \
 	static CECSComponent##name *Create (unsigned int entityId, const struct SData_Component##name &data) \
 	{ \
@@ -28,7 +30,7 @@ public: \
 	} \
 	static CECSComponent##name *GetByEntityId (unsigned int entityId) \
 	{ \
-		for (std::vector<CECSComponent##name *>::iterator it = s_components.begin(); it != s_components.end(); ++it) \
+		for (TList::iterator it = s_components.begin(); it != s_components.end(); ++it) \
 		{ \
 			if ((*it)->m_entityId == entityId) \
 				return *it; \
@@ -40,6 +42,10 @@ public: \
 		CECSComponent##name *ret = GetByEntityId(entityId); \
 		Assert_(ret != NULL); \
 		return *ret; \
+	} \
+	static TList &All () \
+	{ \
+		return s_components;\
 	} \
 	unsigned int m_entityId; \
 

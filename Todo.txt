@@ -1,22 +1,55 @@
 
 NEXT
 
+* fix camera!
+* make camera up always be world up
+? quaternion camera?
+* make sprinting, crouching and jumping work
+
+* camera X got reversed somehow
+
+* "left" isn't really the right term, it's really right...
+
+* remove math stuff from camera class after making component work, since camera just gets transform from entity.  math stuff should be in a global place for all transforms.
+
+* if we can formalize a way to get outside resources into the ECS system, we could let the camera system get write access to the camera from another thread.
+
+* maybe need another component for "desired movement".  or maybe it should go into the "bearings" component?
+
+* when consuming the data from the input component (mouse move...) reset it back to zero?
+
 * find another word for bearings.
+
+* get rid of cplayer class - should be replaced by components!
+
+* get rid of auto adjust brightness. games fake it!
 
 * convert camera to using component
 * convert input to using component
 * convert physics to using components
 
+* instead of ECS coupling mouse input so directly with CCamera, should have mouse input change rotation on entity, and should have camera take that info after ecs tick or something?
+
 * helper function for creating entities? just pass in entity ID.  perhaps should be in CGame
 
 * look into enum classes for a templated flags class!
  * we may not actually need these flags / enums if we change where CreateEntity() lives
+ * still useful in other times i'm sure -> like with input flags
 
 * moev the player creation out of load game data, into something else. like init world or something? who knows
 
 * game data probably should be loaded before the world is loaded - and kept around all the time, as you go from level to level.
 
+* find a way to wrap access to all ECS externals (like CCamera) into some kind of "shared resource" system, so that only one person can have write access at a time etc.
+ * CCamera needs this for sure!
+ * also, how we get the input component list inside ECS for input to propogate input, that isn't safe
 
+
+* antialiasing
+* temporal supersampling for AA
+* iterative BVH tests
+* depth of field (?)
+* motion blur (?)
 
 
 * figure out a better way to automate more of the bearings and ECS hookup boilerplate code
@@ -111,6 +144,9 @@ ECS details
 * could do something like you step through a mirror into a sector that is a reflection of the sector you came from, but leads to different sectors.
 * could have underwater stuff i think with swimming.
 * could mess with camera view to have trippy effects.  Both simple stuff like changing fov, but also more complex stuff like sine wave offsets of primary ray directions
+* could use a distance field texture for symbols on walls.  high specular with multi color (specular color or multiple lights?) probably would look pretty cool
+* show a monster for the first time behind frosted glass
+* bump mapping a reflective floor can make a neat "blurry when farther away" effect
 
 --MODELS
 * version number in MDX files
@@ -125,6 +161,20 @@ ECS details
 * if splitting y axis more than into 2 sections, could instead do N slices, and keep track of where each slice ends index wise. then, find the min/max index of the ray and do the corresponding slices.
 
 --RENDERING
+* neat effect: set bearings.m_rotationAxisZ to 0,0,1 but let the other axis rotations happen. could be a neat drunk / dazed effect.
+* tile rerendering may actually help here? well... how often will the camera not be moving though...
+* try implementing "flip quad" supersampling. or flip tri
+ * basically, every even row samples left side high on even frames, then left side low on odd frames.
+ * every odd row samples top side left on even frames,  then top side right on odd frames.
+ * these sames can be used by both cells that touch the sample effectively giving each cell 2 samples for the cost of 1 sample.
+ * if you compost current frame with last frame, you basically get 4 samples for the cost of 1.
+* exponential fog
+* glitter and related articles:
+ * http://gamedev.stackexchange.com/questions/69011/how-can-i-create-a-glitter-effect  
+ * http://developer.amd.com/wordpress/media/2012/10/Shopf-Procedural.pdf
+* do color thresholding to make image look "old".  might be a special effect when you have a specific status or something.  or for in game cinematics or something..
+* make a gfx option for smoothing on distance field textures or not? or maybe just always turn it on.
+* need the ability to specify a vaxis for the sector planes.  if non specified, derive it from vaxis.  needed cause you can't orient textures the way you want always (like, to make text look right)
 * definite integral to find out fog amount of fog density defined by f(x,y,z) for 2 end points of a line segment A, B
 * if doing "varying fog densities" like with a perlin noise fog density function, "ray march" down the ray doing fog samples, making the step get progressively larger as distance increases (distance down ray? or distance from camera??)
  * also could look at calculus and convolution stuff.
@@ -592,6 +642,14 @@ TO "SHIP" TO TEAM
 
 =====DONE=====
 
+--8/20/14
+* cutting out camera functionality from camera, player, input, etc, putting it into ECS system.
+
+--8/11/14
+* at siggraph!
+* doing sRGB conversion and taking before and after screenshots
+* making X take a screenshot, like how Z toggles video recording
+
 --6/23/14
 * made window be the correct size.
 * over last couple days learned about integrals and got analytic fog density shadertoy demos working.
@@ -862,6 +920,7 @@ TO "SHIP" TO TEAM
 --10/19/13
 * figured out how includes and defines worked in .cl program compiling
 * cpu gives camera pos, fwd, up and other info and passes it to cl to make into rays.
+
 --9/22/13
 * Get opencl compiling and running
 * started cleaning up and renaming things

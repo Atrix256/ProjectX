@@ -36,8 +36,21 @@ ComponentBegin(Bearings, "The bearings store a location and rotation")
 	ComponentData(float3, rotationAxisX, "The x axis basis vector for the rotation matrix")
 	ComponentData(float3, rotationAxisY, "The y axis basis vector for the rotation matrix")
 	ComponentData(float3, rotationAxisZ, "The z axis basis vector for the rotation matrix")
+	ComponentData(cl_float4, quaternion, "The quaternion representing rotation.")
 ComponentEnd
-	
+
+ComponentBegin(Input, "The input from a single frame is stored here")
+	ComponentData(float, mouseMoveX, "How much the mouse has moved on the x axis")
+	ComponentData(float, mouseMoveY, "How much the mouse has moved on the y axis")
+	ComponentData(bool , keyWalkForward, "Tracks key state")
+	ComponentData(bool , keyWalkLeft, "Tracks key state")
+	ComponentData(bool , keyWalkRight, "Tracks key state")
+	ComponentData(bool , keyWalkBack, "Tracks key state")
+	ComponentData(bool , keyJump, "Tracks key state")
+	ComponentData(bool , keyCrouch, "Tracks key state")
+	ComponentData(bool , keySprint, "Tracks key state")
+ComponentEnd
+
 //=============================================================================================================================
 
 // undefine the macros, as a convinience to the users of this list

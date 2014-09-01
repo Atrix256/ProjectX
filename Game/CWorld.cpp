@@ -42,6 +42,24 @@ void Copy(float3 &lhs, const SData_Vec3 &rhs)
 }
 
 //-----------------------------------------------------------------------------
+void ConvertFromLinearTosRGB(float3 &color)
+{
+	color[0] *= color[0];
+	color[1] *= color[1];
+	color[2] *= color[2];
+}
+
+//-----------------------------------------------------------------------------
+void ConvertFromLinearTosRGB(cl_float4 &color)
+{
+	// only do the first 3 components... we are assuming we have some sort of
+	// scalar or alpha in the last component which shouldn't be modified.
+	color.s[0] *= color.s[0];
+	color.s[1] *= color.s[1];
+	color.s[2] *= color.s[2];
+}
+
+//-----------------------------------------------------------------------------
 void Copy(cl_float4 &lhs, const SData_Vec3 &rhs, const float w)
 {
 	lhs.s[0] = rhs.m_x;
@@ -174,12 +192,21 @@ unsigned int CWorld::AddMaterial (const struct SData_Material &materialSource, c
 	Copy(material.m_reflectionColor, materialSource.m_ReflectionColor);
 	Copy(material.m_refractionColor, materialSource.m_RefractionColor);
 
+	// convert the colors from linear space to sRGB so our OpenCL kernel doesn't have
+	// to do it every frame
+	ConvertFromLinearTosRGB(material.m_diffuseColor);
+	ConvertFromLinearTosRGB(material.m_specularColorAndPower);
+	ConvertFromLinearTosRGB(material.m_emissiveColor);
+	ConvertFromLinearTosRGB(material.m_reflectionColor);
+	ConvertFromLinearTosRGB(material.m_refractionColor);
+
 	material.m_rayInteraction =
 		lengthsq(material.m_reflectionColor) > 0 ? e_rayInteractionReflect : (lengthsq(material.m_refractionColor) > 0 ? e_rayInteractionRefract : e_rayInteractionNone );
 
 	material.m_refractionIndex = materialSource.m_RefractionIndex;
 
 	Copy(material.m_absorbance, materialSource.m_Absorbance);
+	ConvertFromLinearTosRGB(material.m_absorbance);
 
 	// convert absorbance from absorbance per centimeter to absorbance per world unit (meters)
 	material.m_absorbance[0] *= 100.0f;
@@ -209,6 +236,8 @@ unsigned int CWorld::AddMaterial (const struct SData_Material &materialSource, c
 		texturePath += materialSource.m_EmissiveTexture.c_str();
 		material.m_emissiveTextureIndex = (float)CDirectX::TextureManager().GetOrLoad(texturePath.c_str());
 	}
+
+	material.m_diffuseTextureIsDistanceField = materialSource.m_DiffuseTextureIsDistanceField;
 
 	return m_materials.Count() - 1;
 }
@@ -394,6 +423,9 @@ void CWorld::LoadSectorPointLights (
 		light.m_attenuationConstDistDistsq[0] = lightSource.m_AttenuationConstant;
 		light.m_attenuationConstDistDistsq[1] = lightSource.m_AttenuationDistance;
 		light.m_attenuationConstDistDistsq[2] = lightSource.m_AttenuationDistanceSquared;
+
+		// convert light color to sRGB so the kernel doesn't have to do that every frame
+		ConvertFromLinearTosRGB(light.m_color);
 
 		// spot light params
 		Copy(light.m_spotLightReverseDir, lightSource.m_ConeDirection);
@@ -1021,11 +1053,16 @@ void CWorld::LoadSector (
 	// load / set the sector data
 	Copy(sector.m_ambientLight, sectorSource.m_AmbientLight);
 	Copy(sector.m_fogColorAndFactor, sectorSource.m_FogColor, sectorSource.m_FogDensityFactor);
+
 	sector.m_fogFactorMax = sectorSource.m_FogFactorMax;
 	Copy(sector.m_fogPlane, sectorSource.m_FogPlane);
 	Normalize(sector.m_fogPlane);
 	Copy(sector.m_halfDims, sectorSource.m_Dimensions);
 	sector.m_halfDims /= 2.0f;
+
+	// convert colors to sRGB so the kernel doesn't have to do that every frame
+	ConvertFromLinearTosRGB(sector.m_ambientLight);
+	ConvertFromLinearTosRGB(sector.m_fogColorAndFactor);
 
 	if (sectorSource.m_FogConstantDensity)
 		sector.m_fogMode = sectorSource.m_FogFactorMax > 0.0f ? e_fogConstantDensity : e_fogNone;
@@ -1066,12 +1103,6 @@ bool CWorld::Load (const char *worldFileName)
 {
 	if (!DataSchemasXML::Load(m_worldData, worldFileName, "World"))
 		m_worldData.SetDefault();
-
-	// Starting Sector, Position and facing etc.
-	SSharedDataRootHostToKernel::Camera().m_sector = SData::GetEntryById(m_worldData.m_Sector, m_worldData.m_StartSector, c_defaultSector);
-	CGame::SetPlayerPos(m_worldData.m_StartPoint.m_x, m_worldData.m_StartPoint.m_y, m_worldData.m_StartPoint.m_z);
-	CGame::SetPlayerFacing(m_worldData.m_StartFacing.m_x, m_worldData.m_StartFacing.m_y, m_worldData.m_StartFacing.m_z);
-	CCamera::Get().SetAutoAjustBrightness(m_worldData.m_AutoAdjustBrightness);
 
 	// portals
 	m_portals.Resize(m_worldData.m_Portal.size());

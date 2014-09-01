@@ -1,7 +1,6 @@
-<World AutoAdjustBrightness="false">
-  <StartSector Value="StartRoom"/>
-  <StartPoint Value="0,0,-4.5"/>
-  <StartFacing Value="0,0,1"/>
+<World>
+  <Material id="Letters" DiffuseTexture="Art/comic.png" DiffuseTextureIsDistanceField="true" SpecularColor="0,0,0"/>
+  <Material id="Moustache" DiffuseTexture="Art/moustache.png" DiffuseTextureIsDistanceField="true" SpecularColor="0,0,0"/>
 
   <Material id="Black" DiffuseColor="0,0,0"/>
   <Material id="Brick" DiffuseTexture="Art/oildrum_Diffuse.png" SpecularColor="0.25, 0.25, 0.25" SpecularPower="50"/>
@@ -21,9 +20,9 @@
   <Material id="Mirror" DiffuseColor="0,0,0" SpecularColor="0,0,0" ReflectionColor="0.9,1,0.9"/>
   <Material id="BumpyMirror" NormalTexture="Art/simplenormal.png" SpecularColor="0,0,0" ReflectionColor="0.9,1,0.9"/>
 
-  <Material id="Ruby" DiffuseColor="0,0,0" SpecularColor="1,0.6,0.6" SpecularPower="1" RefractionIndex="0.90" RefractionColor="1,1,1" Absorbance="0.0,0.002,0.002"/>
+  <Material id="Ruby" DiffuseColor="0,0,0" SpecularColor="1,0.6,0.6" SpecularPower="1" RefractionIndex="0.90" RefractionColor="1,1,1" Absorbance="0.0,0.06,0.06"/>
 
-  <Material id="Ruby2" DiffuseColor="0,0,0" SpecularColor="0,0,0" RefractionIndex="0.9" RefractionColor="1,1,1" Absorbance="0.0,0.002,0.002"/>
+  <Material id="Ruby2" DiffuseColor="0,0,0" SpecularColor="0,0,0" RefractionIndex="0.9" RefractionColor="1,1,1" Absorbance="0.0,0.06,0.06"/>
 
   <Material id="SoapBubble" DiffuseColor="0.1,0.02,0.1" SpecularColor="0.5,0.1,0.5" SpecularPower="5" RefractionIndex="0.75" RefractionColor="1,1,1"/>
   <Material id="BumpySoapBubble" NormalTexture="Art/cells.png" DiffuseColor="0.1,0.02,0.1" SpecularColor="0.5,0.1,0.5" SpecularPower="5" RefractionIndex="0.95" RefractionColor="1,1,1"/>
@@ -123,8 +122,8 @@
     <ModelInstance ModelId="IcoSphere" MaterialOverride="Grid" Position="-1,-2.75,-16" Scale="0.3"/>
     <ModelInstance ModelId="IcoSphere" MaterialOverride="Grid" Position="1.25,-2.75,16" Scale="0.3"/>
     
-    <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25"/>
-    <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,0, 1" Material="Letters" TextureScale="0.25,0.25"/>
+    <SectorPlane UAxis="0,0,-1" Material="Moustache" TextureScale="0.25,0.25"/>
 
     <SectorPlane UAxis=" 1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="-1,0,0" Material="RoughBrick" TextureScale="0.25,0.25"/>

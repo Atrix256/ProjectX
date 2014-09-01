@@ -7,6 +7,7 @@ The root class for game logic
 ==================================================================================================*/
 
 #include "CGame.h"
+#include "CCamera.h"
 #include "ECS\ECS.h"
 
 CPlayer CGame::m_player;
@@ -30,18 +31,12 @@ void CGame::Update (float elapsed)
 
 	ECS::Update(elapsed);
 	m_player.Update(elapsed);
-}
 
-//--------------------------------------------------------------------------------------------------
-void CGame::SetPlayerPos (float X, float Y, float Z)
-{
-	m_player.SetPosition(X, Y, Z);
-}
-
-//--------------------------------------------------------------------------------------------------
-void CGame::SetPlayerFacing (float X, float Y, float Z)
-{
-	m_player.SetFacing(X, Y, Z);
+	// Get the camera transform from the ECS system.
+	float3 pos, fwd, up, left; 
+	cl_uint sector;
+	if (ECS::GetCameraTransform(pos, fwd, up, left, sector))
+		CCamera::Get().SetBearings(pos, fwd, left, up, sector);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -66,7 +61,7 @@ void CGame::LoadGameData ()
 				m_gameData.m_Component##name, \
 				entity.m_Component##name, \
 				-1); \
-			SData_Component##name *component##name = componentIndex##name != -1 \
+			struct SData_Component##name *component##name = componentIndex##name != -1 \
 				? &m_gameData.m_Component##name[componentIndex##name] \
 				: NULL;
 		#include "ECS\ComponentList.h"

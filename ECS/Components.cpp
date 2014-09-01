@@ -15,7 +15,7 @@ systems to do work on entities.
 
 // define the static member component lists
 #define ComponentBegin(name, hint) \
-	std::vector<CECSComponent##name *> CECSComponent##name::s_components;
+	CECSComponent##name::TList CECSComponent##name::s_components;
 #include "ComponentList.h"
 
 //--------------------------------------------------------------------------------------------------
@@ -40,4 +40,22 @@ CECSComponentBearings::CECSComponentBearings (
 		DegreesToRadians(data.m_Rotation.m_y),
 		DegreesToRadians(data.m_Rotation.m_z)
 	);
+
+	m_quaternion.s[0] = 0.0f;
+	m_quaternion.s[1] = 0.0f;
+	m_quaternion.s[2] = 0.0f;
+	m_quaternion.s[3] = 1.0f;
+}
+
+//--------------------------------------------------------------------------------------------------
+CECSComponentInput::CECSComponentInput (
+	unsigned int entityId,
+	const struct SData_ComponentInput &data
+)
+{
+	m_entityId = entityId;
+	m_mouseMoveX = m_mouseMoveY = 0.0f;
+
+	#define INPUT_TOGGLE(name, resetOnKeyUp) bool m_key##name = false;
+	#include "Game/InputToggleList.h"
 }

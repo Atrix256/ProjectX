@@ -70,10 +70,7 @@ public:
 	// was the toggle deactivated this frame?
 	static bool InputToggleDeactivated(EInputToggles inputToggle) { return m_toggleState[inputToggle] == 0 && m_toggleStateLastFrame[inputToggle] != 0; }
 
-	static void Update ()
-	{
-		memcpy(m_toggleStateLastFrame, m_toggleState, sizeof(m_toggleState));
-	}
+	static void Update ();
 
 private:
 	static unsigned int m_toggleState[e_inputToggleCount];

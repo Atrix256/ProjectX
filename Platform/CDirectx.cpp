@@ -93,6 +93,7 @@ CDirectX::CDirectX ()
 	, m_clEnqueueReleaseD3D10ObjectsKHR(NULL)
 	, m_recording(false)
 	, m_recordingFrameNumber(0)
+	, m_wantsScreenshot(false)
 {
 }
 
@@ -422,6 +423,37 @@ void CreateBMPFile(HWND hwnd, const char *pszFile, PBITMAPINFO pbi,
 }
 
 //-----------------------------------------------------------------------------
+void CDirectX::TakeScreenshot ()
+{
+	// make sure the screenshots directory exists
+	_mkdir("Screenshots");
+
+	// find the next screen shot number to take
+	FILE *File = NULL;
+	bool done = false;
+	char fileName[256];
+	int nextFileIndex = 1;
+	do 
+	{
+		sprintf(fileName,"Screenshots/Screen%i.bmp",nextFileIndex);
+		File = fopen(fileName,"rb");
+
+		if(File)
+		{
+			fclose(File);
+			nextFileIndex++;
+		}
+		else
+		{
+			done = true;
+		}
+	} 
+	while(!done);
+
+	TakeScreenshot(fileName);
+}
+
+//-----------------------------------------------------------------------------
 void CDirectX::TakeScreenshot (const char *fileName)
 {
 #if 1
@@ -490,6 +522,12 @@ void CDirectX::TakeScreenshot (const char *fileName)
 	hr = D3DX10SaveTextureToFile(texture, D3DX10_IFF_BMP, fileName);
 	texture->Release();
 #endif
+}
+
+//-----------------------------------------------------------------------------
+void CDirectX::RequestScreenshot ()
+{
+	m_wantsScreenshot = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -564,6 +602,12 @@ void CDirectX::DrawScene (float elapsed)
 		sprintf(fileName,"RecordedVideo/Frames/frame%i.bmp", m_recordingFrameNumber);
 		m_recordingFrameNumber++;
 		TakeScreenshot(fileName);
+	}
+
+	if (m_wantsScreenshot)
+	{
+		TakeScreenshot();
+		m_wantsScreenshot = false;
 	}
 }
 
@@ -1019,26 +1063,7 @@ void CDirectX::RunKernels(float elapsed)
 		// read the data the kernel wrote back
 		//sharedDataRootKernelToHost.ReadFromCLMem(m_cxGPUContext, m_cqCommandQueue);
 
-		// do auto adjust brightness stuff if we should
-		if (camera.m_frameCount % camera.m_HDRBrightnessSamplingInterval == 0)
-		{
-			if (CCamera::Get().AutoAdjustBrightness())
-			{
-				float maxBrightness = ((float)(sharedDataRootKernelToHost.GetObjectConst().m_maxBrightness1000x)) / 1000.0f;
-				if (maxBrightness < 0.001f)
-					maxBrightness = 0.001f;
-
-				float target = CDirectX::Settings().m_Brightness / maxBrightness;
-
-				float delta = target - camera.m_brightnessMultiplier;
-
-				// todo: this is linear, need to make it not be
-				camera.m_brightnessMultiplier += delta * CGame::GameData().m_Gfx.m_HDRBrightnessDelta;
-			}
-			// else don't
-			else
-				camera.m_brightnessMultiplier = CDirectX::Settings().m_Brightness;
-		}
+		camera.m_brightnessMultiplier = CDirectX::Settings().m_Brightness;
     }
 }
 
@@ -1097,6 +1122,7 @@ static LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						case VK_SHIFT: CInput::SetInputToggle(CInput::e_inputToggleSprint, pressed); break;
 
 						case 'Z': if (!pressed) CDirectX::Get().ToggleRecording(); break;
+						case 'X': if (!pressed) CDirectX::Get().RequestScreenshot(); break;
 					}
 				}
 			}

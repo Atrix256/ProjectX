@@ -35,5 +35,8 @@ builderrors.txt
 RecordedVideo/Frames/*.*
 RecordedVideo/*.mp4
 
+# screenshots
+ScreenShots/*.*
+
 # python cache
 *.pyc

@@ -15,10 +15,14 @@
   
   <!--=======================================Components=======================================-->
   <ComponentBearings id="Default"/>
+  <ComponentInput id="Default"/>
+
+  <ComponentBearings id="Player" Sector="StartRoom"/>
   
   <!--========================================Entities========================================-->
   <Entity id="Player">
-    <ComponentBearings Value="Default"/>
+    <ComponentBearings Value="Player"/>
+    <ComponentInput Value="Default"/>
     <SystemCamera Value="true"/>
     <SystemPlayerController Value="true"/>
     <SystemCreaturePhysics Value="true"/>

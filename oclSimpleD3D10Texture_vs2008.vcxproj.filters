@@ -37,6 +37,9 @@
     <Filter Include="ECS Code">
       <UniqueIdentifier>{fefd6307-36ac-4bf0-92c0-0ef86e5871a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ECS Code\Systems">
+      <UniqueIdentifier>{6aa40439-465e-43d8-b5cd-6fb85f9ffbc2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\tinyxml\tinyxml2.h">
@@ -190,6 +193,9 @@
     </ClCompile>
     <ClCompile Include="ECS\ECS.cpp">
       <Filter>ECS Code</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS\Systems\CECSSystemCreaturePhysics.cpp">
+      <Filter>ECS Code\Systems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

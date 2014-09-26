@@ -54,3 +54,10 @@ public: \
 #define ComponentEnd };
 
 #include "ComponentList.h"
+
+//--------------------------------------------------------------------------------------------------
+// Component Helper Functions
+// Should probably only have functions that get passed const component references
+//--------------------------------------------------------------------------------------------------
+
+void Camera_GetBasisVectors (const CECSComponentCamera &camera, float3 &xAxis, float3 &yAxis, float3 &zAxis);

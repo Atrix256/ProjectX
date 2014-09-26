@@ -32,8 +32,9 @@ public:
 	inline float3& operator= (const float v[3])
 	{
 		m_data.s[0] = v[0];
-		m_data.s[0] = v[0];
-		m_data.s[0] = v[0];
+		m_data.s[1] = v[1];
+		m_data.s[2] = v[2];
+		return *this;
 	}
 
 	inline float3 operator+ (const float3& other) const

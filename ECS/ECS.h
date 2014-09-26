@@ -11,6 +11,8 @@ The entry point for the ECS system
 #include "DataSchemas/DataSchemasStructs.h"
 #include "ECSEnums.h"
 #include "Platform/float3.h"
+#include "Platform/SharedArray.h"
+#include "KernelCode/Shared/SharedGeometry.h"
 
 namespace ECS
 {
@@ -32,4 +34,6 @@ namespace ECS
 
 	bool GetCameraTransform (float3 &pos, float3 &fwd, float3 &up, float3 &left, cl_uint &sector);
 
+	void SetWorldData (const CSharedArray<SSector> &sectors);
+	const CSharedArray<SSector> &GetWorldData ();
 };

@@ -31,20 +31,19 @@ CECSComponentBearings::CECSComponentBearings (
 	m_position[0] = data.m_Position.m_x;
 	m_position[1] = data.m_Position.m_y;
 	m_position[2] = data.m_Position.m_z;
+}
 
-	MatrixRotation(
-		m_rotationAxisX,
-		m_rotationAxisY,
-		m_rotationAxisZ,
-		DegreesToRadians(data.m_Rotation.m_x),
-		DegreesToRadians(data.m_Rotation.m_y),
-		DegreesToRadians(data.m_Rotation.m_z)
-	);
-
-	m_quaternion.s[0] = 0.0f;
-	m_quaternion.s[1] = 0.0f;
-	m_quaternion.s[2] = 0.0f;
-	m_quaternion.s[3] = 1.0f;
+//--------------------------------------------------------------------------------------------------
+CECSComponentCamera::CECSComponentCamera (
+	unsigned int entityId,
+	const struct SData_ComponentCamera &data
+)
+	: m_pitchMax(DegreesToRadians(data.m_PitchMax))
+	, m_pitchMin(DegreesToRadians(data.m_PitchMin))
+{
+	m_entityId = entityId;
+	m_pitch = DegreesToRadians(data.m_Pitch);
+	m_yaw = DegreesToRadians(data.m_Yaw);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -58,4 +57,29 @@ CECSComponentInput::CECSComponentInput (
 
 	#define INPUT_TOGGLE(name, resetOnKeyUp) bool m_key##name = false;
 	#include "Game/InputToggleList.h"
+}
+
+//--------------------------------------------------------------------------------------------------
+CECSComponentPhysics::CECSComponentPhysics (
+	unsigned int entityId,
+	const struct SData_ComponentPhysics &data
+)
+{
+	m_entityId = entityId;
+	m_cylinderHalfDims[0] = m_cylinderHalfDims[2]  = data.m_CylinderRadius;
+	m_cylinderHalfDims[1] = data.m_CylinderHeight / 2.0f;
+}
+
+//--------------------------------------------------------------------------------------------------
+void Camera_GetBasisVectors (const CECSComponentCamera &camera, float3 &xAxis, float3 &yAxis, float3 &zAxis)
+{
+	const float theta = camera.m_yaw;
+	const float phi = camera.m_pitch;
+	zAxis[0] = cos(theta) * cos(phi);
+	zAxis[1] = sin(phi);
+	zAxis[2] = sin(theta) * cos(phi);
+
+	const float3 trueUp = {0.0f,1.0f,0.0f};
+	xAxis = normalize(cross(trueUp, zAxis));
+	yAxis = normalize(cross(zAxis, xAxis));
 }

@@ -13,8 +13,9 @@ The entry point for the ECS system
 
 namespace ECS
 {
-	static unsigned int g_nextEntityId = 1;
-	static bool g_doingUpdate = false;
+	static unsigned int s_nextEntityId = 1;
+	static bool s_doingUpdate = false;
+	static const CSharedArray<SSector> *s_worldsectors = NULL;
 
 	//--------------------------------------------------------------------------------------------------
 	void CreateEntity (
@@ -24,7 +25,7 @@ namespace ECS
 	)
 	{
 		// reserve an entity id
-		unsigned int entityId = g_nextEntityId++;
+		unsigned int entityId = s_nextEntityId++;
 
 		// create the components for the entity
 		#define ComponentBegin(name, hint) \
@@ -43,13 +44,13 @@ namespace ECS
 	//--------------------------------------------------------------------------------------------------
 	void Update (float elapsedSeconds)
 	{
-		g_doingUpdate = true;
+		s_doingUpdate = true;
 
 		// update each system - this can be threaded in the future
 		#define SystemBegin(name, single, hint) CECSSystem##name::UpdateSystem(elapsedSeconds);
 		#include "SystemList.h"
 
-		g_doingUpdate = false;
+		s_doingUpdate = false;
 	}
 
 	//--------------------------------------------------------------------------------------------------
@@ -57,7 +58,7 @@ namespace ECS
 	{
 		// We access components directly without regard for threading matters, so we better not do this
 		// during an update call!
-		Assert_(g_doingUpdate == false);
+		Assert_(s_doingUpdate == false);
 
 		// apply this mouse movement to all input components
 		CECSComponentInput::TList& list = CECSComponentInput::All();
@@ -80,7 +81,7 @@ namespace ECS
 	{
 		// We access components directly without regard for threading matters, so we better not do this
 		// during an update call!
-		Assert_(g_doingUpdate == false);
+		Assert_(s_doingUpdate == false);
 
 		// apply this mouse movement to all input components
 		CECSComponentInput::TList& list = CECSComponentInput::All();
@@ -106,18 +107,36 @@ namespace ECS
 		// Get the bearings from the bearings component of the single entity registered with the camera,
 		// if there is one registered.
 
-		if (CECSSystemCamera::GetRegisteredEntityCount() == 0)
+		if (CECSSystemFPSCamera::GetRegisteredEntityCount() == 0)
 			return false;
 
-		unsigned int cameraEntity = CECSSystemCamera::GetRegisteredEntity(0);
-		CECSComponentBearings *bearingsComponent = CECSComponentBearings::GetByEntityId(cameraEntity);
-		Assert_(bearingsComponent != NULL);
-		pos = bearingsComponent->m_position;
-		fwd = bearingsComponent->m_rotationAxisZ;
-		up = bearingsComponent->m_rotationAxisY;
-		left = bearingsComponent->m_rotationAxisX;
-		sector = bearingsComponent->m_sector;
+		unsigned int cameraEntity = CECSSystemFPSCamera::GetRegisteredEntity(0);
+		CECSComponentBearings &bearingsComponent = CECSComponentBearings::MustGetByEntityId(cameraEntity);
+		pos = bearingsComponent.m_position;
+		sector = bearingsComponent.m_sector;
+
+		CECSComponentCamera &cameraComponent = CECSComponentCamera::MustGetByEntityId(cameraEntity);
+
+		float3 xAxis, yAxis, zAxis;
+		Camera_GetBasisVectors(cameraComponent, xAxis, yAxis, zAxis);
+
+		left = xAxis;
+		up = yAxis;
+		fwd = zAxis;
 
 		return true;
+	}
+
+	//--------------------------------------------------------------------------------------------------
+	void SetWorldData (const CSharedArray<SSector> &sectors)
+	{
+		s_worldsectors = &sectors;
+	}
+
+	//--------------------------------------------------------------------------------------------------
+	const CSharedArray<SSector> &GetWorldData ()
+	{
+		Assert_(s_worldsectors != NULL);
+		return *s_worldsectors;
 	}
 };

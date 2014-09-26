@@ -61,8 +61,8 @@ public:
 		camera.m_left = left;
 		camera.m_up = up;
 		camera.m_sector = sector;
-		float3 delta = {0,0,0};
-		AttemptMove(delta);
+		//float3 delta = {0,0,0};
+		//AttemptMove(delta);
 	}
 
 	void AttemptMove (const float3 &delta);

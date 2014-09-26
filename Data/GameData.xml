@@ -15,15 +15,21 @@
   
   <!--=======================================Components=======================================-->
   <ComponentBearings id="Default"/>
+  <ComponentCamera id="Default"/>
   <ComponentInput id="Default"/>
+  <ComponentPhysics id="Default"/>
 
   <ComponentBearings id="Player" Sector="StartRoom"/>
+  <ComponentCamera id="Player" Yaw="90" PitchMin="-70" PitchMax="70"/>
+  <ComponentPhysics id="Player" CylinderRadius="1.0" CylinderHeight="1.0"/>
   
   <!--========================================Entities========================================-->
   <Entity id="Player">
     <ComponentBearings Value="Player"/>
+    <ComponentCamera Value="Player"/>
     <ComponentInput Value="Default"/>
-    <SystemCamera Value="true"/>
+    <ComponentPhysics Value="Player"/>
+    <SystemFPSCamera Value="true"/>
     <SystemPlayerController Value="true"/>
     <SystemCreaturePhysics Value="true"/>
   </Entity>

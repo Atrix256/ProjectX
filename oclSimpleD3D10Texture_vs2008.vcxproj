@@ -252,6 +252,7 @@
     <ClCompile Include="ECS\Components.cpp" />
     <ClCompile Include="ECS\ECS.cpp" />
     <ClCompile Include="ECS\Systems.cpp" />
+    <ClCompile Include="ECS\Systems\CECSSystemCreaturePhysics.cpp" />
     <ClCompile Include="External\tinyxml\tinyxml2.cpp" />
     <ClCompile Include="Game\CCamera.cpp" />
     <ClCompile Include="Game\CInput.cpp" />

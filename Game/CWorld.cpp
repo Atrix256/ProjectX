@@ -17,6 +17,8 @@ This class holds all information about the world
 #include "CCamera.h"
 #include "Platform/OS.h"
 
+#include "ECS/ECS.h"
+
 #include "Game\CGame.h"
 
 #include <algorithm>
@@ -1101,6 +1103,9 @@ void CWorld::LoadSector (
 //-----------------------------------------------------------------------------
 bool CWorld::Load (const char *worldFileName)
 {
+	// tell the ECS system about our world data (temp, until map access is more formalized)
+	ECS::SetWorldData(m_sectors);
+
 	if (!DataSchemasXML::Load(m_worldData, worldFileName, "World"))
 		m_worldData.SetDefault();
 

@@ -41,7 +41,7 @@
   <!--===============================================================
   StartRoom
   ================================================================-->
-  <Sector id="StartRoom" FogConstantDensity="true" FogColor="0,0,1" FogPlane="0,1,0,-5" FogDensityFactor="0.03" FogFactorMax="0.8" Dimensions="40,10,10" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector id="StartRoom" Dimensions="40,10,10" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
     <Sphere Position="4,5,0" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="4,5,0" Color="1,1,0.8" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
     
@@ -61,7 +61,8 @@
   <!--===============================================================
   HallwayToDarkRoom
   ================================================================-->
-  <Sector id="HallwayToDarkRoom" FogConstantDensity="false" FogColor="0,1,0" FogPlane="0,1,0,1" FogDensityFactor="0.01"  Dimensions="10,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <!-- FogConstantDensity="false" FogColor="0,1,0" FogPlane="0,1,0,1" FogDensityFactor="0.01"  -->
+  <Sector id="HallwayToDarkRoom" Dimensions="10,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
 
     <Sphere Position="0,3.5,-15" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="0,3.5,-15" Color="1,1,0.8" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="110" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
@@ -85,7 +86,7 @@
   <!--===============================================================
   DarkRoom
   ================================================================-->
-  <Sector id="DarkRoom" FogConstantDensity="true" FogColor="1,0,0" FogPlane="0.1,1,0.05,3" FogDensityFactor="0.03" FogFactorMax="0.8" Dimensions="40,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector id="DarkRoom" Dimensions="40,10,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
     <SectorPlane UAxis="0,0,-1" Material="RoughBrick" TextureScale="0.25,0.25"/>
     <SectorPlane UAxis="0,0, 1" Material="RoughBrick" TextureScale="0.25,0.25"/>
 
@@ -106,7 +107,7 @@
   <!--===============================================================
   Hallway
   ================================================================-->
-  <Sector id="Hallway" FogColor="1,1,1" FogPlane="0,1,0,2.5" FogConstantDensity="true" FogDensityFactor="0.4" FogFactorMax="1" Dimensions="7,7,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
+  <Sector id="Hallway" Dimensions="7,7,40" CastShadows="false" AmbientLight="0.1, 0.1, 0.1">
 
     <Sphere Position="0,3.5,10" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="0,3.5,10" Color="1,0.5,0.5" AttenuationConstant="0.5" AttenuationDistanceSquared="0.01" ConeDirection="0,-1,0" ConeAngle="130" ConeAttenuationAngle="20" ConeFalloffFactor="2"/>
@@ -135,7 +136,7 @@
   <!--===============================================================
   Outside
   ================================================================-->
-  <Sector id="Outside" FogColor="1,0,1" FogPlane="0,1,0,7" FogDensityFactor="0.008" Dimensions="40,20,80" CastShadows="false" AmbientLight="0.2, 0.2, 0.2">
+  <Sector id="Outside" Dimensions="40,20,80" CastShadows="false" AmbientLight="0.2, 0.2, 0.2">
 
     <Sphere Position="-27,5,69" Radius="0.1" Material="WhiteLight" CastShadows="false"/>
     <PointLight Position="-27,5,69" Color="1,1,0.2" AttenuationConstant="1" AttenuationDistance="0.0025" />

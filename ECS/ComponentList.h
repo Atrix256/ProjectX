@@ -33,10 +33,6 @@ ComponentEnd - end the component definition
 ComponentBegin(Bearings, "The bearings store a location and rotation")
 	ComponentData(unsigned int, sector, "The sector the entity is in")
 	ComponentData(float3, position, "The position in the sector")
-	ComponentData(float3, rotationAxisX, "The x axis basis vector for the rotation matrix")
-	ComponentData(float3, rotationAxisY, "The y axis basis vector for the rotation matrix")
-	ComponentData(float3, rotationAxisZ, "The z axis basis vector for the rotation matrix")
-	ComponentData(cl_float4, quaternion, "The quaternion representing rotation.")
 ComponentEnd
 
 ComponentBegin(Input, "The input from a single frame is stored here")
@@ -49,6 +45,18 @@ ComponentBegin(Input, "The input from a single frame is stored here")
 	ComponentData(bool , keyJump, "Tracks key state")
 	ComponentData(bool , keyCrouch, "Tracks key state")
 	ComponentData(bool , keySprint, "Tracks key state")
+ComponentEnd
+
+ComponentBegin(Camera, "The data needed for any kind of camera.  Up to the system to decide what sort of camera it is.")
+	ComponentData(float, yaw, "Rotation around the vertical axis - looking left and right.")
+	ComponentData(float, pitch, "Rotation around the horizontal axis - looking up and down.")
+	ComponentData(const float, pitchMax, "The highest pitch value allowed.")
+	ComponentData(const float, pitchMin, "The lowest pitch value allowed.")
+ComponentEnd
+
+ComponentBegin(Physics, "Entity physics information")
+	ComponentData(float3, cylinderHalfDims, "The half dims of the physics cylinder. X,Z axis are the radius, Y axis is the half height")
+	ComponentData(float3, positionDelta, "How much the object wants to move this frame")
 ComponentEnd
 
 //=============================================================================================================================

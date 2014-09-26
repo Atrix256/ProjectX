@@ -1,14 +1,24 @@
-
 NEXT
 
-* fix camera!
-* make camera up always be world up
-? quaternion camera?
-* make sprinting, crouching and jumping work
+* save off the current physics as a "free fly" mode?
 
-* camera X got reversed somehow
+* make the physics cylinder be able to traverse sectors
+* a cylinder may be in multiple sectors at once, need to deal with that.
+
+* make physics & sector traversals work in ECS system, the right way that it should work
+
+* make "player height" work again, instead of the camera being in the center of the cylidner.
+ 
+* solve the problem of how components should interface with the world (like, for physics!)
+ * maybe also need a separate system for physics world, so ECS doesn't need knowledge of shared array and shared geometry stuff
+ * Systems.cpp also shouldnt be including and interfacing with ECS namespace!!
+ * apparently we need a singleton entity with singleton components
+
+* make sprinting, crouching and jumping work. make sure all current functionality works.
 
 * "left" isn't really the right term, it's really right...
+
+* can we run the game logic during the render? possibly on another thread?  try it and see.  can simulate longer game loop with a sleep or something.
 
 * remove math stuff from camera class after making component work, since camera just gets transform from entity.  math stuff should be in a global place for all transforms.
 
@@ -23,10 +33,6 @@ NEXT
 * get rid of cplayer class - should be replaced by components!
 
 * get rid of auto adjust brightness. games fake it!
-
-* convert camera to using component
-* convert input to using component
-* convert physics to using components
 
 * instead of ECS coupling mouse input so directly with CCamera, should have mouse input change rotation on entity, and should have camera take that info after ecs tick or something?
 
@@ -161,6 +167,7 @@ ECS details
 * if splitting y axis more than into 2 sections, could instead do N slices, and keep track of where each slice ends index wise. then, find the min/max index of the ray and do the corresponding slices.
 
 --RENDERING
+* static shadows for static geometry and static lights - somehow, not sure.
 * neat effect: set bearings.m_rotationAxisZ to 0,0,1 but let the other axis rotations happen. could be a neat drunk / dazed effect.
 * tile rerendering may actually help here? well... how often will the camera not be moving though...
 * try implementing "flip quad" supersampling. or flip tri
@@ -641,6 +648,15 @@ TO "SHIP" TO TEAM
 
 
 =====DONE=====
+
+--9/3/14
+* working on physics stuff more. swept cylinder vs sector test works and cylinder sliding.
+ * need to traverse portals and handle the cylinder being in multiple sectors at once.
+* made camera min/max pitch be in the game data for the component.
+
+--9/1/14
+* checked in progress up to this point
+* camera and movement are in ECS system now.
 
 --8/20/14
 * cutting out camera functionality from camera, player, input, etc, putting it into ECS system.

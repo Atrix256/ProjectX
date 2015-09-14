@@ -1,5 +1,7 @@
 NEXT
 
+* SLI on / off doesnt seem to matter... figure out how to use both video cards!!
+
 * save off the current physics as a "free fly" mode?
 
 * make the physics cylinder be able to traverse sectors

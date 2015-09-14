@@ -51,8 +51,8 @@
 
 // reminders for build output window and log
 #ifdef _WIN32
-    #pragma message ("Note: including shrUtils.h")
-    #pragma message ("Note: including opencl.h")
+    //#pragma message ("Note: including shrUtils.h")
+    //#pragma message ("Note: including opencl.h")
 #endif
 
 // SDK Revision #

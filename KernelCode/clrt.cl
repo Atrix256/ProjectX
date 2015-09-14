@@ -6,9 +6,9 @@ The kernel code
 
 ==================================================================================================*/
 
-#include "Shared/SSharedDataRoot.h"
-#include "Shared/SharedGeometry.h"
-#include "KernelMath.h"
+#include "KernelCode/Shared/SSharedDataRoot.h"
+#include "KernelCode/Shared/SharedGeometry.h"
+#include "KernelCode/KernelMath.h"
 
 #define c_maxRayBounces SETTINGS_RAYBOUNCES
 #define c_maxRayLength 1000.0f
